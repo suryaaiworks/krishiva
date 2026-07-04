@@ -11,6 +11,7 @@ import {
   Bot, X, AlertTriangle, ShieldCheck, Wind, Droplets, Sun
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { useThemeContext } from "@/components/layout/ThemeProvider";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +58,7 @@ const SCHEMES_LIST = [
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { isDemoDrawerOpen } = useThemeContext();
   const [isVoiceActive, setIsVoiceActive] = React.useState(false);
   const [typedPrompt, setTypedPrompt] = React.useState("");
   const [aiResponse, setAiResponse] = React.useState<string | null>(null);
@@ -492,36 +494,54 @@ export default function DashboardPage() {
               </span>
               <h3 className="text-lg font-bold text-foreground mb-4">Important Alerts</h3>
 
-              <div className="relative border-l border-border/50 pl-4.5 space-y-5 text-xs">
+              <div className="space-y-3.5">
                 {/* Alert 1 */}
-                <div className="relative">
-                  <div className="absolute -left-7 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500/10 text-rose-500">
-                    <AlertTriangle className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-3.5 p-3 rounded-[16px] border border-border/40 bg-muted/10 hover:bg-muted/20 transition-all duration-200">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-500/10 text-rose-500">
+                    <AlertTriangle className="h-4.5 w-4.5" />
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-foreground">Dry Spell Warning</span>
-                      <span className="text-[9px] text-muted-foreground">Just now</span>
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className="font-bold text-foreground truncate text-xs">Dry Spell Warning</span>
+                      <span className="text-[9px] text-muted-foreground shrink-0 font-medium">Just now</span>
                     </div>
-                    <p className="text-muted-foreground leading-normal">
+                    <p className="text-muted-foreground leading-normal text-[11px]">
                       Zero rain forecasted for next 5 days. Secure drip lines.
                     </p>
+                    <div className="pt-1.5 flex justify-between items-center">
+                      <Button
+                        onClick={() => router.push("/weather")}
+                        variant="link"
+                        className="text-[10px] text-primary hover:underline font-extrabold p-0 h-auto self-start leading-none"
+                      >
+                        Action Plan →
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Alert 2 */}
-                <div className="relative">
-                  <div className="absolute -left-7 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
-                    <AlertTriangle className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-3.5 p-3 rounded-[16px] border border-border/40 bg-muted/10 hover:bg-muted/20 transition-all duration-200">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+                    <AlertTriangle className="h-4.5 w-4.5" />
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-foreground">Stem Borer Risk</span>
-                      <span className="text-[9px] text-muted-foreground">3 hours ago</span>
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className="font-bold text-foreground truncate text-xs">Stem Borer Risk</span>
+                      <span className="text-[9px] text-muted-foreground shrink-0 font-medium">3 hours ago</span>
                     </div>
-                    <p className="text-muted-foreground leading-normal">
+                    <p className="text-muted-foreground leading-normal text-[11px]">
                       Humidity indices match pest migration profiles in Zone A.
                     </p>
+                    <div className="pt-1.5 flex justify-between items-center">
+                      <Button
+                        onClick={() => router.push("/disease")}
+                        variant="link"
+                        className="text-[10px] text-primary hover:underline font-extrabold p-0 h-auto self-start leading-none"
+                      >
+                        Scan Stalks →
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -933,8 +953,8 @@ export default function DashboardPage() {
       </div>
 
       {/* FLOATING VIRA ROBOT ASSISTANT */}
-      {showViraBubble && (
-        <div className="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-30 flex flex-col items-end gap-2.5">
+      {showViraBubble && !isDemoDrawerOpen && (
+        <div className="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-40 flex flex-col items-end gap-2.5">
           {/* Chat Bubble overlay */}
           <AnimatePresence>
             <motion.div 

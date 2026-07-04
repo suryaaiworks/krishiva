@@ -407,13 +407,13 @@ export default function MarketIntelligencePage() {
             
             {/* Search Input */}
             <div className="relative w-full md:max-w-xs">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/60" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/60 pointer-events-none" />
               <input 
                 type="text"
                 placeholder="Search crops (e.g. Groundnut...)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-card border border-border rounded-btn pl-9 pr-4 h-10 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none placeholder:text-muted-foreground/60"
+                className="w-full bg-card border border-border rounded-input pl-9 pr-4 h-10 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-muted-foreground/60 transition-all duration-200"
               />
             </div>
 
@@ -422,7 +422,7 @@ export default function MarketIntelligencePage() {
               <select 
                 value={selectedDistrict}
                 onChange={(e) => setSelectedDistrict(e.target.value)}
-                className="bg-card border border-border rounded-btn px-3 h-10 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none"
+                className="bg-card border border-border rounded-input px-3 h-10 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none transition-all duration-200 cursor-pointer"
               >
                 <option value="Pune">Pune District</option>
                 <option value="Nagpur">Nagpur District</option>
@@ -432,7 +432,7 @@ export default function MarketIntelligencePage() {
               <select 
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-card border border-border rounded-btn px-3 h-10 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none"
+                className="bg-card border border-border rounded-input px-3 h-10 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none transition-all duration-200 cursor-pointer"
               >
                 <option value="all">All Categories</option>
                 <option value="oilseeds">Oilseeds & Cash</option>

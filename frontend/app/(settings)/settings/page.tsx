@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
+import { useThemeContext, AccentColor } from "@/components/layout/ThemeProvider";
 import { 
   ArrowLeft, Bell, Globe, Lock, HelpCircle, Phone, 
   Smartphone, Sun, Moon, Monitor, Play
@@ -24,6 +25,7 @@ import { useRouter } from "next/navigation";
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { accentColor, setAccentColor } = useThemeContext();
   const [mounted, setMounted] = React.useState(false);
   const [language, setLanguage] = React.useState("en");
   const [fontSize, setFontSize] = React.useState("medium");
@@ -125,6 +127,33 @@ export default function SettingsPage() {
                       >
                         <t.icon className="h-4.5 w-4.5 shrink-0" />
                         <span className="text-[10px]">{t.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Accent Color Select */}
+                <div className="space-y-1.5">
+                  <label className="font-bold text-foreground">Theme Accent Color</label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { id: "forest", label: "Forest", colorClass: "bg-[#2E7D32]" },
+                      { id: "teal", label: "Teal", colorClass: "bg-[#008080]" },
+                      { id: "blue", label: "Blue", colorClass: "bg-[#0000FF]" },
+                      { id: "amber", label: "Amber", colorClass: "bg-[#F59E0B]" },
+                      { id: "rose", label: "Rose", colorClass: "bg-[#EF4444]" }
+                    ].map((acc) => (
+                      <div
+                        key={acc.id}
+                        onClick={() => setAccentColor(acc.id as AccentColor)}
+                        className={`p-2.5 rounded-btn border text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 ${
+                          accentColor === acc.id
+                            ? "border-primary bg-primary/5 text-primary font-bold animate-pulse-once"
+                            : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
+                        }`}
+                      >
+                        <span className={`h-4.5 w-4.5 rounded-full ${acc.colorClass} border border-black/10 shrink-0`} />
+                        <span className="text-[9px] font-semibold">{acc.label}</span>
                       </div>
                     ))}
                   </div>

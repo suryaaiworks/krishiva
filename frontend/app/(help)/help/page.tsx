@@ -51,10 +51,24 @@ const FAQS: FaqItem[] = [
   }
 ];
 
+const CATEGORY_MAP = {
+  all: { label: "All", value: "all" },
+  weather: { label: "Weather", value: "weather" },
+  market: { label: "Market", value: "mandi" },
+  schemes: { label: "Schemes", value: "schemes" },
+  disease: { label: "Disease", value: "disease" },
+  machinery: { label: "Machinery", value: "machinery" },
+  payments: { label: "Payments", value: "payments" },
+  profile: { label: "Profile", value: "profile" },
+  support: { label: "Support", value: "vira" },
+  government: { label: "Government", value: "schemes" },
+  crop: { label: "Crop", value: "crops" }
+} as const;
+
 export default function HelpPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [selectedCategory, setSelectedCategory] = React.useState<"all" | FaqItem["category"]>("all");
+  const [selectedCategory, setSelectedCategory] = React.useState<keyof typeof CATEGORY_MAP>("all");
   const [expandedIndex, setExpandedIndex] = React.useState<number | null>(null);
   
   // Support Form State
@@ -70,7 +84,8 @@ export default function HelpPage() {
   const [chatTyping, setChatTyping] = React.useState(false);
 
   const filteredFaqs = FAQS.filter(faq => {
-    const matchesCategory = selectedCategory === "all" || faq.category === selectedCategory;
+    const targetVal = CATEGORY_MAP[selectedCategory].value;
+    const matchesCategory = targetVal === "all" || faq.category === targetVal;
     const matchesSearch = faq.q.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           faq.a.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
@@ -189,29 +204,38 @@ export default function HelpPage() {
           />
 
           {/* Search bar and Filters */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-center bg-card p-4 rounded-card border border-border/80 shadow-sm">
-            <div className="sm:col-span-2 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="flex flex-col gap-4 bg-card p-4 rounded-card border border-border/80 shadow-sm">
+            {/* Search Box */}
+            <div className="relative w-full">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search FAQs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent pl-9.5 pr-4 py-2 border border-border rounded-btn text-xs focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground text-foreground"
+                className="w-full bg-transparent pl-9.5 pr-4 py-2.5 border border-border rounded-input text-xs focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground text-foreground transition-all duration-200"
               />
             </div>
 
-            <div className="sm:col-span-2 flex gap-1.5 justify-end overflow-x-auto py-1">
-              {(["all", "vira", "crops", "disease", "mandi", "schemes", "relief"] as const).map((cat) => (
-                <Button
-                  key={cat}
-                  size="sm"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`h-8 px-2.5 text-[9px] font-bold rounded-btn cursor-pointer ${selectedCategory === cat ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
-                >
-                  {cat.toUpperCase()}
-                </Button>
-              ))}
+            {/* Filter Chips wrapped */}
+            <div className="flex flex-wrap gap-1.5 py-1">
+              {(Object.keys(CATEGORY_MAP) as Array<keyof typeof CATEGORY_MAP>).map((key) => {
+                const cat = CATEGORY_MAP[key];
+                return (
+                  <Button
+                    key={key}
+                    size="sm"
+                    onClick={() => setSelectedCategory(key)}
+                    className={`h-8 px-3 text-[10px] font-bold rounded-btn cursor-pointer transition-all duration-200 ${
+                      selectedCategory === key 
+                        ? "bg-primary text-white shadow-sm" 
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {cat.label}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 

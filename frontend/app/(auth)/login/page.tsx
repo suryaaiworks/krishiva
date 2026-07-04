@@ -39,6 +39,7 @@ export default function LoginPage() {
   const [mounted, setMounted] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isOffline, setIsOffline] = React.useState(false);
+  const [selectedRole, setSelectedRole] = React.useState<"farmer" | "buyer" | "owner" | "guest">("farmer");
 
   // Form setup
   const {
@@ -72,11 +73,19 @@ export default function LoginPage() {
 
   const onSubmit = (data: LoginFormValues) => {
     setIsLoading(true);
-    console.log("Logging in with phone:", data.phone);
+    console.log("Logging in with phone:", data.phone, "as role:", selectedRole);
     // Mock login timeout
     setTimeout(() => {
       setIsLoading(false);
-      router.push("/dashboard");
+      if (selectedRole === "farmer") {
+        router.push("/dashboard");
+      } else if (selectedRole === "buyer") {
+        router.push("/buyer/dashboard");
+      } else if (selectedRole === "owner") {
+        router.push("/owner/dashboard");
+      } else {
+        router.push("/guest/dashboard");
+      }
     }, 1800);
   };
 
@@ -84,7 +93,15 @@ export default function LoginPage() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      router.push("/dashboard");
+      if (selectedRole === "farmer") {
+        router.push("/dashboard");
+      } else if (selectedRole === "buyer") {
+        router.push("/buyer/dashboard");
+      } else if (selectedRole === "owner") {
+        router.push("/owner/dashboard");
+      } else {
+        router.push("/guest/dashboard");
+      }
     }, 1200);
   };
 
@@ -92,7 +109,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      router.push("/dashboard");
+      router.push("/guest/dashboard");
     }, 1000);
   };
 
@@ -228,7 +245,7 @@ export default function LoginPage() {
         {/* Centerpiece Form Card */}
         <div className="flex-1 flex items-center justify-center py-8">
           <motion.div
-            className="w-full max-w-sm border border-border bg-card/60 backdrop-blur-md rounded-card p-6 md:p-8 shadow-sm flex flex-col gap-6"
+            className="w-full max-w-md border border-border bg-card/60 backdrop-blur-md rounded-card p-6 md:p-8 shadow-sm flex flex-col gap-6"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 150, damping: 20 }}
@@ -243,53 +260,109 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Main validation form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-1">
-                <Input
-                  {...register("phone")}
-                  label="Phone Number"
-                  placeholder="Enter 10-digit phone number"
-                  icon={Phone}
-                  error={errors.phone?.message}
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                Select Your Role
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { id: "farmer", label: "Farmer", desc: "Grow & Trade" },
+                  { id: "buyer", label: "Buyer", desc: "Procure Crops" },
+                  { id: "owner", label: "Owner", desc: "Rent Machines" },
+                  { id: "guest", label: "Guest", desc: "Demo View" }
+                ].map((role) => {
+                  const isSelected = selectedRole === role.id;
+                  return (
+                    <button
+                      key={role.id}
+                      type="button"
+                      onClick={() => setSelectedRole(role.id as "farmer" | "buyer" | "owner" | "guest")}
+                      className={`p-2 rounded-btn border text-left transition-all ${
+                        isSelected 
+                          ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                          : "border-border bg-card/40 hover:bg-muted/10"
+                      }`}
+                    >
+                      <span className="font-extrabold text-[10px] text-foreground block">{role.label}</span>
+                      <span className="text-[8px] text-muted-foreground block mt-0.5">{role.desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Conditional form rendering */}
+            {selectedRole === "guest" ? (
+              <div className="space-y-4 pt-2">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Enter the platform as a Guest to preview trade and rental statistics without creating an account.
+                </p>
+                <Button
+                  onClick={handleGuestLogin}
                   disabled={isLoading}
-                  maxLength={10}
-                />
+                  className="w-full h-11 justify-center rounded-btn font-bold cursor-pointer transition-all duration-200 active:scale-[0.98]"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4.5 w-4.5 animate-spin" />
+                      Please Wait
+                    </>
+                  ) : (
+                    <>
+                      Enter Guest Platform
+                      <ArrowRight className="ml-1.5 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
               </div>
-
-              {/* Remember me & Forgot details row */}
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground select-none cursor-pointer">
-                  <input
-                    type="checkbox"
-                    {...register("rememberMe")}
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="space-y-1">
+                  <Input
+                    {...register("phone")}
+                    label="Phone Number"
+                    placeholder="Enter 10-digit phone number"
+                    icon={Phone}
+                    error={errors.phone?.message}
                     disabled={isLoading}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50 cursor-pointer"
+                    maxLength={10}
                   />
-                  <span>Remember my farm</span>
-                </label>
-              </div>
+                </div>
 
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-11 justify-center rounded-btn font-bold cursor-pointer transition-transform duration-200 active:scale-[0.98]"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4.5 w-4.5 animate-spin" />
-                    Please Wait
-                  </>
-                ) : (
-                  <>
-                    Send OTP Verification
-                    <ArrowRight className="ml-1.5 h-4 w-4" />
-                  </>
-                )}
-              </Button>
-            </form>
+                {/* Remember me & Forgot details row */}
+                <div className="flex items-center justify-between pt-1">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground select-none cursor-pointer">
+                    <input
+                      type="checkbox"
+                      {...register("rememberMe")}
+                      disabled={isLoading}
+                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50 cursor-pointer"
+                    />
+                    <span>Remember my farm</span>
+                  </label>
+                </div>
 
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-11 justify-center rounded-btn font-bold cursor-pointer transition-transform duration-200 active:scale-[0.98]"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4.5 w-4.5 animate-spin" />
+                      Please Wait
+                    </>
+                  ) : (
+                    <>
+                      Send OTP Verification
+                      <ArrowRight className="ml-1.5 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
+            )}
             {/* Separator */}
             <div className="relative flex items-center">
               <div className="flex-grow border-t border-border"></div>

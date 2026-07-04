@@ -9,7 +9,7 @@ import { LucideIcon } from "lucide-react";
 type MotionDivProps = HTMLMotionProps<"div">;
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  title: string;
+  title?: string;
   description?: string;
   icon?: LucideIcon;
   iconClassName?: string;
@@ -54,16 +54,20 @@ export function Card({
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <h3 className="font-heading text-lg font-semibold tracking-tight text-foreground">
-              {title}
-            </h3>
-            {description && (
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {description}
-              </p>
-            )}
-          </div>
+          {(title || description) && (
+            <div className="space-y-1.5">
+              {title && (
+                <h3 className="font-heading text-lg font-semibold tracking-tight text-foreground">
+                  {title}
+                </h3>
+              )}
+              {description && (
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {description}
+                </p>
+              )}
+            </div>
+          )}
 
           {children && <div className="mt-2">{children}</div>}
 
@@ -93,16 +97,20 @@ export function Card({
           </div>
         )}
 
-        <div className="space-y-1.5">
-          <h3 className="font-heading text-lg font-semibold tracking-tight text-foreground">
-            {title}
-          </h3>
-          {description && (
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {description}
-            </p>
-          )}
-        </div>
+        {(title || description) && (
+          <div className="space-y-1.5">
+            {title && (
+              <h3 className="font-heading text-lg font-semibold tracking-tight text-foreground">
+                {title}
+              </h3>
+            )}
+            {description && (
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {description}
+              </p>
+            )}
+          </div>
+        )}
 
         {children && <div className="mt-2">{children}</div>}
 

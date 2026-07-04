@@ -218,13 +218,13 @@ export default function OfficesPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center bg-card p-4 rounded-card border border-border/60 shadow-sm">
           {/* Search Box */}
           <div className="md:col-span-2 relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <input 
               type="text" 
               placeholder="Search by center name, officer, or address..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-muted/30 border border-border rounded-btn pl-10 pr-4 h-11 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none placeholder:text-muted-foreground/60"
+              className="w-full bg-muted/30 border border-border rounded-input pl-10 pr-4 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-muted-foreground/60 transition-all duration-200"
             />
           </div>
 
@@ -233,7 +233,7 @@ export default function OfficesPage() {
             <select 
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="w-full bg-muted/30 border border-border rounded-btn px-3.5 h-11 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none cursor-pointer"
+              className="w-full bg-muted/30 border border-border rounded-input px-3.5 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none cursor-pointer transition-all duration-200"
             >
               <option value="Pune">Pune District</option>
               <option value="Nagpur">Nagpur District</option>
@@ -246,7 +246,7 @@ export default function OfficesPage() {
             <select 
               value={selectedBlock}
               onChange={(e) => setSelectedBlock(e.target.value)}
-              className="w-full bg-muted/30 border border-border rounded-btn px-3.5 h-11 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none cursor-pointer"
+              className="w-full bg-muted/30 border border-border rounded-input px-3.5 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none cursor-pointer transition-all duration-200"
             >
               <option value="Shirur">Shirur Block (Taluka)</option>
               <option value="Baramati">Baramati Block (Taluka)</option>

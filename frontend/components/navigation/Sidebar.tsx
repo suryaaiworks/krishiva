@@ -40,10 +40,13 @@ export function Sidebar() {
     <motion.aside
       animate={{ width: isCollapsed ? 88 : 264 }}
       transition={{ type: "spring", stiffness: 350, damping: 35 }}
-      className="hidden md:flex h-screen flex-col border-r border-border bg-card p-4 sticky top-0 relative z-30 shrink-0"
+      className={cn(
+        "hidden md:flex h-screen flex-col border-r border-border bg-card sticky top-0 relative z-30 shrink-0",
+        isCollapsed ? "p-3" : "p-4"
+      )}
     >
       {/* Brand Header */}
-      <div className="flex items-center gap-2.5 px-3 py-4 mb-4 select-none min-h-[64px]">
+      <div className={cn("flex items-center select-none min-h-[64px] mb-4 py-4", isCollapsed ? "justify-center px-0" : "px-3 gap-2.5")}>
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-btn bg-primary text-primary-foreground shadow-sm">
           <Sprout className="h-5 w-5" />
         </div>
@@ -85,7 +88,8 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group relative flex items-center gap-3 rounded-[18px] px-4.5 py-3.5 text-xs font-semibold text-muted-foreground transition-all duration-200 hover:bg-primary/5 hover:text-foreground cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
+                "group relative flex items-center rounded-[18px] py-3.5 text-xs font-semibold text-muted-foreground transition-all duration-200 hover:bg-primary/5 hover:text-foreground cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
+                isCollapsed ? "justify-center px-0 gap-0" : "px-4.5 py-3.5 gap-3",
                 isActive && "text-primary bg-primary/10 hover:bg-primary/10 hover:text-primary"
               )}
             >

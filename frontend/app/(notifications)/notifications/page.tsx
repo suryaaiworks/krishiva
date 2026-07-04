@@ -172,27 +172,31 @@ export default function NotificationsPage() {
         </div>
 
         {/* Search bar and Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-center bg-card p-4 rounded-card border border-border/80 shadow-sm">
+        <div className="flex flex-col gap-4 bg-card p-4 rounded-card border border-border/80 shadow-sm">
           {/* Search Box */}
-          <div className="sm:col-span-2 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative w-full">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               placeholder="Search notifications..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent pl-9.5 pr-4 py-2 border border-border rounded-btn text-xs focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground text-foreground"
+              className="w-full bg-transparent pl-9.5 pr-4 py-2.5 border border-border rounded-input text-xs focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground text-foreground transition-all duration-200"
             />
           </div>
 
-          {/* Filters Selectors */}
-          <div className="sm:col-span-2 flex gap-1.5 justify-end overflow-x-auto py-1">
+          {/* Filters Selectors wrapped */}
+          <div className="flex flex-wrap gap-1.5 py-1">
             {(["all", "critical", "warning", "info"] as const).map((type) => (
               <Button
                 key={type}
                 size="sm"
                 onClick={() => setFilter(type)}
-                className={`h-8 px-3 text-[10px] font-bold rounded-btn cursor-pointer ${filter === type ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+                className={`h-8 px-3.5 text-[10px] font-bold rounded-btn cursor-pointer transition-all duration-200 ${
+                  filter === type 
+                    ? "bg-primary text-white shadow-sm" 
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </Button>

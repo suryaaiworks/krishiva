@@ -11,7 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-interface Scenario {
+import { useThemeContext } from "@/components/layout/ThemeProvider";
+
+export interface Scenario {
   id: number;
   title: string;
   desc: string;
@@ -21,7 +23,7 @@ interface Scenario {
   color: string;
 }
 
-const scenarios: Scenario[] = [
+export const scenarios: Scenario[] = [
   {
     id: 1,
     title: "Healthy Farm Scenario",
@@ -82,8 +84,7 @@ export function DemoController() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [activeScenarioId, setActiveScenarioId] = React.useState<number>(1);
+  const { activeScenarioId, setActiveScenarioId, isDemoDrawerOpen, setIsDemoDrawerOpen } = useThemeContext();
   const [isThinking, setIsThinking] = React.useState(false);
   const [thinkingProgress, setThinkingProgress] = React.useState(0);
   const [logIndex, setLogIndex] = React.useState(0);
@@ -94,19 +95,39 @@ export function DemoController() {
 
   // Load state from localStorage on mount
   React.useEffect(() => {
-    const savedScenario = localStorage.getItem("demo_scenario_id");
     const savedPresentation = localStorage.getItem("demo_presentation_mode");
-    if (savedScenario) {
-      setActiveScenarioId(Number(savedScenario));
-    }
     if (savedPresentation) {
       setPresentationMode(savedPresentation === "true");
     }
   }, []);
 
+  // Close on Escape keypress
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsDemoDrawerOpen(false);
+      }
+    };
+    if (isDemoDrawerOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDemoDrawerOpen, setIsDemoDrawerOpen]);
+
+  // Lock body scroll when drawer is open
+  React.useEffect(() => {
+    if (isDemoDrawerOpen) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [isDemoDrawerOpen]);
+
   const handleSelectScenario = (scenario: Scenario) => {
     setActiveScenarioId(scenario.id);
-    localStorage.setItem("demo_scenario_id", String(scenario.id));
     
     // Trigger AI thinking overlay
     setIsThinking(true);
@@ -187,7 +208,7 @@ export function DemoController() {
     }, 7000); // cycle every 7 seconds
 
     return () => clearInterval(timer);
-  }, [isAutoPlaying, pathname, router]);
+  }, [isAutoPlaying, pathname, router, setActiveScenarioId]);
 
   const handleTogglePresentationMode = () => {
     const nextVal = !presentationMode;
@@ -225,107 +246,117 @@ export function DemoController() {
     alert("Demo preferences and scenario loops reset to Healthy Farm baseline.");
   };
 
-  const activeScenario = scenarios.find(s => s.id === activeScenarioId) || scenarios[0];
-
   return (
     <>
-      {/* Floating Demo Trigger Button (Bottom-Right corner above mobile nav) */}
-      <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50">
+      {/* Floating Demo Trigger Button (Bottom-Right corner, shifted left to prevent Vira overlap) */}
+      <div className="fixed bottom-20 right-24 md:bottom-8 md:right-28 z-40">
         <motion.button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => setIsDemoDrawerOpen(!isDemoDrawerOpen)}
           className="h-12 w-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg cursor-pointer border border-white/20 relative"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           <span className="absolute inset-0 rounded-full bg-primary/30 animate-ping opacity-60" />
-          {isOpen ? <X className="h-5 w-5" /> : <Play className="h-5 w-5 fill-white" />}
+          {isDemoDrawerOpen ? <X className="h-5 w-5" /> : <Play className="h-5 w-5 fill-white" />}
         </motion.button>
       </div>
 
-      {/* Global Scenario Alert Header (Only shown when drawer is closed to indicate active demo mode status) */}
-      {!isOpen && !presentationMode && (
-        <div className="fixed top-16 left-0 right-0 z-40 px-4 pointer-events-none md:left-64">
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`max-w-2xl mx-auto p-2.5 rounded-btn border text-[10.5px] font-bold text-center shadow-sm flex items-center justify-center gap-2 ${activeScenario.color}`}
-          >
-            <Sparkles className="h-4 w-4 shrink-0 animate-pulse" />
-            <span>{activeScenario.alert}</span>
-          </motion.div>
-        </div>
-      )}
-
-      {/* SLIDE-UP DEMO DRAWER PANEL */}
+      {/* RIGHT-SIDE SLIDE-OVER DRAWER */}
       <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ y: "100%", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "100%", opacity: 0 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-2xl p-6 md:left-64 max-h-[85vh] overflow-y-auto"
-          >
-            <div className="max-w-4xl mx-auto space-y-6">
-              
-              {/* Header */}
-              <div className="flex justify-between items-start pb-3 border-b border-border/50">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Sliders className="h-5 w-5 text-primary" />
-                    <h3 className="text-base font-extrabold text-foreground">Krishiva Hackathon Demo Control Center</h3>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Switch between pre-loaded agricultural scenarios to demonstrate B2B direct match capabilities.
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => setIsOpen(false)}
-                  variant="outline" 
-                  className="h-8 w-8 rounded-full p-0 bg-card border border-border text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  ✕
-                </Button>
-              </div>
+        {isDemoDrawerOpen && (
+          <>
+            {/* Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDemoDrawerOpen(false)}
+              className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm"
+            />
 
-              {/* Scenarios Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                {scenarios.map((sc) => {
-                  const isActive = sc.id === activeScenarioId;
-                  const Icon = sc.icon;
-                  return (
-                    <div
-                      key={sc.id}
-                      onClick={() => handleSelectScenario(sc)}
-                      className={`p-4 rounded-card border text-left cursor-pointer transition-all flex flex-col justify-between h-40 ${
-                        isActive 
-                          ? "border-primary bg-primary/5 ring-1 ring-primary" 
-                          : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
-                      }`}
-                    >
-                      <div className="space-y-2 text-xs leading-normal">
-                        <div className="flex justify-between items-center">
-                          <Icon className={`h-5 w-5 ${isActive ? "text-primary" : "text-muted-foreground/60"}`} />
-                          <Badge variant={isActive ? "success" : "outline"} className="text-[7.5px] px-1.5 font-bold">
-                            Scenario {sc.id}
-                          </Badge>
-                        </div>
-                        <h4 className="font-extrabold text-foreground tracking-tight text-[11px] pt-1">{sc.title}</h4>
-                        <p className="text-[10px] text-muted-foreground/80 line-clamp-3">
-                          {sc.desc}
-                        </p>
-                      </div>
+            {/* Slide-over Panel */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              className="fixed right-0 top-0 bottom-0 h-full w-full sm:w-[380px] md:w-[420px] bg-card border-l border-border shadow-2xl p-6 overflow-y-auto z-50 flex flex-col justify-between"
+            >
+              <div className="space-y-6">
+                
+                {/* Header */}
+                <div className="flex justify-between items-start pb-3 border-b border-border/50">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Sliders className="h-5 w-5 text-primary" />
+                      <h3 className="text-base font-extrabold text-foreground">Krishiva Hackathon Demo Controls</h3>
                     </div>
-                  );
-                })}
+                    <p className="text-[10px] text-muted-foreground leading-normal">
+                      Switch between agricultural scenarios to demonstrate buyer B2B capabilities.
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => setIsDemoDrawerOpen(false)}
+                    variant="outline" 
+                    className="h-8 w-8 rounded-full p-0 bg-card border border-border text-muted-foreground hover:text-foreground cursor-pointer flex items-center justify-center"
+                  >
+                    ✕
+                  </Button>
+                </div>
+
+                {/* Scenarios List */}
+                <div className="space-y-3">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                    Select Demo Scenario
+                  </span>
+                  <div className="space-y-2.5">
+                    {scenarios.map((sc) => {
+                      const isActive = sc.id === activeScenarioId;
+                      const Icon = sc.icon;
+                      return (
+                        <div
+                          key={sc.id}
+                          onClick={() => handleSelectScenario(sc)}
+                          className={`p-3 rounded-card border text-left cursor-pointer transition-all flex items-center gap-3 ${
+                            isActive 
+                              ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                              : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
+                          }`}
+                        >
+                          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-btn bg-muted/20 ${isActive ? "text-primary bg-primary/10" : "text-muted-foreground/60"}`}>
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center gap-2">
+                              <h4 className="font-extrabold text-foreground tracking-tight text-[11px] truncate">
+                                {sc.title}
+                              </h4>
+                              <Badge variant={isActive ? "success" : "outline"} className="text-[7.5px] px-1.5 font-bold shrink-0">
+                                Scenario {sc.id}
+                              </Badge>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground/80 line-clamp-1 mt-0.5">
+                              {sc.desc}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
 
               {/* Controls bar */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border/40 items-center justify-between text-xs">
+              <div className="pt-4 border-t border-border/40 space-y-4 text-xs">
                 
-                {/* Left: Presentation settings switches */}
-                <div className="flex flex-wrap items-center gap-6">
+                {/* Presentation Settings Row */}
+                <div className="flex flex-col gap-3">
                   {/* Presentation mode */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-4 p-2.5 rounded-btn bg-muted/10 border border-border/30">
+                    <span className="font-bold text-foreground select-none">
+                      Presentation Mode
+                    </span>
                     <input 
                       type="checkbox" 
                       id="pres-mode"
@@ -333,13 +364,13 @@ export function DemoController() {
                       onChange={handleTogglePresentationMode}
                       className="h-4 w-8 rounded-full appearance-none bg-muted checked:bg-primary transition-all cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-3 after:w-3 after:rounded-full after:bg-card after:transition-all checked:after:translate-x-3.5"
                     />
-                    <label htmlFor="pres-mode" className="font-bold text-foreground cursor-pointer select-none">
-                      Presentation Mode (Hide debug bars)
-                    </label>
                   </div>
 
                   {/* Auto play */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-4 p-2.5 rounded-btn bg-muted/10 border border-border/30">
+                    <span className="font-bold text-foreground select-none">
+                      Autoplay Scenarios
+                    </span>
                     <button
                       onClick={() => setIsAutoPlaying(!isAutoPlaying)}
                       className={`h-7 px-3 rounded-btn text-[10px] font-bold transition-all border flex items-center gap-1.5 cursor-pointer ${
@@ -349,43 +380,43 @@ export function DemoController() {
                       }`}
                     >
                       {isAutoPlaying ? <PauseCircle className="h-3.5 w-3.5" /> : <PlayCircle className="h-3.5 w-3.5" />}
-                      {isAutoPlaying ? "Stop Auto Play" : "Kiosk Auto Play Loop"}
+                      {isAutoPlaying ? "Running" : "Start Loop"}
                     </button>
                   </div>
                 </div>
 
-                {/* Right: navigation buttons */}
-                <div className="flex items-center justify-end gap-2.5">
+                {/* Scenario Navigation & Reset Buttons */}
+                <div className="grid grid-cols-2 gap-2">
                   <Button 
                     onClick={handlePrevScenario}
                     variant="outline" 
-                    className="text-[10.5px] font-bold h-8 px-3 rounded-btn cursor-pointer bg-card"
+                    className="text-[10px] font-bold h-9 px-2 rounded-btn cursor-pointer bg-card justify-center flex items-center"
                   >
-                    <ChevronLeft className="mr-1 h-3.5 w-3.5 shrink-0" />
-                    Prev Scenario
+                    <ChevronLeft className="mr-0.5 h-3.5 w-3.5 shrink-0" />
+                    Prev
                   </Button>
                   <Button 
                     onClick={handleNextScenario}
                     variant="outline" 
-                    className="text-[10.5px] font-bold h-8 px-3 rounded-btn cursor-pointer bg-card"
+                    className="text-[10px] font-bold h-9 px-2 rounded-btn cursor-pointer bg-card justify-center flex items-center"
                   >
-                    Next Scenario
-                    <ChevronRight className="ml-1 h-3.5 w-3.5 shrink-0" />
+                    Next
+                    <ChevronRight className="ml-0.5 h-3.5 w-3.5 shrink-0" />
                   </Button>
                   <Button 
                     onClick={handleResetDemo}
                     variant="outline"
-                    className="text-[10.5px] font-bold h-8 px-3 rounded-btn cursor-pointer bg-card border border-rose-500/20 text-rose-500 hover:bg-rose-500/5"
+                    className="col-span-2 text-[10px] font-bold h-9 px-3 rounded-btn cursor-pointer bg-card border border-rose-500/20 text-rose-500 hover:bg-rose-500/5 justify-center flex items-center"
                   >
                     <RefreshCw className="mr-1.5 h-3.5 w-3.5 shrink-0" />
-                    Reset
+                    Reset Hackathon Demo
                   </Button>
                 </div>
 
               </div>
 
-            </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
