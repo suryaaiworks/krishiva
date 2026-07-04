@@ -142,7 +142,7 @@ export default function LoginPage() {
             <Sprout className="h-6 w-6" />
           </div>
           <span className="font-heading text-lg font-bold tracking-tight">
-            Kisan Alert <span className="text-primary">AI</span>
+            Krishiva <span className="text-primary">AI</span>
           </span>
         </div>
 
@@ -171,7 +171,7 @@ export default function LoginPage() {
 
         {/* Copyright info */}
         <p className="text-xs text-slate-500 relative z-10">
-          © 2026 Kisan Alert AI. Powered by Google Gemini & Cloud Run.
+          © 2026 Krishiva. Powered by Google Gemini & Cloud Run.
         </p>
       </div>
 
@@ -185,7 +185,7 @@ export default function LoginPage() {
               <Sprout className="h-4.5 w-4.5" />
             </div>
             <span className="font-heading text-sm font-bold text-foreground">
-              Kisan Alert <span className="text-primary">AI</span>
+              Krishiva <span className="text-primary">AI</span>
             </span>
           </div>
 

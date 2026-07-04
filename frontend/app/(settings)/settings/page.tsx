@@ -19,7 +19,10 @@ interface NotificationSetting {
   enabled: boolean;
 }
 
+import { useRouter } from "next/navigation";
+
 export default function SettingsPage() {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const [language, setLanguage] = React.useState("en");
@@ -282,11 +285,11 @@ export default function SettingsPage() {
                 {/* Helpline button */}
                 <div className="flex justify-between items-center p-3 rounded-btn border border-rose-500/20 bg-rose-500/5">
                   <div className="space-y-0.5">
-                    <span className="font-bold block text-[11px] text-foreground">Kisan Call Center (KCC)</span>
+                    <span className="font-bold block text-[11px] text-foreground">Krishiva Helpline (Toll-Free)</span>
                     <span className="text-[9.5px] text-muted-foreground">Free farming support (24x7)</span>
                   </div>
                   <Button
-                    onClick={() => alert("Dialing Kisan Call Center: 1800-180-1551")}
+                    onClick={() => alert("Dialing Krishiva Helpline: 1800-180-1551")}
                     size="sm"
                     className="h-8 rounded-btn cursor-pointer bg-primary text-white px-3 font-bold"
                   >
@@ -298,21 +301,21 @@ export default function SettingsPage() {
                 {/* Support actions list */}
                 <div className="space-y-2 text-[11px] text-muted-foreground pt-1 pl-1">
                   <div 
-                    onClick={() => alert("Redirecting to FAQs directory...")}
+                    onClick={() => router.push("/help")}
                     className="flex justify-between items-center py-1.5 border-b border-border/30 cursor-pointer hover:text-primary transition-colors"
                   >
-                    <span>Read Frequenty Asked Questions</span>
+                    <span>Read Frequently Asked Questions</span>
                     <Play className="h-3 w-3 fill-current text-muted-foreground/40 rotate-90" />
                   </div>
                   <div 
-                    onClick={() => alert("Syncing with customer support live chat...")}
+                    onClick={() => router.push("/help")}
                     className="flex justify-between items-center py-1.5 border-b border-border/30 cursor-pointer hover:text-primary transition-colors"
                   >
                     <span>Chat with support officer</span>
                     <Play className="h-3 w-3 fill-current text-muted-foreground/40 rotate-90" />
                   </div>
                   <div 
-                    onClick={() => alert("Please detail your issue and submit diagnostic files.")}
+                    onClick={() => router.push("/help")}
                     className="flex justify-between items-center py-1.5 cursor-pointer hover:text-primary transition-colors"
                   >
                     <span>Report a software bug / issue</span>
@@ -322,7 +325,12 @@ export default function SettingsPage() {
 
                 {/* About & Version */}
                 <div className="pt-3 border-t border-border/20 text-center space-y-1">
-                  <span className="text-[10px] font-bold text-foreground block">Kisan Alert AI App</span>
+                  <span 
+                    onClick={() => router.push("/about")}
+                    className="text-[10px] font-bold text-foreground block cursor-pointer hover:text-primary transition-colors"
+                  >
+                    Krishiva AI App
+                  </span>
                   <span className="text-[9.5px] text-muted-foreground block">Version 1.0.4 (Production Build)</span>
                 </div>
               </div>

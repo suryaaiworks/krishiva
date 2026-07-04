@@ -341,7 +341,7 @@ export default function BuyerMarketplacePage() {
         <div className="bg-gradient-to-tr from-primary/10 via-card to-accent/5 p-5 rounded-card border border-primary/20 flex items-start gap-3 text-xs shadow-sm">
           <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5 animate-pulse" />
           <div className="space-y-1">
-            <h4 className="font-extrabold text-foreground">Kisan AI Selling Advisory</h4>
+            <h4 className="font-extrabold text-foreground">Vira AI Selling Advisory</h4>
             <p className="text-muted-foreground leading-relaxed">
               We recommend selling your Sugarcane to **Sahyadri Sugar Cooperative**. While Baramati Agro offers a close rate, Sahyadri Sugar is only 3.5 km away and offers direct pickup, which boosts your net earnings by ₹1,400. Furthermore, Sahyadri Sugar has a 98% payment success rate with instant Direct Bank Transfer upon delivery slip generation.
             </p>

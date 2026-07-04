@@ -82,7 +82,7 @@ const cropMarketData: Record<CropType, CropData> = {
     buyers: [
       { name: "Pune Agri Oils Ltd", location: "Shirur Mandi", qty: "100 QTL", price: "₹6,950", dist: "12km", rating: 4.8 },
       { name: "Mahalaxmi Seed Traders", location: "Pune City", qty: "50 QTL", price: "₹6,900", dist: "18km", rating: 4.6 },
-      { name: "Kisan Direct Procurement", location: "Shirur", qty: "200 QTL", price: "₹6,880", dist: "8km", rating: 4.5 }
+      { name: "Krishiva Direct Procurement", location: "Shirur", qty: "200 QTL", price: "₹6,880", dist: "8km", rating: 4.5 }
     ],
     mandis: [
       { name: "Pune Mandi", dist: "12km", price: "₹6,850", time: "35 mins", best: true },
@@ -360,7 +360,7 @@ export default function MarketIntelligencePage() {
             <div className="mt-5 pt-4 border-t border-border/40 flex items-start gap-2.5 text-xs">
               <Sparkles className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
               <p className="text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Kisan AI Market Summary:</strong> Mandi volumes are robust. Grains and oilseeds trade at above-average rates due to export relaxations. Tomato indices see drop corrections due to harvest flushes in Nashik.
+                <strong className="text-foreground">Vira AI Market Summary:</strong> Mandi volumes are robust. Grains and oilseeds trade at above-average rates due to export relaxations. Tomato indices see drop corrections due to harvest flushes in Nashik.
               </p>
             </div>
           </Card>

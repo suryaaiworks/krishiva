@@ -272,7 +272,7 @@ export function DemoController() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Sliders className="h-5 w-5 text-primary" />
-                    <h3 className="text-base font-extrabold text-foreground">Kisan AI Hackathon Demo Control Center</h3>
+                    <h3 className="text-base font-extrabold text-foreground">Krishiva Hackathon Demo Control Center</h3>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Switch between pre-loaded agricultural scenarios to demonstrate B2B direct match capabilities.

@@ -30,7 +30,7 @@ const INITIAL_MESSAGES: Message[] = [
   {
     id: "1",
     sender: "ai",
-    text: "Hello Ramesh! I am your Kisan AI Advisor. How can I help your farm today? You can ask me for crop suggestions, weather forecasts, market prices, or upload crop leaf photos to diagnose diseases.",
+    text: "Hello Ramesh! I am your Vira AI Advisor. How can I help your farm today? You can ask me for crop suggestions, weather forecasts, market prices, or upload crop leaf photos to diagnose diseases.",
     timestamp: "10:15 AM",
   },
 ];
@@ -125,7 +125,7 @@ export default function AssistantPage() {
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground">Kisan AI Assistant</h2>
+              <h2 className="text-sm font-bold text-foreground">Vira AI Assistant</h2>
               <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Active (Gemini 2.5)
@@ -417,7 +417,7 @@ export default function AssistantPage() {
             >
               <input
                 type="text"
-                placeholder="Ask Kisan AI..."
+                placeholder="Ask Vira..."
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 className="flex-1 bg-transparent px-3 text-xs focus:outline-none placeholder:text-muted-foreground text-foreground"

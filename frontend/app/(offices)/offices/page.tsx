@@ -360,11 +360,11 @@ export default function OfficesPage() {
               <div className="space-y-3 text-xs leading-normal">
                 <div className="flex items-center justify-between bg-card p-3 rounded-btn border border-border/60">
                   <div className="space-y-0.5">
-                    <span className="font-bold block">Kisan Call Center (Toll-Free)</span>
+                    <span className="font-bold block">Krishiva Helpline (Toll-Free)</span>
                     <span className="text-[10px] text-muted-foreground">Direct advisory help desk: 1800-180-1551</span>
                   </div>
                   <Button 
-                    onClick={() => handleDialNumber("1800-180-1551", "Kisan Call Center")}
+                    onClick={() => handleDialNumber("1800-180-1551", "Krishiva Helpline")}
                     size="sm"
                     className="h-8 w-8 rounded-full p-0 bg-primary cursor-pointer shrink-0"
                   >

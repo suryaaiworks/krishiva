@@ -18,7 +18,7 @@ export function Sidebar() {
           <Sprout className="h-5 w-5" />
         </div>
         <span className="font-heading text-lg font-bold tracking-tight text-foreground">
-          Kisan Alert <span className="text-primary">AI</span>
+          Krishiva <span className="text-primary">AI</span>
         </span>
       </div>
 
@@ -51,7 +51,7 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-border pt-4 px-3 text-[10px] text-muted-foreground">
-        © 2026 Kisan Alert AI
+        © 2026 Krishiva
       </div>
     </aside>
   );

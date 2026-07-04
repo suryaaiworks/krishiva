@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 // Onboarding slides config
 const SLIDES = [
   {
-    title: "Welcome to Kisan Alert AI",
+    title: "Welcome to Krishiva",
     description: "Your intelligent farming companion powered by Artificial Intelligence.",
     illustration: "/illustrations/farmer_ai_assistant.png",
   },
@@ -148,7 +148,7 @@ export default function Home() {
 
               <div className="text-center space-y-2">
                 <h1 className="text-2xl font-extrabold tracking-tight text-white">
-                  Kisan Alert <span className="text-primary">AI</span>
+                  Krishiva <span className="text-primary">AI</span>
                 </h1>
                 <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
                   AI Powered Agricultural Intelligence
@@ -188,7 +188,7 @@ export default function Home() {
                   <Sprout className="h-4.5 w-4.5" />
                 </div>
                 <span className="font-heading text-sm font-bold text-foreground">
-                  Kisan Alert <span className="text-primary">AI</span>
+                  Krishiva <span className="text-primary">AI</span>
                 </span>
               </div>
               
@@ -317,7 +317,7 @@ export default function Home() {
                   Ready to Start!
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Thank you for completing onboarding. Kisan Alert AI is configured for your farm.
+                  Thank you for completing onboarding. Krishiva is configured for your farm.
                 </p>
               </div>
 

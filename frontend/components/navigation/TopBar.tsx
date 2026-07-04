@@ -4,6 +4,7 @@ import * as React from "react";
 import { useTheme } from "next-themes";
 import { Moon, Sun, Bell, Languages, Sprout } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function TopBar() {
   const { theme, setTheme } = useTheme();
@@ -21,7 +22,7 @@ export function TopBar() {
             <Sprout className="h-5 w-5" />
           </div>
           <span className="font-heading text-lg font-bold tracking-tight text-foreground">
-            Kisan Alert <span className="text-primary">AI</span>
+            Krishiva <span className="text-primary">AI</span>
           </span>
         </div>
 
@@ -30,9 +31,11 @@ export function TopBar() {
             <Languages className="h-5 w-5" />
           </Button>
 
-          <Button variant="ghost" size="icon" aria-label="Notifications">
-            <Bell className="h-5 w-5" />
-          </Button>
+          <Link href="/notifications">
+            <Button variant="ghost" size="icon" aria-label="Notifications">
+              <Bell className="h-5 w-5" />
+            </Button>
+          </Link>
 
           {mounted && (
             <Button

@@ -548,7 +548,7 @@ export default function SchemesPage() {
                     <div className="mt-5 pt-3 border-t border-border/40 flex items-start gap-2.5 text-xs">
                       <Sparkles className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5 animate-pulse" />
                       <p className="text-muted-foreground leading-relaxed">
-                        <strong className="text-foreground">Kisan AI Recommendation:</strong> You are eligible for RKVY, PM-KISAN, and the Solar Pump Subsidy. Priority is high for **Solar Pump Subsidy** since applications close June 30. Applying for both PM-KISAN and Micro Irrigation could save you ₹30,500 this season.
+                        <strong className="text-foreground">Vira AI Recommendation:</strong> You are eligible for RKVY, PM-KISAN, and the Solar Pump Subsidy. Priority is high for **Solar Pump Subsidy** since applications close June 30. Applying for both PM-KISAN and Micro Irrigation could save you ₹30,500 this season.
                       </p>
                     </div>
                   </Card>

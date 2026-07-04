@@ -55,7 +55,7 @@ export function AICard({
         <div className="flex-1 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-primary tracking-wide uppercase">
-              Kisan AI Advisor
+              Vira AI Advisor
             </span>
             {timestamp && (
               <span className="text-[10px] text-muted-foreground">

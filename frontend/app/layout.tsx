@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kisan Alert AI",
-  description: "AI-Powered Agricultural Intelligence Platform for Farmers",
+  title: "Krishiva - Empowering Farmers with AI",
+  description: "Krishiva is a premium AI-powered agricultural companion designed to optimize harvests, detect crop diseases, match direct B2B buyers, and automate relief resources.",
 };
 
 export default function RootLayout({
