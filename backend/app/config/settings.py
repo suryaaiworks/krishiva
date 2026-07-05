@@ -10,12 +10,18 @@ class Settings(BaseSettings):
     
     # CORS Origins (Comma separated strings converted to list)
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
+    CORS_ORIGIN_REGEX: str = r"https://.*\.vercel\.app"
     
     # Supabase Settings
-    SUPABASE_URL: str = "https://your-supabase-project-id.supabase.co"
-    SUPABASE_KEY: str = "your-supabase-anon-key"
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
     SUPABASE_SECRET_KEY: str = ""
-    SUPABASE_JWT_SECRET: str = "your-supabase-jwt-secret-placeholder-for-signing"
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+    SUPABASE_JWT_SECRET: str = ""
+    
+    # Security and URLs
+    SECRET_KEY: str = ""
+    FRONTEND_URL: str = "http://localhost:3000"
     
     # Direct PostgreSQL connection URL (e.g. Supabase Transaction Pooler)
     DATABASE_URL: str = "postgresql://postgres:postgres@127.0.0.1:5432/postgres"

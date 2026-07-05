@@ -1,23 +1,24 @@
-from fastapi import APIRouter
-from app.database.firestore import get_db
+from fastapi import APIRouter, Depends
+from app.database.connection import get_db, db_connected
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 router = APIRouter(prefix="/base", tags=["Base Operations"])
 
 @router.get("/health")
-def health_check():
+def health_check(db: Session = Depends(get_db)):
     # Check database status
-    db_connected = False
+    db_active = False
     try:
-        db = get_db()
-        if db is not None:
-            db_connected = True
+        db.execute(text("SELECT 1"))
+        db_active = True
     except Exception:
-        db_connected = False
+        db_active = False
 
     return {
         "success": True,
         "status": "healthy",
-        "database": "connected" if db_connected else "mock_mode",
+        "database": "connected" if (db_active and db_connected) else ("sqlite_fallback" if db_active else "error"),
         "service": "kisan-alert-ai-backend"
     }
 

@@ -133,9 +133,15 @@ class GeminiService:
                 return response_schema.model_validate_json(response.text)
             except Exception as e:
                 logger.error(f"Structured output parsing error: {e}. Falling back to default Pydantic object.")
-                return None
+                try:
+                    return cls._generate_mock_pydantic(response_schema, prompt)
+                except Exception:
+                    return None
 
-        return None
+        try:
+            return cls._generate_mock_pydantic(response_schema, prompt)
+        except Exception:
+            return None
 
     @classmethod
     async def call_with_tools(
@@ -182,6 +188,15 @@ class GeminiService:
     def _get_mock_response(prompt: str, system_instruction: str = None) -> str:
         """Constructs a context-aware mock reply matching system prompt intents."""
         q = prompt.lower()
+        
+        # Audit/Stage Log translation bypass in mock mode
+        if "translate" in q:
+            if "query:" in q:
+                parts = prompt.split("Query:")
+                if len(parts) > 1:
+                    return parts[1].strip()
+            return prompt
+            
         if "weather" in q or "rain" in q:
             return (
                 "Vira: Based on climate models for Pune, a dry spell warning is active. "
@@ -194,7 +209,7 @@ class GeminiService:
                 "Recommended treatment: Apply Mancozeb 75% WP (2g/L) or copper oxychloride organic solutions. "
                 "Remove dry leaves to break the fungal propagation cycle."
             )
-        elif "crop" in q or "recommend" in q:
+        elif "crop" in q or "recommend" in q or "sugarcane" in q or "sugarcanes" in q:
             return (
                 "Vira: Evaluated matching crop profiles for your loamy soil in Shirur, Pune. "
                 "Sugarcane matches at 96% and Groundnut (TAG-24) at 88%. Groundnuts will restore nitrogen post-harvest."

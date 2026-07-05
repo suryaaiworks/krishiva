@@ -18,7 +18,7 @@ class AssistantController:
         Appends user query to database log, invokes Vira agent,
         appends AI reply, and returns reply packet.
         """
-        # 1. Log user message
+        # 1. Log original user message in chat log
         timestamp = datetime.datetime.now().strftime("%I:%M %p")
         user_msg = {
             "id": str(uuid_generator()),
@@ -28,7 +28,21 @@ class AssistantController:
         }
         NotificationRepository.append_chat_message(db, user_id, user_msg)
         
-        # 2. Fetch context memory for Vira Agent
+        # 2. Retrieve settings and language
+        language = "en"
+        try:
+            from app.models.user import Settings as UserSettings
+            user_settings = db.query(UserSettings).filter(UserSettings.user_id == user_id).first()
+            if user_settings:
+                language = user_settings.language
+        except Exception as e:
+            logger.warning(f"Failed to load settings in chat_with_vira: {e}")
+
+        # 3. Translate query to English if regional language
+        from app.services.translation_service import TranslationService
+        english_message = await TranslationService.translate_to_english(user_message)
+        
+        # 4. Fetch context memory for Vira Agent
         farmer_profile = UserRepository.get_profile(db, user_id)
         farms = FarmRepository.get_by_user(db, user_id)
         history_record = NotificationRepository.get_chat_history(db, user_id)
@@ -42,25 +56,30 @@ class AssistantController:
                     if health_log.growth_stage and health_log.growth_stage not in crops_list:
                         crops_list.append(health_log.growth_stage)
                             
+        lang_name = "Telugu" if language == "te" else "Hindi" if language == "hi" else "English"
         user_context = {
             "user_id": str(user_id),
             "farmer_name": farmer_profile.name if farmer_profile else "Ramesh Patil",
             "experience": f"{farmer_profile.experience_years} years" if farmer_profile else "15 years",
-            "language": "English",
+            "language": lang_name,
             "district": farmer_profile.verified_id.split("-")[0] if (farmer_profile and farmer_profile.verified_id) else "Pune",
             "crops": ", ".join(crops_list) if crops_list else "Sugarcane, Groundnut",
             "history": history
         }
         
-        # 3. Execute Vira Agent
+        # 5. Execute Vira Agent on the English translated query
         agent = ViraAgent()
-        agent_reply = await agent.execute(user_message, user_context, db=db)
+        agent_reply = await agent.execute(english_message, user_context, db=db)
         
-        # 4. Log AI response
+        # 6. Translate response back to user preferred language
+        reply_text = agent_reply.get("text") or agent_reply.get("speech") or ""
+        translated_reply_text = await TranslationService.translate_to_language(reply_text, language)
+
+        # 7. Log AI response
         ai_msg = {
             "id": str(uuid_generator()),
             "sender": "ai",
-            "text": agent_reply.get("text") or agent_reply.get("speech") or "",
+            "text": translated_reply_text,
             "timestamp": timestamp,
             "cardType": agent_reply.get("cardType") or "general",
             "redirect": agent_reply.get("redirect") or "",
@@ -69,7 +88,7 @@ class AssistantController:
             "reasoning": agent_reply.get("reasoning", ""),
             "action": agent_reply.get("action", "speak"),
             "requires_confirmation": agent_reply.get("requires_confirmation", False),
-            "speech": agent_reply.get("speech") or agent_reply.get("text") or "",
+            "speech": translated_reply_text,
             "data": agent_reply.get("data") or {}
         }
         NotificationRepository.append_chat_message(db, user_id, ai_msg)
@@ -143,10 +162,14 @@ class AssistantController:
         start_time = time.time()
         user_message = payload.message
 
+        logger.info("================ VIRA VOICE PIPELINE AUDIT START ================")
+        logger.info(f"Stage 1: Speech input transcription received: '{user_message}'")
+
         user_profile = None
         user_settings = None
         farms = []
         history = []
+        
         if payload.history:
             history = payload.history
 
@@ -174,17 +197,28 @@ class AssistantController:
         if not language:
             language = user_settings.language if user_settings else "te"
 
+        logger.info(f"Stage 2: Language Preference detected: '{language}'")
+
+        # Translate incoming regional query to English using TranslationService
+        from app.services.translation_service import TranslationService
+        try:
+            english_message = await TranslationService.translate_to_english(user_message)
+            logger.info(f"Stage 3: Query Translation to English success: '{english_message}'")
+        except Exception as e:
+            logger.error(f"Stage 3: Query Translation failed: {e}")
+            english_message = user_message
+
+        # Handle context location safely
         location = payload.farmer.get("location") if payload.farmer else None
         if not location:
             location = user_profile.verified_id.split("-")[0] if (user_profile and user_profile.verified_id) else "Pune"
 
-        farmer_name = user_profile.name if user_profile else (payload.farmer.get("name") if payload.farmer else "Ramesh Patil")
-
+        lang_name = "Telugu" if language == "te" else "Hindi" if language == "hi" else "English"
         user_context = {
             "user_id": str(user_id) if user_id else "demo",
-            "farmer_name": farmer_name,
+            "farmer_name": user_profile.name if user_profile else (payload.farmer.get("name") if payload.farmer else "Ramesh Patil"),
             "experience": f"{user_profile.experience_years} years" if user_profile else "15 years",
-            "language": language,
+            "language": lang_name,
             "district": location,
             "crops": crops_list if crops_list else ["Sugarcane", "Groundnut"],
             "history": history
@@ -196,21 +230,39 @@ class AssistantController:
             user_msg = {
                 "id": str(uuid_generator()),
                 "sender": "user",
-                "text": user_message,
+                "text": user_message, # Log original language query
                 "timestamp": timestamp
             }
             NotificationRepository.append_chat_message(db, user_id, user_msg)
 
-        # Execute Vira LangGraph agent
+        logger.info("Stage 4 & 5: Intent classification & Vira Agent LangGraph entry.")
         agent = ViraAgent()
-        agent_reply = await agent.execute(user_message, user_context, db=db)
+        try:
+            agent_reply = await agent.execute(english_message, user_context, db=db)
+            logger.info(f"Stage 6: Gemini response generated. Intent: '{agent_reply.get('intent')}'")
+        except Exception as e:
+            logger.error(f"Stage 6: Vira Agent execution failed: {e}")
+            agent_reply = {
+                "intent": "general_chat",
+                "text": "I'm sorry, I encountered an internal error. Please try again.",
+                "speech": "I'm sorry, I encountered an internal error. Please try again."
+            }
+
+        # Translate reply text back to regional language using TranslationService
+        reply_text = agent_reply.get("text") or agent_reply.get("speech") or ""
+        try:
+            translated_reply_text = await TranslationService.translate_to_language(reply_text, language)
+            logger.info(f"Stage 7: Response translation success back to '{language}': '{translated_reply_text}'")
+        except Exception as e:
+            logger.error(f"Stage 7: Response translation failed: {e}")
+            translated_reply_text = reply_text
 
         # Log AI response if authenticated
         if user_id and user_id != "demo":
             ai_msg = {
                 "id": str(uuid_generator()),
                 "sender": "ai",
-                "text": agent_reply.get("text") or agent_reply.get("speech") or "",
+                "text": translated_reply_text,
                 "timestamp": timestamp,
                 "cardType": agent_reply.get("cardType") or "general",
                 "redirect": agent_reply.get("redirect") or "",
@@ -219,7 +271,7 @@ class AssistantController:
                 "reasoning": agent_reply.get("reasoning", ""),
                 "action": agent_reply.get("action", "speak"),
                 "requires_confirmation": agent_reply.get("requires_confirmation", False),
-                "speech": agent_reply.get("speech") or agent_reply.get("text") or "",
+                "speech": translated_reply_text,
                 "data": agent_reply.get("data") or {}
             }
             NotificationRepository.append_chat_message(db, user_id, ai_msg)
@@ -241,6 +293,9 @@ class AssistantController:
         redirect_path = agent_reply.get("redirect")
         page_val = redirect_path.lstrip("/") if redirect_path else ""
 
+        logger.info("Stage 8: Speech response packaged and dispatched to client.")
+        logger.info("================ VIRA VOICE PIPELINE AUDIT END ================")
+
         return {
             "success": True,
             "intent": agent_reply.get("intent", "general_chat"),
@@ -249,9 +304,9 @@ class AssistantController:
             "action": agent_reply.get("action", "speak"),
             "requires_confirmation": agent_reply.get("requires_confirmation", False),
             "route": redirect_path or "",
-            "speech": agent_reply.get("speech") or agent_reply.get("text") or "",
+            "speech": translated_reply_text,
             "data": agent_reply.get("data") or {},
-            "aiResponse": agent_reply.get("speech") or agent_reply.get("text") or "",
+            "aiResponse": translated_reply_text,
             "page": page_val,
             "pipeline": pipeline
         }

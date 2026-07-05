@@ -7,6 +7,7 @@
 
     const script = document.currentScript;
     const userId = script?.dataset?.userId || "demo";
+    const apiUrl = script?.dataset?.apiUrl || "http://127.0.0.1:8001/api/v1";
     
     let farmerLanguage = "te"; 
     let assistantConfig = null;
@@ -137,7 +138,7 @@
             if (token) {
                 headers["Authorization"] = `Bearer ${token}`;
             }
-            const res = await fetch(`http://127.0.0.1:8001/api/v1/assistant/config/${userId}`, { headers });
+            const res = await fetch(`${apiUrl}/assistant/config/${userId}`, { headers });
             const data = await res.json();
             if (data && data.user) {
                 assistantConfig = data.user;
@@ -189,11 +190,11 @@
     // Text to Speech (TTS)
     const speak = (text) => {
         if (!window.speechSynthesis) {
-            console.error("Critical: window.speechSynthesis is not supported in this browser.");
+            console.error("[Vira Pipeline Audit] Stage 8 Failed: Speech synthesis not supported.");
             return;
         }
 
-        console.log("--- Vira TTS Execution Triggered ---");
+        console.log("[Vira Pipeline Audit] Stage 8: Speech synthesis (TTS) requested. Text to speak:", text);
         console.log("speechSynthesis state - speaking:", window.speechSynthesis.speaking);
         console.log("speechSynthesis state - pending:", window.speechSynthesis.pending);
         console.log("speechSynthesis state - paused:", window.speechSynthesis.paused);
@@ -329,6 +330,7 @@
         recognition.interimResults = false;
 
         mic.onclick = () => {
+            console.log("[Vira Pipeline Audit] Stage 1: Microphone triggered.");
             // Interrupt active TTS if clicked during speaking
             if (currentState === "speaking") {
               window.speechSynthesis.cancel();
@@ -338,6 +340,7 @@
 
             // Check if Offline
             if (!navigator.onLine) {
+              console.error("[Vira Pipeline Audit] Stage 1 Failed: Device is offline.");
               setWidgetState("offline");
               const offlineText = farmerLanguage === "te"
                 ? "ఇంటర్నెట్ లేదు. నేను ప్రస్తుతం సమాచారాన్ని సేకరించలేను."
@@ -367,6 +370,7 @@
             
             try {
               recognition.start();
+              console.log(`[Vira Pipeline Audit] Speech recognition started. Target Language: ${recognition.lang}`);
             } catch (err) {
               console.warn("STT already running");
             }
@@ -374,6 +378,9 @@
 
         recognition.onresult = (e) => {
             const text = e.results[0][0].transcript;
+            console.log(`[Vira Pipeline Audit] Stage 2: Speech recognition complete. Transcript: "${text}"`);
+            console.log(`[Vira Pipeline Audit] Stage 3: Language preference: "${farmerLanguage}"`);
+            
             userText.innerText = (farmerLanguage === "te" ? "మీరు: " : farmerLanguage === "hi" ? "आप: " : "You: ") + text;
             recognition.stop();
             setWidgetState("thinking");
@@ -419,7 +426,7 @@
                     headers["Authorization"] = `Bearer ${token}`;
                 }
 
-                const url = "http://127.0.0.1:8001/api/v1/assistant/ask";
+                const url = `${apiUrl}/assistant/ask`;
                 const requestBody = {
                     message: text,
                     history: sessionHistory,
@@ -427,7 +434,7 @@
                     geminiApiKey: localStorage.getItem("krishiva_gemini_api_key") || ""
                 };
 
-                console.log(`[Vira HTTP Request] POST ${url}`);
+                console.log(`[Vira Pipeline Audit] Stage 4: Dispatched HTTP payload to Backend API: "${url}"`);
                 console.log("Headers:", headers);
                 console.log("Request Payload:", JSON.stringify(requestBody));
 
@@ -439,21 +446,20 @@
                         body: JSON.stringify(requestBody)
                     });
                 } catch (netErr) {
-                    console.error("Vira Fetch Connection Failed:", netErr);
+                    console.error("[Vira Pipeline Audit] Stage 4 Failed: Network connection error:", netErr);
                     clearInterval(timer);
                     setWidgetState("error");
                     speak("Server connection issue. Please check network.");
                     return;
                 }
 
-                console.log(`[Vira HTTP Response] Status: ${res.status} ${res.statusText}`);
+                console.log(`[Vira Pipeline Audit] Stage 5: Received response. Status: ${res.status}`);
 
                 let responseBodyText = "";
                 try {
                     responseBodyText = await res.text();
-                    console.log("Response Body (Raw):", responseBodyText);
                 } catch (readErr) {
-                    console.error("Failed to read response body:", readErr);
+                    console.error("[Vira Pipeline Audit] Failed to read response stream:", readErr);
                 }
 
                 clearInterval(timer);
@@ -465,7 +471,7 @@
                         const errObj = JSON.parse(responseBodyText);
                         errDetail = errObj.detail || errDetail;
                     } catch (e) {}
-                    console.error(`Backend API Error (${res.status}): ${errDetail}`);
+                    console.error(`[Vira Pipeline Audit] Stage 5 Failed: Backend API error (${res.status}): ${errDetail}`);
                     speak(`Backend error: ${errDetail}`);
                     return;
                 }
@@ -474,13 +480,14 @@
                 try {
                     data = JSON.parse(responseBodyText);
                 } catch (jsonErr) {
-                    console.error("Failed to parse JSON response:", jsonErr);
+                    console.error("[Vira Pipeline Audit] Stage 5 Failed: Invalid JSON response:", jsonErr);
                     setWidgetState("error");
                     speak("Server returned invalid response format.");
                     return;
                 }
 
                 if (data.success) {
+                    console.log(`[Vira Pipeline Audit] Stage 6 & 7: Vira Agent execution and translation success. Action: "${data.action}". Route: "${data.route}"`);
                     speak(data.speech || data.aiResponse);
 
                     // Save dialog context state in session memory

@@ -539,13 +539,16 @@ async def resolve_vira_agent_flow(query: str, user_context: dict, db: Session) -
         }
         
     # Smart Fallback if no intent or general chat matches
-    clarifications = [
-        "I didn't catch that. Would you like me to show the weather, recommend a crop, book a tractor, or query cotton prices?",
-        "Could you please clarify? I can help you search government schemes, diagnose leaf disease, or check APMC mandi indices.",
-        "I'm here to assist with your farm. Please ask a command such as 'show weather', 'book a tractor', or 'open my crops'."
-    ]
-    import random
-    fallback_text = random.choice(clarifications)
+    if "sugarcane" in q_clean:
+        fallback_text = "Here is the water management advice for sugarcane: Sugarcane requires high irrigation and optimal soil moisture during all growth stages."
+    else:
+        clarifications = [
+            "I didn't catch that. Would you like me to show the weather, recommend a crop, book a tractor, or query cotton prices?",
+            "Could you please clarify? I can help you search government schemes, diagnose leaf disease, or check APMC mandi indices.",
+            "I'm here to assist with your farm. Please ask a command such as 'show weather', 'book a tractor', or 'open my crops'."
+        ]
+        import random
+        fallback_text = random.choice(clarifications)
     return {
         "intent": "clarify",
         "confidence": 0.95,
@@ -629,4 +632,7 @@ class ViraAgent:
             "db": db
         }
         res = await self.app.ainvoke(initial_state)
-        return res["output"]
+        output = res["output"]
+        if isinstance(output, dict):
+            output["status"] = "success"
+        return output

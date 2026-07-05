@@ -39,8 +39,9 @@ export function ViraVoiceWidget() {
 
       if (token) {
         try {
-          // Retrieve farmer context dynamically from backend profile & farms
+          // Retrieve farmer context dynamically from backend profile, settings, & farms
           const prof = await apiClient.get<any>("/profile");
+          const settings = await apiClient.get<any>("/settings");
           const farmList = await apiClient.get<any[]>("/profile/farms");
           
           const crops = farmList ? farmList.map((f: any) => f.current_crop).filter(Boolean) : [];
@@ -50,7 +51,7 @@ export function ViraVoiceWidget() {
             id: prof?.id || "demo-farmer",
             name: prof?.name || "Ramesh Patil",
             phone: prof?.phone || "9876543210",
-            language: prof?.language || "te",
+            language: settings?.language || prof?.language || "te",
             location: prof?.district || district || "Pune",
             crops: crops.length > 0 ? crops : ["Sugarcane", "Groundnut"]
           };
@@ -73,6 +74,7 @@ export function ViraVoiceWidget() {
       script = document.createElement("script");
       script.src = "/vira.js";
       script.dataset.userId = farmerContext.id;
+      script.dataset.apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001/api/v1";
       document.body.appendChild(script);
     }
 

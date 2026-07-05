@@ -32,13 +32,16 @@ app = FastAPI(
 )
 
 # CORS configurations
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+cors_kwargs = {
+    "allow_origins": settings.cors_origins,
+    "allow_credentials": True,
+    "allow_methods": ["*"],
+    "allow_headers": ["*"],
+}
+if getattr(settings, "CORS_ORIGIN_REGEX", None):
+    cors_kwargs["allow_origin_regex"] = settings.CORS_ORIGIN_REGEX
+
+app.add_middleware(CORSMiddleware, **cors_kwargs)
 
 # Mount local mock uploads directory if static fallback is required
 STATIC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "static_uploads"))
@@ -94,7 +97,9 @@ from app.routers import (
     tasks, settings as app_settings, assistant,
     dashboard, weather
 )
+from app.api.base import router as base_router
 
+app.include_router(base_router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(profile.router, prefix="/api/v1")
 app.include_router(crops.router, prefix="/api/v1")

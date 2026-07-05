@@ -68,7 +68,7 @@ def decode_token(token: str) -> dict:
             audience="authenticated"
         )
     else:
-        jwt_secret = settings.SUPABASE_JWT_SECRET or settings.SUPABASE_SECRET_KEY or "your-supabase-jwt-secret-placeholder-for-signing"
+        jwt_secret = settings.SUPABASE_JWT_SECRET or settings.SUPABASE_SECRET_KEY or settings.SUPABASE_SERVICE_ROLE_KEY or ""
         return jwt.decode(
             token,
             jwt_secret,
