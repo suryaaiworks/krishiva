@@ -44,7 +44,8 @@ class StorageService:
                 f.write(file_bytes)
                 
             # Mock URL representing local host
-            mock_url = f"http://127.0.0.1:8001/static_uploads/{bucket_name}/{unique_name}"
+            base_api = os.environ.get("BASE_API_URL", "http://127.0.0.1:8001")
+            mock_url = f"{base_api}/static_uploads/{bucket_name}/{unique_name}"
             logger.info(f"File {file_name} saved locally as fallback: {mock_url}")
             return mock_url
         except Exception as e:

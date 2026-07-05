@@ -112,7 +112,9 @@ class AuthController:
         # Send Welcome and Verify Email via Brevo
         BrevoEmailService.send_welcome_email(email, name)
         # Send mock verification email
-        verify_link = f"http://127.0.0.1:8001/api/v1/auth/verify?token={user_uuid}"
+        import os
+        base_api = os.environ.get("BASE_API_URL", "http://127.0.0.1:8001")
+        verify_link = f"{base_api}/api/v1/auth/verify?token={user_uuid}"
         BrevoEmailService.send_verification_email(email, verify_link)
         
         UserRepository.log_activity(db, user_uuid, "EMAIL_SIGNUP", f"Signed up via email: {email}")
