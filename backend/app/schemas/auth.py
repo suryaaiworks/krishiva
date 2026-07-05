@@ -44,3 +44,6 @@ class ResetPasswordRequest(BaseModel):
 class StandardResponse(BaseModel):
     success: bool
     message: str
+
+class GuestLoginRequest(BaseModel):
+    role: Optional[str] = "Farmer"

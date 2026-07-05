@@ -43,7 +43,23 @@ export default function LoginPage() {
   const [mounted, setMounted] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isOffline, setIsOffline] = React.useState(false);
-  const [selectedRole, setSelectedRole] = React.useState<"farmer" | "buyer" | "owner" | "guest">("farmer");
+  const [selectedRole, setSelectedRoleState] = React.useState<"farmer" | "buyer" | "owner" | "guest">("farmer");
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedRole = localStorage.getItem("krishiva_role");
+      if (savedRole && ["farmer", "buyer", "owner", "guest"].includes(savedRole.toLowerCase())) {
+        setSelectedRoleState(savedRole.toLowerCase() as any);
+      }
+    }
+  }, []);
+
+  const setSelectedRole = (role: "farmer" | "buyer" | "owner" | "guest") => {
+    setSelectedRoleState(role);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("krishiva_role", role);
+    }
+  };
 
   // Form setup
   const {
@@ -125,10 +141,10 @@ export default function LoginPage() {
           localStorage.setItem("krishiva_role", selectedRole);
           localStorage.setItem("krishiva_user_id", data.session.user?.id || "");
           
-          if (selectedRole === "farmer") router.push("/dashboard");
-          else if (selectedRole === "buyer") router.push("/buyer/dashboard");
-          else if (selectedRole === "owner") router.push("/owner/dashboard");
-          else router.push("/guest/dashboard");
+          const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
+                                  (selectedRole === "buyer" ? "/dashboard/buyer" :
+                                   (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
+          router.push(targetDashboard);
           return;
         }
       }
@@ -143,10 +159,10 @@ export default function LoginPage() {
       localStorage.setItem("krishiva_role", selectedRole);
       localStorage.setItem("krishiva_user_id", res.user_id);
       
-      if (selectedRole === "farmer") router.push("/dashboard");
-      else if (selectedRole === "buyer") router.push("/buyer/dashboard");
-      else if (selectedRole === "owner") router.push("/owner/dashboard");
-      else router.push("/guest/dashboard");
+      const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
+                              (selectedRole === "buyer" ? "/dashboard/buyer" :
+                               (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
+      router.push(targetDashboard);
     } catch (err: any) {
       alert(err.message || "OTP verification failed.");
     } finally {
@@ -157,23 +173,31 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
+      const roleMapped = selectedRole === "farmer" ? "Farmer" : 
+                         (selectedRole === "buyer" ? "Buyer" : 
+                          (selectedRole === "owner" ? "Owner" : "Guest"));
+                          
+      const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
+                              (selectedRole === "buyer" ? "/dashboard/buyer" :
+                               (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
+
       // Try Supabase Google OAuth provider redirection
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: typeof window !== "undefined" ? window.location.origin + "/dashboard" : undefined
+          redirectTo: typeof window !== "undefined" ? window.location.origin + targetDashboard : undefined
         }
       });
       if (error) {
         // Fallback to backend API mock Google token exchange
         const res: any = await apiClient.post("/auth/google", {
           id_token: "google_login_sample_token_2026",
-          role: "Farmer"
+          role: roleMapped
         });
         localStorage.setItem("krishiva_token", res.access_token);
-        localStorage.setItem("krishiva_role", res.role);
+        localStorage.setItem("krishiva_role", selectedRole);
         localStorage.setItem("krishiva_user_id", res.user_id);
-        router.push("/dashboard");
+        router.push(targetDashboard);
       }
     } catch (err: any) {
       alert(err.message || "Google Authentication failed.");
@@ -185,15 +209,19 @@ export default function LoginPage() {
   const handleGuestLogin = async () => {
     setIsLoading(true);
     try {
-      const res: any = await apiClient.post("/auth/guest", {});
+      const roleMapped = selectedRole === "farmer" ? "Farmer" : 
+                         (selectedRole === "buyer" ? "Buyer" : 
+                          (selectedRole === "owner" ? "Owner" : "Guest"));
+                          
+      const res: any = await apiClient.post("/auth/guest", { role: roleMapped });
       localStorage.setItem("krishiva_token", res.access_token);
       localStorage.setItem("krishiva_role", selectedRole);
       localStorage.setItem("krishiva_user_id", res.user_id);
       
-      if (selectedRole === "farmer") router.push("/dashboard");
-      else if (selectedRole === "buyer") router.push("/buyer/dashboard");
-      else if (selectedRole === "owner") router.push("/owner/dashboard");
-      else router.push("/guest/dashboard");
+      const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
+                              (selectedRole === "buyer" ? "/dashboard/buyer" :
+                               (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
+      router.push(targetDashboard);
     } catch (err: any) {
       alert(err.message || "Guest authentication failed.");
     } finally {

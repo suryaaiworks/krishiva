@@ -4,7 +4,8 @@ from app.database.connection import get_db
 from app.schemas.auth import (
     OTPSendRequest, OTPSendResponse, OTPVerifyRequest,
     EmailSignupRequest, EmailLoginRequest, TokenResponse,
-    GoogleLoginRequest, ForgotPasswordRequest, StandardResponse
+    GoogleLoginRequest, ForgotPasswordRequest, StandardResponse,
+    GuestLoginRequest
 )
 from app.controllers.auth_controller import AuthController
 
@@ -56,8 +57,8 @@ def google_login(payload: GoogleLoginRequest, db: Session = Depends(get_db)):
     )
 
 @router.post("/guest", response_model=TokenResponse)
-def guest_login(db: Session = Depends(get_db)):
-    res = AuthController.guest_login(db)
+def guest_login(payload: GuestLoginRequest = GuestLoginRequest(), db: Session = Depends(get_db)):
+    res = AuthController.guest_login(db, payload.role)
     return TokenResponse(
         access_token=res["access_token"],
         role=res["role"],

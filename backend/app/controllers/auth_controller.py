@@ -80,7 +80,9 @@ class AuthController:
             UserRepository.log_activity(db, user_uuid, "USER_SIGNUP", f"Signed up via phone OTP verification: {phone}")
         else:
             user_uuid = user.id
-            UserRepository.log_activity(db, user_uuid, "USER_LOGIN", f"Logged in via phone OTP: {phone}")
+            user.role = role
+            db.commit()
+            UserRepository.log_activity(db, user_uuid, "USER_LOGIN", f"Logged in via phone OTP: {phone} with role {role}")
 
         # Issue JWT Access Token signed with Supabase JWT Secret
         token = AuthController._generate_jwt(user_uuid, user.email, user.role)
@@ -161,7 +163,9 @@ class AuthController:
             BrevoEmailService.send_welcome_email(email, name)
             UserRepository.log_activity(db, user_uuid, "GOOGLE_SIGNUP", f"Registered using Google Auth.")
         else:
-            UserRepository.log_activity(db, user_uuid, "GOOGLE_LOGIN", f"Signed in using Google Auth.")
+            user.role = role
+            db.commit()
+            UserRepository.log_activity(db, user_uuid, "GOOGLE_LOGIN", f"Signed in using Google Auth with role {role}.")
 
         token = AuthController._generate_jwt(user_uuid, email, user.role)
         return {
@@ -172,7 +176,7 @@ class AuthController:
         }
 
     @staticmethod
-    def guest_login(db: Session) -> dict:
+    def guest_login(db: Session, role: str = "Guest") -> dict:
         """
         Bypasses auth to spawn a temporary Guest profile session.
         """
@@ -180,15 +184,15 @@ class AuthController:
         email = f"guest_{guest_uuid.hex[:8]}@krishiva.com"
         
         # Save temporary user
-        user = UserRepository.create_user(db, guest_uuid, email, None, "Farmer")
-        UserRepository.create_or_update_profile(db, guest_uuid, "Guest Farmer")
-        UserRepository.log_activity(db, guest_uuid, "GUEST_LOGIN", "Logged in using Guest access.")
+        user = UserRepository.create_user(db, guest_uuid, email, None, role)
+        UserRepository.create_or_update_profile(db, guest_uuid, f"Guest {role}")
+        UserRepository.log_activity(db, guest_uuid, "GUEST_LOGIN", f"Logged in using Guest access with role {role}.")
         
-        token = AuthController._generate_jwt(guest_uuid, email, "Farmer")
+        token = AuthController._generate_jwt(guest_uuid, email, role)
         return {
             "access_token": token,
             "token_type": "bearer",
-            "role": "Farmer",
+            "role": role,
             "user_id": str(guest_uuid)
         }
 
