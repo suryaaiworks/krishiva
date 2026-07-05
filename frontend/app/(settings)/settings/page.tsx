@@ -21,12 +21,15 @@ interface NotificationSetting {
   enabled: boolean;
 }
 
+import { useLanguage } from "@/context/LanguageContext";
+
 import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { accentColor, setAccentColor } = useThemeContext();
+  const { setLanguage: setGlobalLanguage, t } = useLanguage();
   const [mounted, setMounted] = React.useState(false);
   const [language, setLanguage] = React.useState("en");
   const [fontSize, setFontSize] = React.useState("medium");
@@ -92,10 +95,11 @@ export default function SettingsPage() {
         pin_lock_enabled: pinLockEnabled,
         notifications_config: configObj
       });
-      alert("System configurations and notification channels updated successfully.");
+      await setGlobalLanguage(language as any);
+      alert(t("Preferences saved successfully"));
     } catch (err) {
       console.error(err);
-      alert("System configurations updated.");
+      alert(t("Preferences saved successfully"));
     }
   };
 
@@ -115,8 +119,8 @@ export default function SettingsPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <SectionHeader 
-            title="App Settings & Controls" 
-            description="Configure language preferences, dark/light themes, notifications channels, and biometric authentication."
+            title={t("Application Settings")} 
+            description={t("Configure language preferences, dark/light themes, notifications channels, and biometric authentication.")}
             className="mb-0"
           />
         </div>
@@ -137,16 +141,15 @@ export default function SettingsPage() {
               <div className="space-y-4 text-xs leading-normal">
                 {/* Language Select */}
                 <div className="space-y-1.5">
-                  <label className="font-bold text-foreground">Preferred Application Language</label>
+                  <label className="font-bold text-foreground">{t("Preferred Application Language")}</label>
                   <select 
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                     className="w-full bg-muted/20 border border-border rounded-btn px-3 h-10 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none cursor-pointer"
                   >
-                    <option value="en">English (US/India)</option>
-                    <option value="mr">मराठी (Marathi - Western Zone)</option>
-                    <option value="hi">हिन्दी (Hindi - Northern Belt)</option>
-                    <option value="pa">ਪੰਜਾਬੀ (Punjabi - Granary Zone)</option>
+                    <option value="en">{t("English")}</option>
+                    <option value="te">{t("Telugu")}</option>
+                    <option value="hi">{t("Hindi")}</option>
                   </select>
                 </div>
 

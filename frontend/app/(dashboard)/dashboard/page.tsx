@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Chip } from "@/components/ui/chip";
 import { apiClient } from "@/services/apiClient";
+import { useLanguage } from "@/context/LanguageContext";
 
 // Quick Actions Configuration
 const QUICK_ACTIONS = [
@@ -60,6 +61,7 @@ const SCHEMES_LIST = [
 export default function DashboardPage() {
   const router = useRouter();
   const { isDemoDrawerOpen } = useThemeContext();
+  const { t } = useLanguage();
   const [isVoiceActive, setIsVoiceActive] = React.useState(false);
   const [typedPrompt, setTypedPrompt] = React.useState("");
   const [aiResponse, setAiResponse] = React.useState<string | null>(null);
@@ -270,15 +272,15 @@ export default function DashboardPage() {
 
             <div className="space-y-2">
               <h1 className="font-heading text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-                Good Morning Ramesh.
+                {t("Good Morning")} Ramesh.
               </h1>
               {/* Daily Farm Brief */}
               <div className="text-sm md:text-base text-muted-foreground font-medium space-y-1.5 leading-relaxed">
-                <p>🟢 Your sugarcane crops are <span className="font-bold text-foreground">healthy</span>.</p>
-                <p>🌧️ Light rain forecast is expected <span className="font-bold text-foreground">after 5:00 PM today</span>.</p>
-                <p>📈 Sugarcane prices <span className="font-bold text-foreground">increased by 3.6%</span> at Pune Mandi.</p>
-                <p>🏛️ You qualify for <span className="font-bold text-primary underline cursor-pointer" onClick={() => router.push("/schemes")}>2 eligible government schemes</span>.</p>
-                <p>🤖 Vira has <span className="font-bold text-primary underline cursor-pointer" onClick={() => handlePromptClick("Recommend crops")}>3 pending recommendations</span> waiting for you.</p>
+                <p>🟢 {t("Your sugarcane crops are")} <span className="font-bold text-foreground">{t("healthy")}</span>.</p>
+                <p>🌧️ {t("Light rain forecast is expected")} <span className="font-bold text-foreground">{t("after 5:00 PM today")}</span>.</p>
+                <p>📈 {t("Sugarcane prices")} <span className="font-bold text-foreground">{t("increased by 3.6%")}</span> {t("at Pune Mandi")}.</p>
+                <p>🏛️ {t("You qualify for")} <span className="font-bold text-primary underline cursor-pointer" onClick={() => router.push("/schemes")}>{t("2 eligible government schemes")}</span>.</p>
+                <p>🤖 {t("Vira has")} <span className="font-bold text-primary underline cursor-pointer" onClick={() => handlePromptClick("Recommend crops")}>{t("3 pending recommendations")}</span> {t("waiting for you")}.</p>
               </div>
             </div>
           </div>
@@ -447,8 +449,8 @@ export default function DashboardPage() {
         {/* SECTION 4: QUICK ACTIONS GRID */}
         <div>
           <SectionHeader 
-            title="Advisory Operations" 
-            description="Access agricultural helpers and B2B marketplace paths." 
+            title={t("Quick Actions")} 
+            description={t("Access agricultural helpers and B2B marketplace paths.")} 
           />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
             {QUICK_ACTIONS.map((action, idx) => {
@@ -465,10 +467,10 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <h4 className="font-heading text-sm font-bold text-foreground truncate">
-                      {action.label}
+                      {t(action.label)}
                     </h4>
                     <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
-                      {action.desc}
+                      {t(action.desc)}
                     </p>
                   </div>
                 </motion.div>
@@ -1002,8 +1004,8 @@ export default function DashboardPage() {
         {/* SECTION 9: RECENT ACTIVITIES LOG */}
         <div className="relative overflow-hidden rounded-[24px] border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all duration-300">
           <SectionHeader
-            title="Recent Activity Log"
-            description="Logs of your recent diagnosis requests and AI discussions."
+            title={t("Recent Activity Log")}
+            description={t("Logs of your recent diagnosis requests and AI discussions.")}
             className="mb-4"
           />
           <div className="divide-y divide-border text-xs">

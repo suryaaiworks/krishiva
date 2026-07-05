@@ -6,9 +6,12 @@ import { Moon, Sun, Bell, Languages, Sprout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 export function TopBar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
+  const { language, setLanguage, t } = useLanguage();
 
   React.useEffect(() => {
     setMounted(true);
@@ -27,12 +30,22 @@ export function TopBar() {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <Button variant="ghost" size="icon" aria-label="Switch Language">
-            <Languages className="h-5 w-5" />
-          </Button>
+          {/* Custom Language Selector Dropdown */}
+          <div className="relative flex items-center border border-border rounded-btn px-2 py-1 bg-card hover:bg-muted text-xs font-bold gap-1 text-foreground transition-colors cursor-pointer select-none">
+            <Languages className="h-3.5 w-3.5 text-muted-foreground" />
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as any)}
+              className="bg-transparent font-sans text-xs outline-none cursor-pointer text-foreground font-bold border-none py-0.5"
+            >
+              <option value="en" className="bg-popover text-foreground">{t("English")}</option>
+              <option value="te" className="bg-popover text-foreground">{t("Telugu")}</option>
+              <option value="hi" className="bg-popover text-foreground">{t("Hindi")}</option>
+            </select>
+          </div>
 
           <Link href="/notifications">
-            <Button variant="ghost" size="icon" aria-label="Notifications">
+            <Button variant="ghost" size="icon" aria-label={t("Notifications")}>
               <Bell className="h-5 w-5" />
             </Button>
           </Link>

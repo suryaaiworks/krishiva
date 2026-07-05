@@ -16,7 +16,14 @@ WEATHER_MEMORY_CACHE = {}
 
 class WeatherService:
     @staticmethod
-    def get_weather_forecast(lat: float, lng: float) -> dict:
+    def get_weather_forecast(lat: float, lng: float, lang: str = "en") -> dict:
+        data = WeatherService.get_weather_forecast_raw(lat, lng)
+        import copy
+        result_data = copy.deepcopy(data)
+        return WeatherService._translate_weather_data(result_data, lang)
+
+    @staticmethod
+    def get_weather_forecast_raw(lat: float, lng: float) -> dict:
         """
         Compiles current, hourly, and 7-day forecasts using OpenWeatherMap.
         Integrates dynamic agricultural advice and handles database caching.
@@ -357,6 +364,103 @@ class WeatherService:
             {"day": "Tomorrow", "temp": "23°C - 28°C", "rain": "85%", "humidity": "88%", "wind": "18 km/h", "condition": "Heavy Showers", "type": "rain", "advice": "Skip irrigation entirely. Rain levels will exceed 22mm, leading to saturated clay soils."}
         ]
         return {"current": current, "hourly": hourly, "daily": daily}
+
+    @staticmethod
+    def _translate_weather_data(data: dict, lang: str) -> dict:
+        if lang not in ["hi", "te"]:
+            return data
+            
+        advice_map = {
+            "te": {
+                "Heavy rain forecast. Skip irrigation today and clear drainage channels to avoid waterlogging.": "భారీ వర్ష సూచన ఉంది. ఈ రోజు నీటిపారుదలని నిలిపివేయండి మరియు నీరు నిల్వ ఉండకుండా డ్రైనేజీ కాలువలను శుభ్రం చేయండి.",
+                "High wind speed. Avoid spraying pesticides or fertilizers to prevent chemical drift.": "గాలి వేగం ఎక్కువగా ఉంది. రసాయనాలు కొట్టుకుపోకుండా ఉండటానికి పురుగుమందులు లేదా ఎరువులు చల్లడం నివారించండి.",
+                "Hot day. Increase drip cycles by 15% in early morning or evening to combat soil moisture loss.": "వేడి రోజు. నేల తేమ నష్టాన్ని ఎదుర్కోవడానికి ఉదయాన్నే లేదా సాయంత్రం డ్రిప్ సైకిళ్లను 15% పెంచండి.",
+                "Clear skies and moderate weather. Ideal conditions for general field weeding and crop health inspections.": "నిర్మలమైన ఆకాశం మరియు సాధారణ వాతావరణం. కలుపు తీయుట మరియు పంట ఆరోగ్య తనిఖీలకు అనుకూలమైన పరిస్థితులు.",
+                "Fair weather conditions expected. Proceed with standard irrigation schedules.": "అనుకూలమైన వాతావరణ పరిస్థితులు అంచనా వేయబడ్డాయి. సాధారణ నీటిపారుదల షెడ్యూల్‌తో కొనసాగండి.",
+                "Delay weeding operations. Soil temperature is high, meaning water evaporation is active.": "కలుపు తీయుట వాయిదా వేయండి. నేల ఉష్ణోగ్రత ఎక్కువగా ఉంది, అనగా నీటి ఆవిరి వేగంగా జరుగుతోంది.",
+                "Skip irrigation entirely. Rain levels will exceed 22mm, leading to saturated clay soils.": "నీటిపారుదలని పూర్తిగా నిలిపివేయండి. వర్షపాతం 22 మిమీ దాటుతుంది, ఇది నేలలో నీటి నిల్వకు దారితీస్తుంది.",
+                "Weather loaded from database cache. Standard agricultural advisories apply.": "వాతావరణ డేటాబేస్ కాష్ నుండి లోడ్ చేయబడింది. ప్రామాణిక వ్యవసాయ సలహాలు వర్తిస్తాయి."
+            },
+            "hi": {
+                "Heavy rain forecast. Skip irrigation today and clear drainage channels to avoid waterlogging.": "भारी बारिश का पूर्वानुमान है। आज सिंचाई रोक दें और जलभराव से बचने के लिए जल निकासी चैनलों को साफ करें।",
+                "High wind speed. Avoid spraying pesticides or fertilizers to prevent chemical drift.": "तेज हवा की गति है। रसायनों के बहाव को रोकने के लिए कीटनाशकों या उर्वरकों के छिड़काव से बचें।",
+                "Hot day. Increase drip cycles by 15% in early morning or evening to combat soil moisture loss.": "गर्म दिन है। मिट्टी की नमी के नुकसान से निपटने के लिए सुबह या शाम को ड्रिप चक्र 15% बढ़ाएं।",
+                "Clear skies and moderate weather. Ideal conditions for general field weeding and crop health inspections.": "साफ आसमान और मध्यम मौसम। निराई-गुड़ाई और फसल स्वास्थ्य निरीक्षण के लिए आदर्श स्थिति।",
+                "Fair weather conditions expected. Proceed with standard irrigation schedules.": "अनुकूल मौसम की स्थिति की उम्मीद है। सामान्य सिंचाई कार्यक्रम के साथ आगे बढ़ें।",
+                "Delay weeding operations. Soil temperature is high, meaning water evaporation is active.": "निराई का काम टाल दें। मिट्टी का तापमान अधिक है, जिससे वाष्पीकरण सक्रिय है।",
+                "Skip irrigation entirely. Rain levels will exceed 22mm, leading to saturated clay soils.": "सिंचाई पूरी तरह छोड़ दें। बारिश का स्तर 22 मिमी से अधिक हो जाएगा, जिससे दोमट मिट्टी संतृप्त हो जाएगी।",
+                "Weather loaded from database cache. Standard agricultural advisories apply.": "डेटाबेस कैश से मौसम लोड किया गया। मानक कृषि सलाह लागू होती है।"
+            }
+        }
+
+        condition_map = {
+            "te": {
+                "Clear Sky": "నిర్మలమైన ఆకాశం",
+                "Clear": "నిర్మలమైన ఆకాశం",
+                "Cloudy Sky": "మబ్బులతో కూడిన ఆకాశం",
+                "Clouds": "మబ్బులు",
+                "Sunny Intervals": "పాక్షికంగా ఎండ",
+                "Heavy Showers": "భారీ వర్షం",
+                "Rain": "వర్షం",
+                "Light Rain": "తేలికపాటి వర్షం",
+                "Drizzle": "చినుకులు",
+                "Thunderstorm": "ఉరుములతో కూడిన వర్షం",
+                "Mist": "పొగమంచు",
+                "Fog": "దట్టమైన పొగమంచు"
+            },
+            "hi": {
+                "Clear Sky": "साफ़ आसमान",
+                "Clear": "साफ़ आसमान",
+                "Cloudy Sky": "बादल छाए हैं",
+                "Clouds": "बादल",
+                "Sunny Intervals": "आंशिक धूप",
+                "Heavy Showers": "भारी बारिश",
+                "Rain": "बारिश",
+                "Light Rain": "हल्की बारिश",
+                "Drizzle": "बूंदाबांदी",
+                "Thunderstorm": "आंधी-तूफान",
+                "Mist": "कोहरा",
+                "Fog": "घना कोहरा"
+            }
+        }
+
+        # Translate current
+        curr = data.get("current", {})
+        cond = curr.get("condition", "")
+        if cond in condition_map[lang]:
+            curr["condition"] = condition_map[lang][cond]
+        elif cond.title() in condition_map[lang]:
+            curr["condition"] = condition_map[lang][cond.title()]
+            
+        # Translate daily
+        for d in data.get("daily", []):
+            d_cond = d.get("condition", "")
+            if d_cond in condition_map[lang]:
+                d["condition"] = condition_map[lang][d_cond]
+            elif d_cond.title() in condition_map[lang]:
+                d["condition"] = condition_map[lang][d_cond.title()]
+                
+            adv = d.get("advice", "")
+            if adv in advice_map[lang]:
+                d["advice"] = advice_map[lang][adv]
+                
+            # Translate day label if today/tomorrow
+            if "Today" in d.get("day", ""):
+                d["day"] = "నేడు (Today)" if lang == "te" else "आज (Today)"
+            elif "Tomorrow" in d.get("day", ""):
+                d["day"] = "రేపు (Tomorrow)" if lang == "te" else "कल (Tomorrow)"
+            elif lang == "te":
+                day_trans = {"Monday": "సోమవారం", "Tuesday": "మంగళవారం", "Wednesday": "బుధవారం", "Thursday": "గురువారం", "Friday": "శుక్రవారం", "Saturday": "శనివారం", "Sunday": "ఆదివారం"}
+                for k, v in day_trans.items():
+                    if k in d["day"]:
+                        d["day"] = v
+            elif lang == "hi":
+                day_trans = {"Monday": "सोमवार", "Tuesday": "मंगलवार", "Wednesday": "बुधवार", "Thursday": "गुरुवार", "Friday": "शुक्रवार", "Saturday": "शनिवार", "Sunday": "रविवार"}
+                for k, v in day_trans.items():
+                    if k in d["day"]:
+                        d["day"] = v
+
+        return data
 
 def uuid_generator():
     import uuid

@@ -6,9 +6,11 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { NAVIGATION_ITEMS } from "@/constants/navigation";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function BottomNavigation() {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   // Filter items for mobile bottom bar to prevent cluttering
   const primaryHrefs = ["/dashboard", "/assistant", "/crops", "/notifications", "/settings"];
@@ -39,7 +41,7 @@ export function BottomNavigation() {
               )}
               <Icon className={cn("h-4.8 w-4.8", isActive && "text-primary")} />
               <span className={cn(isActive && "text-foreground font-bold")}>
-                {item.label === "AI Advisor (Vira)" ? "Vira AI" : item.label}
+                {t(item.label === "AI Advisor (Vira)" ? "Vira AI" : item.label)}
               </span>
             </Link>
           );

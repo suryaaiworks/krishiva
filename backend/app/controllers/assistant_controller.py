@@ -96,15 +96,21 @@ class AssistantController:
         return ai_msg
 
     @staticmethod
-    def get_history(db: Session, user_id: UUID) -> list:
+    def get_history(db: Session, user_id: UUID, lang: str = "en") -> list:
         """Retrieves conversational messages queue."""
         hist = NotificationRepository.get_chat_history(db, user_id)
         if not hist:
             # Seed initial Vira welcoming prompt
+            welcome_text = "Hello! I am your Vira AI Advisor. How can I help your farm today? You can ask me for crop suggestions, weather forecasts, market prices, or upload crop leaf photos to diagnose diseases."
+            if lang == "te":
+                welcome_text = "నమస్కారం! నేను మీ వీర AI సలహాదారుని. ఈ రోజు మీ వ్యవసాయానికి నేను ఎలా సహాయపడగలను? మీరు నన్ను పంటల సిఫార్సులు, వాతావరణ అంచనాలు, మార్కెట్ ధరల గురించి అడగవచ్చు లేదా తెగుళ్లను గుర్తించడానికి పంట ఆకుల ఫోటోలను అప్‌లోడ్ చేయవచ్చు."
+            elif lang == "hi":
+                welcome_text = "नमस्ते! मैं आपका वीरा AI सलाहकार हूँ। आज मैं आपके खेत के लिए क्या मदद कर सकता हूँ? आप मुझसे फसल सुझाव, मौसम पूर्वानुमान, बाजार भाव पूछ सकते हैं, या बीमारी की पहचान के लिए पत्ती की फोटो अपलोड कर सकते हैं।"
+                
             welcome_msg = {
                 "id": "1",
                 "sender": "ai",
-                "text": "Hello! I am your Vira AI Advisor. How can I help your farm today? You can ask me for crop suggestions, weather forecasts, market prices, or upload crop leaf photos to diagnose diseases.",
+                "text": welcome_text,
                 "timestamp": "10:15 AM"
             }
             hist = NotificationRepository.append_chat_message(db, user_id, welcome_msg)

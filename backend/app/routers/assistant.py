@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Body, Header
+from fastapi import APIRouter, Depends, Body, Header, Request
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 from app.middleware.auth_middleware import get_current_user
@@ -33,8 +33,14 @@ async def get_optional_user(authorization: Optional[str] = Header(None), db: Ses
     return None
 
 @router.get("/chat", response_model=List[ChatMessage])
-def get_chat_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    return AssistantController.get_history(db, current_user.id)
+def get_chat_history(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    accept_language = request.headers.get("Accept-Language", "en")
+    lang = accept_language.split(",")[0].strip()[:2]
+    return AssistantController.get_history(db, current_user.id, lang=lang)
 
 @router.post("/chat", response_model=ChatMessage)
 async def chat_with_vira(

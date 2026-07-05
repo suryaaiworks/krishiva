@@ -81,6 +81,56 @@ async def startup_event():
     else:
         error_logger.warning("Database engine not configured. Skipping schema creation.")
 
+from fastapi.exceptions import HTTPException
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    accept_language = request.headers.get("Accept-Language", "en")
+    lang = accept_language.split(",")[0].strip()[:2]
+    
+    detail = exc.detail
+    # Translate detail if not English using Gemini/TranslationService
+    if lang in ["hi", "te"] and detail:
+        try:
+            from app.services.translation_service import TranslationService
+            detail = await TranslationService.translate_to_language(detail, lang)
+        except Exception as err:
+            error_logger.error(f"Failed to translate error detail: {err}")
+            # Use dictionary translation lookup for common error phrases if Gemini failed
+            common_translations = {
+                "User not found": {"te": "వినియోగదారు కనుగొనబడలేదు", "hi": "उपयोगकर्ता नहीं मिला"},
+                "Incorrect phone or password": {"te": "తప్పు ఫోన్ లేదా పాస్‌వర్డ్", "hi": "गलत फोन या पासवर्ड"},
+                "Database error occurred": {"te": "డేటాబేస్ లోపం జరిగింది", "hi": "डेटाबेस त्रुटि हुई"},
+            }
+            if detail in common_translations:
+                detail = common_translations[detail][lang]
+            
+    return JSONResponse(
+        status_code=exc.status_code,
+        headers=exc.headers,
+        content={"success": False, "detail": detail}
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    error_logger.error(f"Unhandled system error: {exc}", exc_info=True)
+    
+    accept_language = request.headers.get("Accept-Language", "en")
+    lang = accept_language.split(",")[0].strip()[:2]
+    
+    # Standard farmer-friendly messages
+    if lang == "te":
+        msg = "క్షమించండి, సర్వర్‌లో ఏదో సమస్య ఉన్నట్లుంది. దయచేసి కాసేపటి తర్వాత మళ్లీ ప్రయత్నించండి."
+    elif lang == "hi":
+        msg = "क्षमा करें, सर्वर में कोई समस्या आ रही है। कृपया कुछ समय बाद पुनः प्रयास करें।"
+    else:
+        msg = "We are experiencing a temporary server glitch. Please check back in a few minutes."
+        
+    return JSONResponse(
+        status_code=500,
+        content={"success": False, "detail": msg}
+    )
+
 # Root endpoint
 @app.get("/")
 def read_root():

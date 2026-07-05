@@ -8,11 +8,13 @@ import { cn } from "@/lib/utils";
 import { NAVIGATION_ITEMS } from "@/constants/navigation";
 import { Sprout, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
+  const { t } = useLanguage();
 
   // Safely read and persist collapse state to localStorage on client-side
   React.useEffect(() => {
@@ -67,7 +69,7 @@ export function Sidebar() {
         onClick={handleToggleCollapse}
         variant="outline"
         size="icon"
-        aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        aria-label={isCollapsed ? t("Expand Sidebar") : t("Collapse Sidebar")}
         className="absolute -right-3 top-6 h-6.5 w-6.5 rounded-full border border-border bg-card flex items-center justify-center cursor-pointer shadow-sm hover:bg-muted z-45"
       >
         {isCollapsed ? (
@@ -112,14 +114,14 @@ export function Sidebar() {
                   animate={{ opacity: 1 }}
                   className="whitespace-nowrap truncate"
                 >
-                  {item.label}
+                  {t(item.label)}
                 </motion.span>
               )}
 
               {/* Beautiful Hover Tooltip when collapsed */}
               {isCollapsed && (
                 <div className="absolute left-full ml-3 px-3 py-1.5 bg-popover text-popover-foreground border border-border text-[10px] font-bold rounded-btn shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 whitespace-nowrap z-50">
-                  {item.label}
+                  {t(item.label)}
                 </div>
               )}
             </Link>
@@ -142,7 +144,7 @@ export function Sidebar() {
             <div className="text-left min-w-0 flex-1">
               <span className="font-bold text-[11px] block text-foreground truncate leading-normal">Ramesh Patil</span>
               <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[8.5px] font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20 mt-0.5">
-                Premium Farmer
+                {t("Premium Farmer")}
               </span>
             </div>
           )}
@@ -150,7 +152,7 @@ export function Sidebar() {
 
         {/* System Version */}
         <div className="text-[10px] text-muted-foreground/60 text-center select-none font-semibold">
-          {isCollapsed ? "v1.0.4" : "Krishiva Version 1.0.4"}
+          {isCollapsed ? "v1.0.4" : t("Krishiva Version 1.0.4")}
         </div>
       </div>
     </motion.aside>

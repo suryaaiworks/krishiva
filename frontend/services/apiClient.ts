@@ -50,6 +50,11 @@ class ApiClient {
     const token = this.getToken();
     const headers = new Headers(options.headers || {});
     
+    if (typeof window !== "undefined") {
+      const selectedLang = localStorage.getItem("krishiva_language") || "en";
+      headers.set("Accept-Language", selectedLang);
+    }
+    
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
