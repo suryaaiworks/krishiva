@@ -76,6 +76,20 @@ async def startup_event():
             
             Base.metadata.create_all(bind=engine)
             api_logger.info("Successfully synced/created database tables on Supabase Postgres.")
+            
+            # Check and add missing columns if they do not exist
+            with engine.connect() as conn:
+                for col_name, col_type in [
+                    ("voice_language", "VARCHAR"),
+                    ("speech_speed", "FLOAT"),
+                    ("voice_name", "VARCHAR"),
+                    ("translator_enabled", "BOOLEAN")
+                ]:
+                    try:
+                        conn.execute(text(f"ALTER TABLE settings ADD COLUMN {col_name} {col_type}"))
+                        api_logger.info(f"Added column {col_name} to settings table.")
+                    except Exception:
+                        pass
         except Exception as e:
             error_logger.error(f"Database connection or table sync failed on startup: {e}")
     else:

@@ -30,6 +30,10 @@ class SettingsUpdate(BaseModel):
     biometrics_enabled: Optional[bool] = None
     pin_lock_enabled: Optional[bool] = None
     notifications_config: Optional[Dict[str, bool]] = None
+    voice_language: Optional[str] = None
+    speech_speed: Optional[float] = None
+    voice_name: Optional[str] = None
+    translator_enabled: Optional[bool] = None
 
 class SettingsResponse(BaseModel):
     language: str
@@ -40,6 +44,10 @@ class SettingsResponse(BaseModel):
     biometrics_enabled: bool
     pin_lock_enabled: bool
     notifications_config: Dict[str, Any]
+    voice_language: Optional[str] = "en"
+    speech_speed: Optional[float] = 1.0
+    voice_name: Optional[str] = None
+    translator_enabled: Optional[bool] = True
 
     class Config:
         from_attributes = True
