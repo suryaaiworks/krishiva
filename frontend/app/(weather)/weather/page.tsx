@@ -9,6 +9,7 @@ import {
   Sprout, HelpingHand, ShieldAlert
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { apiClient } from "@/services/apiClient";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -149,6 +150,21 @@ const sevenDayForecast = [
 
 export default function WeatherIntelligencePage() {
   const [expandedDay, setExpandedDay] = React.useState<number | null>(null);
+  const [weatherData, setWeatherData] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    async function loadForecast() {
+      try {
+        const res = await apiClient.get<any>("/weather/forecast");
+        if (res && res.success) {
+          setWeatherData(res);
+        }
+      } catch (err) {
+        console.error("Failed to load weather forecast", err);
+      }
+    }
+    loadForecast();
+  }, []);
 
   const toggleDay = (index: number) => {
     if (expandedDay === index) {
@@ -190,10 +206,10 @@ export default function WeatherIntelligencePage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Current Condition</span>
-                <h3 className="text-5xl font-extrabold text-foreground">28°C</h3>
+                <h3 className="text-5xl font-extrabold text-foreground">{weatherData?.current?.temp || "28°C"}</h3>
                 <div className="space-y-1">
                   <p className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                    Feels Like <strong className="text-primary">30°C</strong> • Cloudy Sky
+                    Feels Like <strong className="text-primary">{weatherData?.current?.feels_like || "30°C"}</strong> • {weatherData?.current?.condition || "Cloudy Sky"}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Sunrise: 06:02 AM • Sunset: 06:58 PM
@@ -212,13 +228,13 @@ export default function WeatherIntelligencePage() {
               <div className="space-y-1">
                 <span className="text-muted-foreground block">Humidity</span>
                 <p className="font-bold text-foreground flex items-center gap-1">
-                  <Droplets className="h-4 w-4 text-primary shrink-0" /> 62%
+                  <Droplets className="h-4 w-4 text-primary shrink-0" /> {weatherData?.current?.humidity || "62%"}
                 </p>
               </div>
               <div className="space-y-1">
                 <span className="text-muted-foreground block">Wind Speed</span>
                 <p className="font-bold text-foreground flex items-center gap-1">
-                  <Wind className="h-4 w-4 text-primary shrink-0" /> 14 km/h
+                  <Wind className="h-4 w-4 text-primary shrink-0" /> {weatherData?.current?.wind_speed || "14 km/h"}
                 </p>
               </div>
               <div className="space-y-1">
@@ -230,7 +246,7 @@ export default function WeatherIntelligencePage() {
               <div className="space-y-1">
                 <span className="text-muted-foreground block">UV Index</span>
                 <p className="font-bold text-foreground flex items-center gap-1">
-                  <Sun className="h-4 w-4 text-primary shrink-0" /> 6 (High)
+                  <Sun className="h-4 w-4 text-primary shrink-0" /> {weatherData?.current?.uv_index || "6 (High)"}
                 </p>
               </div>
             </div>

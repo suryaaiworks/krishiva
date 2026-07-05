@@ -10,6 +10,7 @@ import {
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { apiClient } from "@/services/apiClient";
 
 interface Notification {
   id: string;
@@ -83,22 +84,71 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const [notifications, setNotifications] = React.useState<Notification[]>(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [filter, setFilter] = React.useState<"all" | "critical" | "warning" | "info">("all");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isOffline, setIsOffline] = React.useState(false);
 
-  const handleMarkAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const loadNotifications = async () => {
+    setIsLoading(true);
+    try {
+      const list = await apiClient.get<any[]>("/notifications");
+      if (list && list.length > 0) {
+        setNotifications(list.map((n: any) => ({
+          id: n.id,
+          type: n.type,
+          title: n.title,
+          message: n.message,
+          date: n.date,
+          read: n.is_read,
+          category: n.category,
+          actionLabel: n.action_label,
+          actionHref: n.action_href
+        })));
+      } else {
+        setNotifications(INITIAL_NOTIFICATIONS);
+      }
+    } catch (err) {
+      console.error("Failed to load notifications", err);
+      setNotifications(INITIAL_NOTIFICATIONS);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleClearAll = () => {
-    setNotifications([]);
+  React.useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await apiClient.post("/notifications/read-all", {});
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (err) {
+      console.error(err);
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    }
   };
 
-  const toggleRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
+  const handleClearAll = async () => {
+    try {
+      await apiClient.delete("/notifications");
+      setNotifications([]);
+    } catch (err) {
+      console.error(err);
+      setNotifications([]);
+    }
+  };
+
+  const toggleRead = async (id: string) => {
+    try {
+      await apiClient.post(`/notifications/${id}/toggle`, {});
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
+    } catch (err) {
+      console.error(err);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -106,10 +156,7 @@ export default function NotificationsPage() {
   };
 
   const handleRefresh = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1200);
+    loadNotifications();
   };
 
   // Filter and Search logic

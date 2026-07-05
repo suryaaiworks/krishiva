@@ -1,21 +1,18 @@
-# 🌾 Kisan Alert AI
+# 🌾 Krishiva AI (Kisan Agent)
 
-Kisan Alert AI is a production-grade, AI-powered digital farming companion designed to support smallholder and marginal farmers. It serves as a complete farming ecosystem helping farmers throughout the lifecycle—from crop selection and disease diagnosis to weather forecasting, government schemes coordination, and direct B2B buyer selling.
+Krishiva AI is a production-grade, AI-powered digital farming companion designed to support smallholder and marginal farmers. It serves as a complete farming ecosystem helping farmers throughout the crop lifecycle—from crop selection and disease diagnosis to weather forecasting, government schemes eligibility, and direct B2B buyer selling.
 
 ---
 
 ## 🚀 Features
 
-* **Kisan Mitra AI:** Voice-first conversational AI companion (supporting 11 regional languages) that guides farmers, answers questions, reads screen details aloud, and navigates dashboards.
-* **Smart Crop Advisor:** Guided stepper wizard that evaluates soil type, satellite mapping terrain parameters, and seasons to suggest optimal crops.
-* **AI Crop Disease Scan:** Foliage image diagnostic scans that identify crop pests, rust, and blights, providing chemical and organic treatment instructions.
-* **Weather Intelligence:** Expandable weekly forecasts with day-specific farming action advice and dry spell predictors.
-* **Market Intelligence Center:** Mandi price indices, arbitrage calculators comparing nearby markets, and AI price forecasts.
-* **Farmer Relief Hub:** Command center for natural disasters providing crop loss evaluations, NGO assistance lists, and alternative residue buyers.
-* **Benefits Schemes Advisor:** personalized eligibility checklist that updates an application progress timeline as documents are checked off.
-* **RSK Center Locator:** Vector block mapping with driving directions and QR-coded digital appointment booking token slips.
-* **Buyer B2B Marketplace:** Direct negotiations simulator, vehicle logistics calculators, and verified commercial buyer directories.
-* **Elder Mode & Accessibility:** Toggleable mode with large visual bounds, high-contrast layouts, and voice-assisted form filling.
+* **Vira AI Copilot:** Voice-first conversational AI companion (supporting Telugu, Hindi, and English) that guides farmers, answers questions, reads screen details aloud, and navigates dashboards.
+* **Smart Crop Advisor:** dynamic matching evaluating soil profiles, water availability, and weather forecasts to recommend optimal crops.
+* **AI Crop Disease Scan:** foliage diagnostic scans that identify crop pests, rust, and blights, providing treatment advice.
+* **Weather Intelligence:** week forecasts with dry spell predictions and specific action advice.
+* **Market Intelligence Center:** mandi price indices, arbitrage comparison tables, and price trends.
+* **Benefits Schemes Advisor:** personalized eligibility checklist that updates an application progress timeline.
+* **B2B Buyer Marketplace:** direct buyer connection, logistics price calculators, and verified commercial buyers.
 
 ---
 
@@ -24,13 +21,22 @@ Kisan Alert AI is a production-grade, AI-powered digital farming companion desig
 ```
 KISAN-AGENT/
 ├── frontend/             # Next.js 15 App Router web application
-│   ├── app/              # Routing pages and layout shells
-│   ├── components/       # Reusable UI component modules (shadcn/ui)
-│   ├── constants/        # Navigation configurations
-│   ├── public/           # Vector illustrations and media
+│   ├── app/              # Page views and layouts (Dashboard, Weather, Market, Crops, Disease, etc.)
+│   ├── components/       # Visual components and ViraVoiceWidget
+│   ├── public/           # Static assets (logo, mic icon, vira.js widget, vira.css stylesheet)
+│   ├── services/         # API client configurations (apiClient.ts)
 │   └── package.json      # NPM dependencies configuration
 ├── backend/              # FastAPI application server
-│   ├── app/              # Router, database connection, config, and agents
+│   ├── app/              # Router, database schema, repositories, controllers, and agents
+│   │   ├── ai_agents/    # Vira LangGraph AI decision agents
+│   │   ├── controllers/  # Assistant, auth, crops, machinery, and market endpoints
+│   │   ├── database/     # Supabase client and connection pools
+│   │   ├── middleware/   # Authentication filter middleware
+│   │   ├── models/       # SQLAlchemy models (User, Crop, MarketPrice, Machinery, Scheme, etc.)
+│   │   ├── prompts/      # Gemini prompts for intent parsing, agronomist advice, and disease diagnosis
+│   │   ├── repositories/ # Database query operations (users, farms, machinery, schemes, etc.)
+│   │   └── services/     # Third-party integrations (Gemini, OpenWeather, Brevo, Storage)
+│   ├── krishiva_fallback.db # SQLite seeded backup database
 │   ├── requirements.txt  # Python requirements configuration
 │   └── README.md         # Backend setup details
 ├── docs/                 # Platform documentation
@@ -48,18 +54,18 @@ KISAN-AGENT/
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** Next.js 15 (Turbopack), React 19, TypeScript, Tailwind CSS v4, shadcn/ui, Framer Motion, Lucide React
-* **Backend:** FastAPI, Python 3.14+, Pydantic v2, Uvicorn, LangGraph
-* **Database & Auth:** Firebase Firestore, Firebase Authentication
-* **Hosting:** Firebase Hosting, Google Cloud Run
-* **Google Cloud APIs:** Vertex AI (Gemini Pro), Cloud Translation API, Cloud Speech-to-Text, Cloud Text-to-Speech, Earth Engine (Satellite biomass NDVI indexing), Google Maps Platform (driving routes)
+* **Frontend:** Next.js 15 (Turbopack), React 19, TypeScript, Tailwind CSS, Web Speech API (STT / TTS)
+* **Backend:** FastAPI, Python 3.12+, SQLAlchemy, LangGraph
+* **Database & Auth:** Supabase (PostgreSQL), Firebase Auth fallback
+* **Local DB Fallback:** SQLite (seeded fallback DB)
+* **API Integrations:** Gemini Pro (AI Agents), OpenWeather API, Brevo API (SMTP Notification Emails)
 
 ---
 
 ## ⚡ Installation & Running Local Servers
 
 ### 1. Running the Frontend (Next.js)
-Navigate into the `frontend/` directory, install package dependencies, and start the hot-reloading development server:
+Navigate into the `frontend/` directory, install package dependencies, and start the development server:
 ```bash
 cd frontend
 npm install
@@ -72,11 +78,15 @@ Navigate into the `backend/` directory, initialize a Python virtual environment,
 ```bash
 cd backend
 python -m venv .venv
+# On Windows
 .venv\Scripts\activate
+# On macOS/Linux
+source .venv/bin/activate
+
 pip install -r requirements.txt
 python -m uvicorn app.main:app --port 8001 --reload
 ```
-The API server runs at [http://localhost:8001](http://localhost:8001) and Swagger docs load at [http://localhost:8001/docs](http://localhost:8001/docs).
+The API server runs at [http://127.0.0.1:8001](http://127.0.0.1:8001) and Swagger docs load at [http://127.0.0.1:8001/docs](http://127.0.0.1:8001/docs).
 
 ---
 
@@ -84,39 +94,34 @@ The API server runs at [http://localhost:8001](http://localhost:8001) and Swagge
 
 ### Frontend (`frontend/.env.local`)
 ```env
-NEXT_PUBLIC_API_URL="http://localhost:8001/api/v1"
+NEXT_PUBLIC_API_URL="http://127.0.0.1:8001/api/v1"
 ```
 
 ### Backend (`backend/.env`)
 ```env
-APP_NAME="Kisan Alert AI Backend"
+APP_NAME="Krishiva AI Backend"
 APP_ENV="development"
 DEBUG=true
 PORT=8001
-HOST="0.0.0.0"
-ALLOWED_ORIGINS="http://localhost:3000"
-FIREBASE_PROJECT_ID="kisan-alert-ai-dev"
-FIREBASE_CREDENTIALS_PATH="config/firebase-credentials.json"
-GEMINI_API_KEY=""
-GOOGLE_MAPS_API_KEY=""
+HOST="127.0.0.1"
+ALLOWED_ORIGINS="http://localhost:3000,http://127.0.0.1:3000"
+
+# Supabase Configurations
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_KEY="your-anon-key"
+DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/postgres"
+
+# Third Party Keys
+GEMINI_API_KEY="your-gemini-key"
+OPENWEATHER_API_KEY="your-weather-key"
+BREVO_API_KEY="your-brevo-key"
 ```
-
----
-
-## 🧠 AI Multi-Agent Architecture
-
-The backend core runs a **LangGraph State Graph** orchestrated by a supervisor routing node:
-* **Supervisor:** Routes conversational intent to specialized agents.
-* **Weather Agent:** Evaluates rain cycles and alerts dry spells.
-* **Crop Advisor Agent:** Calculates crop yield matches.
-* **Disease Scan Agent:** Decodes foliage cell uploads.
-* **Market Agent:** Runs APMC price forecasting.
 
 ---
 
 ## 👥 Contributors
 
-* **Kisan Alert AI Dev Team**
+* **Krishiva AI Development Team**
   - Aura Build Team (3-Member Collaboration)
 
 ---

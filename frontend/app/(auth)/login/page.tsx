@@ -10,7 +10,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { 
   Sprout, Phone, Sun, Moon, Globe, 
-  WifiOff, ArrowRight, Loader2 
+  WifiOff, ArrowRight, Loader2, ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { apiClient } from "@/services/apiClient";
+import { supabase } from "@/utils/supabaseClient";
 
 // Zod validation schema for Indian phone numbers (10 digits starting with 6-9)
 const loginSchema = z.object({
@@ -54,6 +56,10 @@ export default function LoginPage() {
     },
   });
 
+  const [otpSent, setOtpSent] = React.useState(false);
+  const [otpCode, setOtpCode] = React.useState("");
+  const [phoneVal, setPhoneVal] = React.useState("");
+
   // Track mount & connection status
   React.useEffect(() => {
     setMounted(true);
@@ -71,46 +77,126 @@ export default function LoginPage() {
     };
   }, []);
 
-  const onSubmit = (data: LoginFormValues) => {
+  const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    console.log("Logging in with phone:", data.phone, "as role:", selectedRole);
-    // Mock login timeout
-    setTimeout(() => {
-      setIsLoading(false);
-      if (selectedRole === "farmer") {
-        router.push("/dashboard");
-      } else if (selectedRole === "buyer") {
-        router.push("/buyer/dashboard");
-      } else if (selectedRole === "owner") {
-        router.push("/owner/dashboard");
-      } else {
-        router.push("/guest/dashboard");
+    setPhoneVal(data.phone);
+    try {
+      // 1. Try Supabase OTP sign in
+      const formattedPhone = `+91${data.phone}`;
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone,
+      });
+      if (error) {
+        // Fallback to backend API
+        await apiClient.post("/auth/otp/send", { phone: data.phone });
       }
-    }, 1800);
+      setOtpSent(true);
+    } catch (err: any) {
+      alert(err.message || "Failed to dispatch verification OTP.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleLogin = () => {
+  const handleVerifyOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpCode.length !== 6) {
+      alert("Please enter a valid 6-digit verification code.");
+      return;
+    }
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      if (selectedRole === "farmer") {
-        router.push("/dashboard");
-      } else if (selectedRole === "buyer") {
-        router.push("/buyer/dashboard");
-      } else if (selectedRole === "owner") {
-        router.push("/owner/dashboard");
-      } else {
-        router.push("/guest/dashboard");
+    try {
+      const formattedPhone = `+91${phoneVal}`;
+      const roleMapped = selectedRole === "farmer" ? "Farmer" : 
+                         (selectedRole === "buyer" ? "Buyer" : 
+                          (selectedRole === "owner" ? "Owner" : "Guest"));
+      
+      // 1. Try Supabase verification
+      if (otpCode !== "123456") {
+        const { data, error } = await supabase.auth.verifyOtp({
+          phone: formattedPhone,
+          token: otpCode,
+          type: "sms"
+        });
+        if (!error && data.session) {
+          localStorage.setItem("krishiva_token", data.session.access_token);
+          localStorage.setItem("krishiva_role", selectedRole);
+          localStorage.setItem("krishiva_user_id", data.session.user?.id || "");
+          
+          if (selectedRole === "farmer") router.push("/dashboard");
+          else if (selectedRole === "buyer") router.push("/buyer/dashboard");
+          else if (selectedRole === "owner") router.push("/owner/dashboard");
+          else router.push("/guest/dashboard");
+          return;
+        }
       }
-    }, 1200);
+
+      // 2. Sandbox bypass or fallback to backend API verification
+      const res: any = await apiClient.post("/auth/otp/verify", {
+        phone: phoneVal,
+        otp: otpCode,
+        role: roleMapped
+      });
+      localStorage.setItem("krishiva_token", res.access_token);
+      localStorage.setItem("krishiva_role", selectedRole);
+      localStorage.setItem("krishiva_user_id", res.user_id);
+      
+      if (selectedRole === "farmer") router.push("/dashboard");
+      else if (selectedRole === "buyer") router.push("/buyer/dashboard");
+      else if (selectedRole === "owner") router.push("/owner/dashboard");
+      else router.push("/guest/dashboard");
+    } catch (err: any) {
+      alert(err.message || "OTP verification failed.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGuestLogin = () => {
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      // Try Supabase Google OAuth provider redirection
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: typeof window !== "undefined" ? window.location.origin + "/dashboard" : undefined
+        }
+      });
+      if (error) {
+        // Fallback to backend API mock Google token exchange
+        const res: any = await apiClient.post("/auth/google", {
+          id_token: "google_login_sample_token_2026",
+          role: "Farmer"
+        });
+        localStorage.setItem("krishiva_token", res.access_token);
+        localStorage.setItem("krishiva_role", res.role);
+        localStorage.setItem("krishiva_user_id", res.user_id);
+        router.push("/dashboard");
+      }
+    } catch (err: any) {
+      alert(err.message || "Google Authentication failed.");
+    } finally {
       setIsLoading(false);
-      router.push("/guest/dashboard");
-    }, 1000);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    setIsLoading(true);
+    try {
+      const res: any = await apiClient.post("/auth/guest", {});
+      localStorage.setItem("krishiva_token", res.access_token);
+      localStorage.setItem("krishiva_role", selectedRole);
+      localStorage.setItem("krishiva_user_id", res.user_id);
+      
+      if (selectedRole === "farmer") router.push("/dashboard");
+      else if (selectedRole === "buyer") router.push("/buyer/dashboard");
+      else if (selectedRole === "owner") router.push("/owner/dashboard");
+      else router.push("/guest/dashboard");
+    } catch (err: any) {
+      alert(err.message || "Guest authentication failed.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -316,7 +402,7 @@ export default function LoginPage() {
                   )}
                 </Button>
               </div>
-            ) : (
+            ) : !otpSent ? (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="space-y-1">
                   <Input
@@ -360,6 +446,52 @@ export default function LoginPage() {
                       <ArrowRight className="ml-1.5 h-4 w-4" />
                     </>
                   )}
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtpSubmit} className="space-y-4">
+                <div className="space-y-1">
+                  <Input
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    label="Verification OTP"
+                    placeholder="Enter 6-digit OTP code"
+                    icon={ShieldCheck}
+                    disabled={isLoading}
+                    maxLength={6}
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    An OTP was sent to {phoneVal}. Type 123456 to bypass in demo sandbox.
+                  </p>
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-11 justify-center rounded-btn font-bold cursor-pointer transition-transform duration-200 active:scale-[0.98]"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4.5 w-4.5 animate-spin" />
+                      Verifying Code
+                    </>
+                  ) : (
+                    <>
+                      Verify OTP & Login
+                      <ArrowRight className="ml-1.5 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setOtpSent(false)}
+                  disabled={isLoading}
+                  className="w-full h-9 justify-center rounded-btn text-xs"
+                >
+                  Back to Phone Entry
                 </Button>
               </form>
             )}

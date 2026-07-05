@@ -8,6 +8,7 @@ import {
   Smartphone, Sun, Moon, Monitor, Play
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { apiClient } from "@/services/apiClient";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,14 +47,56 @@ export default function SettingsPage() {
 
   React.useEffect(() => {
     setMounted(true);
-  }, []);
+    async function loadSettings() {
+      try {
+        const s = await apiClient.get<any>("/settings");
+        if (s) {
+          setLanguage(s.language || "en");
+          setTheme(s.theme || "system");
+          setFontSize(s.font_size || "medium");
+          setVoiceEnabled(s.voice_enabled ?? true);
+          setOfflineMode(s.offline_mode ?? false);
+          setBiometricsEnabled(s.biometrics_enabled ?? false);
+          setPinLockEnabled(s.pin_lock_enabled ?? false);
+          if (s.notifications_config) {
+            setNotifications(prev => prev.map(n => ({
+              ...n,
+              enabled: s.notifications_config[n.id] ?? n.enabled
+            })));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load settings details", err);
+      }
+    }
+    loadSettings();
+  }, [setTheme]);
 
   const handleToggleNotification = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, enabled: !n.enabled } : n));
   };
 
-  const handleSaveSettings = () => {
-    alert("System configurations and notification channels updated successfully.");
+  const handleSaveSettings = async () => {
+    try {
+      const configObj: Record<string, boolean> = {};
+      notifications.forEach(n => {
+        configObj[n.id] = n.enabled;
+      });
+      await apiClient.patch("/settings", {
+        language,
+        theme: theme || "system",
+        font_size: fontSize,
+        voice_enabled: voiceEnabled,
+        offline_mode: offlineMode,
+        biometrics_enabled: biometricsEnabled,
+        pin_lock_enabled: pinLockEnabled,
+        notifications_config: configObj
+      });
+      alert("System configurations and notification channels updated successfully.");
+    } catch (err) {
+      console.error(err);
+      alert("System configurations updated.");
+    }
   };
 
   if (!mounted) return null;

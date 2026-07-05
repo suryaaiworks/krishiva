@@ -16,6 +16,7 @@ import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Chip } from "@/components/ui/chip";
+import { apiClient } from "@/services/apiClient";
 
 // Quick Actions Configuration
 const QUICK_ACTIONS = [
@@ -67,13 +68,12 @@ export default function DashboardPage() {
   // Rotating Tips State
   const [currentTipIdx, setCurrentTipIdx] = React.useState(0);
   
-  // Tasks State
-  const [tasks, setTasks] = React.useState([
-    { id: 1, text: "Apply nitrogen fertilizer mix to Sugarcane Zone B", done: false },
-    { id: 2, text: "Inspect sugarcane foliage root zones for borer tunnels", done: true },
-    { id: 3, text: "Schedule tractor rental booking for tomorrow's weeding", done: false },
-    { id: 4, text: "Submit micro-irrigation documents on PM-Kisan portal", done: false }
-  ]);
+  // Dashboard Brief and Lists State
+  const [dashboardBrief, setDashboardBrief] = React.useState<any>(null);
+  const [machinery, setMachinery] = React.useState<any[]>([]);
+  const [buyers, setBuyers] = React.useState<any[]>([]);
+  const [schemes, setSchemes] = React.useState<any[]>([]);
+  const [tasks, setTasks] = React.useState<any[]>([]);
 
   // Vira Floating Assistant State
   const [viraState, setViraState] = React.useState<"idle" | "speaking" | "thinking">("idle");
@@ -85,6 +85,53 @@ export default function DashboardPage() {
       setCurrentTipIdx((prev) => (prev + 1) % FARMING_TIPS.length);
     }, 8000);
     return () => clearInterval(tipInterval);
+  }, []);
+
+  // Fetch all dashboard data from API
+  React.useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        const brief = await apiClient.get<any>("/dashboard/brief");
+        setDashboardBrief(brief);
+      } catch (e) {
+        console.warn("Failed to load dashboard brief", e);
+      }
+
+      try {
+        const list = await apiClient.get<any[]>("/tasks");
+        setTasks(list.map(t => ({ id: t.id, text: t.text, done: t.is_done })));
+      } catch (e) {
+        console.warn("Failed to load tasks, using defaults", e);
+        setTasks([
+          { id: 1, text: "Apply nitrogen fertilizer mix to Sugarcane Zone B", done: false },
+          { id: 2, text: "Inspect sugarcane foliage root zones for borer tunnels", done: true },
+          { id: 3, text: "Schedule tractor rental booking for tomorrow's weeding", done: false },
+          { id: 4, text: "Submit micro-irrigation documents on PM-Kisan portal", done: false }
+        ]);
+      }
+
+      try {
+        const mach = await apiClient.get<any[]>("/machinery");
+        setMachinery(mach);
+      } catch (e) {
+        console.warn("Failed to load machinery", e);
+      }
+
+      try {
+        const b = await apiClient.get<any[]>("/market/buyers");
+        setBuyers(b);
+      } catch (e) {
+        console.warn("Failed to load buyers", e);
+      }
+
+      try {
+        const s = await apiClient.get<any[]>("/schemes/match");
+        setSchemes(s);
+      } catch (e) {
+        console.warn("Failed to load schemes", e);
+      }
+    };
+    loadDashboardData();
   }, []);
 
   const handlePromptClick = (promptText: string) => {
@@ -137,12 +184,46 @@ export default function DashboardPage() {
     }, 1800);
   };
 
-  const toggleTask = (id: number) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const toggleTask = async (id: any) => {
+    try {
+      await apiClient.patch(`/tasks/${id}/toggle`, {});
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    } catch (e) {
+      console.warn("Offline or sync failed. Toggling locally.", e);
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    }
   };
 
   const completedTasksCount = tasks.filter(t => t.done).length;
-  const progressPercent = Math.round((completedTasksCount / tasks.length) * 100);
+  const progressPercent = tasks.length > 0 ? Math.round((completedTasksCount / tasks.length) * 100) : 0;
+
+  const displayedMachinery = machinery.length > 0 ? machinery.map(m => ({
+    name: m.name,
+    price: m.price,
+    dist: m.dist,
+    owner: m.owner,
+    phone: m.phone,
+    status: m.status === 'available' ? 'Available Now' : 'In Use',
+    icon: Tractor
+  })) : MACHINERY_LIST;
+
+  const displayedBuyers = buyers.length > 0 ? buyers.map(b => ({
+    company: b.companyName,
+    crop: b.cropRequired,
+    qty: b.quantityRequired,
+    price: `₹${b.offeredPrice}/${b.unit}`,
+    dist: b.distance,
+    match: "96%",
+    rating: "4.8"
+  })) : BUYERS_LIST;
+
+  const displayedSchemes = schemes.length > 0 ? schemes.map(s => ({
+    name: s.name,
+    payout: s.benefit,
+    eligibility: s.eligibility_score,
+    deadline: s.deadline,
+    docsMissing: s.required_documents.length
+  })) : SCHEMES_LIST;
 
   return (
     <MainLayout>
@@ -614,7 +695,7 @@ export default function DashboardPage() {
 
               {/* Machinery list */}
               <div className="space-y-3.5 pt-1">
-                {MACHINERY_LIST.map((mach, idx) => {
+                {displayedMachinery.map((mach, idx) => {
                   const Icon = mach.icon;
                   return (
                     <div key={idx} className="flex justify-between items-center p-2.5 rounded-[16px] border border-border/30 bg-muted/20">
@@ -670,7 +751,7 @@ export default function DashboardPage() {
 
               {/* Buyers matching */}
               <div className="space-y-3.5 pt-1">
-                {BUYERS_LIST.map((buyer, idx) => (
+                {displayedBuyers.map((buyer, idx) => (
                   <div key={idx} className="p-3 rounded-[16px] border border-border/30 bg-card space-y-2">
                     <div className="flex justify-between items-start">
                       <div className="space-y-0.5">
@@ -723,7 +804,7 @@ export default function DashboardPage() {
 
               {/* Schemes matching */}
               <div className="space-y-3.5 pt-1">
-                {SCHEMES_LIST.map((sch, idx) => (
+                {displayedSchemes.map((sch, idx) => (
                   <div key={idx} className="p-3 rounded-[16px] border border-border/30 bg-card space-y-2">
                     <div className="flex justify-between items-start">
                       <div className="space-y-0.5">

@@ -8,6 +8,7 @@ import {
   PhoneCall, ArrowUpRight, Check, Search, MapPin, X
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { apiClient } from "@/services/apiClient";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -226,8 +227,29 @@ export default function BuyerMarketplacePage() {
     setNegotiationStatus("idle");
   };
 
-  const handleSubmitCounter = () => {
+  const handleSubmitCounter = async () => {
     setNegotiationStatus("submitting");
+    try {
+      const payload = {
+        buyer_request_id: selectedBuyer.id,
+        offered_price: selectedBuyer.offeredPrice,
+        counter_price: counterPrice,
+        message: "Requesting counter price rate."
+      };
+      const res = await apiClient.post<any>("/market/negotiate", payload);
+      if (res) {
+        setNegotiationStatus(res.status);
+        setNegotiationMessage(res.message);
+        if (res.status === "countered") {
+          setBuyerCounterOffer(res.buyer_counter_offer || Math.round(selectedBuyer.offeredPrice * 1.04));
+        }
+        return;
+      }
+    } catch (err) {
+      console.error("Negotiation failed on B2B desk", err);
+    }
+
+    // Fallback logic
     setTimeout(() => {
       const initial = selectedBuyer.offeredPrice;
       const differencePct = ((counterPrice - initial) / initial) * 100;
@@ -244,7 +266,7 @@ export default function BuyerMarketplacePage() {
         setNegotiationStatus("declined");
         setNegotiationMessage(`The buyer has declined ₹${counterPrice}/${selectedBuyer.unit} as it exceeds their current budget cap for ${selectedBuyer.cropRequired}. Try a counter under ₹${Math.round(initial * 1.05)}.`);
       }
-    }, 1500);
+    }, 1200);
   };
 
   return (

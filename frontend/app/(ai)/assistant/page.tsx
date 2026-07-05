@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, Camera, Image as ImageIcon, MapPin, Send, Mic, 
   Globe, Loader2, PhoneCall, Award, RefreshCw, X
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { apiClient } from "@/services/apiClient";
 import { WeatherCard } from "@/components/weather/WeatherCard";
 import { CropCard } from "@/components/crop/CropCard";
 import { MarketCard } from "@/components/market/MarketCard";
@@ -36,12 +38,84 @@ const INITIAL_MESSAGES: Message[] = [
 ];
 
 export default function AssistantPage() {
-  const [messages, setMessages] = React.useState<Message[]>(INITIAL_MESSAGES);
+  const router = useRouter();
+  const [messages, setMessages] = React.useState<Message[]>([]);
   const [inputValue, setInputValue] = React.useState("");
   const [isTyping, setIsTyping] = React.useState(false);
   const [language, setLanguage] = React.useState("en");
   const [isVoiceActive, setIsVoiceActive] = React.useState(false);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
+
+  // Load chat history from backend on mount
+  React.useEffect(() => {
+    async function loadChatHistory() {
+      const token = typeof window !== "undefined" ? localStorage.getItem("krishiva_token") : null;
+      if (!token) {
+        setMessages(INITIAL_MESSAGES);
+        return;
+      }
+      try {
+        const history = await apiClient.get<any[]>("/assistant/chat");
+        if (history && history.length > 0) {
+          setMessages(history.map((msg, idx) => ({
+            id: `msg-${idx}-${Date.now()}`,
+            sender: msg.sender,
+            text: msg.text,
+            timestamp: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            cardType: msg.cardType
+          })));
+        } else {
+          setMessages(INITIAL_MESSAGES);
+        }
+      } catch (err) {
+        console.error("Failed to load chat history", err);
+        setMessages(INITIAL_MESSAGES);
+      }
+    }
+    loadChatHistory();
+  }, []);
+
+  // Listen for Vira Voice events
+  React.useEffect(() => {
+    const handleViraAction = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { action, response } = customEvent.detail || {};
+
+      if (action === "stt" && response) {
+        const userMsg: Message = {
+          id: `voice-user-${Date.now()}`,
+          sender: "user",
+          text: response,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages((prev) => [...prev, userMsg]);
+        setIsTyping(true);
+      } else if (response && action !== "stt") {
+        setIsTyping(false);
+        // Map backend action names to card types
+        let cardType: Message["cardType"] = undefined;
+        if (action === "query_weather") cardType = "weather";
+        else if (action === "recommend_crop") cardType = "crop";
+        else if (action === "query_market_price") cardType = "market";
+        else if (action === "diagnose_disease") cardType = "disease";
+        else if (action === "apply_scheme") cardType = "scheme";
+
+        const aiMsg: Message = {
+          id: `voice-ai-${Date.now()}`,
+          sender: "ai",
+          text: response,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          cardType: cardType
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+      }
+    };
+
+    window.addEventListener("vira-action", handleViraAction);
+    return () => {
+      window.removeEventListener("vira-action", handleViraAction);
+    };
+  }, []);
 
   // Auto scroll to chat bottom
   React.useEffect(() => {
@@ -63,10 +137,35 @@ export default function AssistantPage() {
     triggerAiResponse(textToSend);
   };
 
-  const triggerAiResponse = (userQuery: string) => {
+  const triggerAiResponse = async (userQuery: string) => {
     setIsTyping(true);
 
-    // Mock AI reasoning based on query keywords
+    try {
+      const res = await apiClient.post<any>("/assistant/chat", { message: userQuery });
+      setIsTyping(false);
+      if (res) {
+        const aiMsg: Message = {
+          id: `ai-${Date.now()}`,
+          sender: "ai",
+          text: res.text,
+          timestamp: res.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          cardType: res.cardType
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+        
+        // Handle voice navigation redirect instruction
+        if (res.redirect) {
+          setTimeout(() => {
+            router.push(res.redirect);
+          }, 1500);
+        }
+        return;
+      }
+    } catch (err) {
+      console.error("Backend assistant chat failed", err);
+    }
+
+    // Local fallback if API fails or device is offline
     setTimeout(() => {
       setIsTyping(false);
       const query = userQuery.toLowerCase();
@@ -95,22 +194,26 @@ export default function AssistantPage() {
         aiMsg.cardType = "relief";
         aiMsg.text = "Here is your personalized recovery plan to manage crop damage, connect with buyers, and obtain seed support:";
       } else {
-        aiMsg.text = `Thank you for asking about &quot;${userQuery}&quot;. At this moment, my primary support modules focus on crop selection, disease scans, APMC mandi pricing, and disaster relief schemes. Please ask a related query.`;
+        aiMsg.text = `Thank you for asking about "${userQuery}". At this moment, my primary support modules focus on crop selection, disease scans, APMC mandi pricing, and disaster relief schemes. Please ask a related query.`;
       }
 
       setMessages((prev) => [...prev, aiMsg]);
-    }, 1800);
+    }, 1200);
   };
 
   const toggleVoiceMode = () => {
-    const nextState = !isVoiceActive;
-    setIsVoiceActive(nextState);
-    if (nextState) {
-      // Simulate recording voice query
+    const launcherBtn = document.querySelector(".vira-btn") as HTMLButtonElement;
+    if (launcherBtn) {
+      const popup = document.querySelector(".vira-popup") as HTMLDivElement;
+      if (popup && popup.style.display !== "flex") {
+        launcherBtn.click();
+      }
       setTimeout(() => {
-        setIsVoiceActive(false);
-        handleSendText("Show today's market prices.");
-      }, 3500);
+        const micBtn = document.querySelector(".vira-mic") as HTMLButtonElement;
+        if (micBtn) {
+          micBtn.click();
+        }
+      }, 300);
     }
   };
 

@@ -8,6 +8,7 @@ import {
   User, Check, AlertCircle
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { apiClient } from "@/services/apiClient";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -149,6 +150,7 @@ export default function OfficesPage() {
   const [bookingOfficeId, setBookingOfficeId] = React.useState<string | null>(null);
   const [bookingStep, setBookingStep] = React.useState<1 | 2>(1);
   const [isBookingLoading, setIsBookingLoading] = React.useState(false);
+  const [offices, setOffices] = React.useState<Office[]>([]);
 
   // Booking states
   const [bookingForm, setBookingForm] = React.useState<BookingForm>({
@@ -158,11 +160,49 @@ export default function OfficesPage() {
     slot: "Morning (9:00 AM - 11:00 AM)"
   });
 
-  const selectedOffice = officesDatabase.find(o => o.id === selectedOfficeId) || officesDatabase[0];
-  const bookingOffice = officesDatabase.find(o => o.id === bookingOfficeId);
+  const loadOffices = async () => {
+    try {
+      const list = await apiClient.get<any[]>("/offices");
+      if (list && list.length > 0) {
+        setOffices(list.map((o: any) => ({
+          id: o.id,
+          name: o.name,
+          type: o.type,
+          district: o.district,
+          block: o.block,
+          address: o.address,
+          distance: o.distance,
+          duration: o.duration,
+          rating: o.rating,
+          status: o.status,
+          hours: o.hours,
+          officer: o.officer,
+          designation: o.designation,
+          phone: o.phone,
+          email: o.email,
+          coords: o.coords,
+          directions: o.directions
+        })));
+      } else {
+        setOffices(officesDatabase);
+      }
+    } catch (err) {
+      console.error("Failed to load local offices", err);
+      setOffices(officesDatabase);
+    }
+  };
+
+  React.useEffect(() => {
+    loadOffices();
+  }, []);
+
+  const activeOffices = offices.length > 0 ? offices : officesDatabase;
+
+  const selectedOffice = activeOffices.find(o => o.id === selectedOfficeId) || activeOffices[0];
+  const bookingOffice = activeOffices.find(o => o.id === bookingOfficeId);
 
   // Filter offices based on state criteria
-  const filteredOffices = officesDatabase.filter(office => {
+  const filteredOffices = activeOffices.filter(office => {
     const matchesSearch = office.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           office.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           office.officer.toLowerCase().includes(searchQuery.toLowerCase());
@@ -178,7 +218,7 @@ export default function OfficesPage() {
   };
 
   const handleOpenBooking = (id: string) => {
-    const office = officesDatabase.find(o => o.id === id);
+    const office = activeOffices.find(o => o.id === id);
     if (office) {
       setBookingOfficeId(id);
       setBookingStep(1);
@@ -191,12 +231,21 @@ export default function OfficesPage() {
     }
   };
 
-  const handleConfirmBooking = () => {
+  const handleConfirmBooking = async () => {
     setIsBookingLoading(true);
-    setTimeout(() => {
+    try {
+      await apiClient.post("/offices/book", {
+        office_id: bookingOfficeId,
+        purpose: bookingForm.purpose,
+        appointment_date: bookingForm.date,
+        time_slot: bookingForm.slot
+      });
+    } catch (err) {
+      console.error("Failed to confirm office booking", err);
+    } finally {
       setIsBookingLoading(false);
       setBookingStep(2);
-    }, 2000);
+    }
   };
 
   const handleDialNumber = (phone: string, name: string) => {

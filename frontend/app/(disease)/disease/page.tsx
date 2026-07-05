@@ -11,18 +11,30 @@ import { UploadImageCard } from "@/components/disease/UploadImageCard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { apiClient } from "@/services/apiClient";
 
 export default function DiseaseDetectionPage() {
   const [phase, setPhase] = React.useState<"upload" | "scanning" | "result">("upload");
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [scanProgress, setScanProgress] = React.useState(0);
   const [scanStatus, setScanStatus] = React.useState("Initializing camera lens...");
+  const [scanResult, setScanResult] = React.useState<any>(null);
 
-  const handleImageSelected = (file: File | null) => {
+  const handleImageSelected = async (file: File | null) => {
     if (file) {
       setPreviewUrl(URL.createObjectURL(file));
       setPhase("scanning");
       setScanProgress(0);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await apiClient.post<any>("/disease/scan", formData);
+        if (res) {
+          setScanResult(res);
+        }
+      } catch (err) {
+        console.error("Leaf scanning upload failed", err);
+      }
     } else {
       setPreviewUrl(null);
     }
@@ -202,21 +214,21 @@ export default function DiseaseDetectionPage() {
                           <span className="text-[10px] font-bold text-warning uppercase tracking-wider block">
                             Scan Diagnosis
                           </span>
-                          <h3 className="text-lg font-bold text-foreground">Sugarcane Rust</h3>
+                          <h3 className="text-lg font-bold text-foreground">{scanResult?.disease_name || "Sugarcane Rust"}</h3>
                         </div>
                         <Badge variant="warning" className="font-bold px-2 py-0.5 text-xs">
-                          94% Match
+                          {scanResult?.confidence ? Math.round(scanResult.confidence) : 94}% Match
                         </Badge>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 py-3 border-y border-border/50 text-xs">
                         <div>
                           <span className="text-muted-foreground block">Crop:</span>
-                          <span className="font-bold text-foreground">Sugarcane (Co 86032)</span>
+                          <span className="font-bold text-foreground">{scanResult?.crop_name || "Sugarcane (Co 86032)"}</span>
                         </div>
                         <div>
                           <span className="text-muted-foreground block">Severity:</span>
-                          <span className="font-bold text-warning">Medium (15% Infected)</span>
+                          <span className="font-bold text-warning">{scanResult?.severity || "Medium"}</span>
                         </div>
                       </div>
 
@@ -226,7 +238,7 @@ export default function DiseaseDetectionPage() {
                           AI Explanation
                         </span>
                         <p className="text-muted-foreground leading-relaxed">
-                          Orange-brown lesions and pustules detected on lower sugarcane leaves. Warm temperature combined with micro-hydration layers on leaf surfaces caused fungal germination.
+                          {scanResult?.description || "Orange-brown lesions and pustules detected on lower sugarcane leaves. Warm temperature combined with micro-hydration layers on leaf surfaces caused fungal germination."}
                         </p>
                       </div>
                     </div>
@@ -250,13 +262,13 @@ export default function DiseaseDetectionPage() {
                             1. Recommended Fungicide Chemical Spray
                           </span>
                           <p className="text-muted-foreground">
-                            Spray <span className="font-bold text-foreground">Mancozeb (0.2%)</span> or <span className="font-bold text-foreground">Propiconazole (0.1%)</span> at 15-day intervals directly on leaf surfaces. Focus sprays on lesions.
+                            {scanResult?.treatment_chemical || "Spray Mancozeb (0.2%) or Propiconazole (0.1%) at 15-day intervals directly on leaf surfaces. Focus sprays on lesions."}
                           </p>
                           <span className="font-bold text-foreground block uppercase tracking-wider text-[10px] text-primary pt-2">
                             2. Organic Solutions & Sanitation
                           </span>
                           <p className="text-muted-foreground">
-                            Uproot heavily infected stalks to prevent spore dispersion. Apply neem oil spray (1.5%) on adjacent rows as a biological barrier.
+                            {scanResult?.treatment_organic || "Uproot heavily infected stalks to prevent spore dispersion. Apply neem oil spray (1.5%) on adjacent rows as a biological barrier."}
                           </p>
                         </div>
 
@@ -264,11 +276,15 @@ export default function DiseaseDetectionPage() {
                           <span className="font-bold text-foreground block uppercase tracking-wider text-[10px] text-primary">
                             3. Agronomic Prevention Measures
                           </span>
-                          <ul className="list-disc list-inside space-y-1.5 text-muted-foreground">
-                            <li>Avoid excess nitrogen fertilizers (causes lush, disease-susceptible foliage).</li>
-                            <li>Switch overhead sprinklers to drip irrigation to keep leaf surfaces dry.</li>
-                            <li>Adopt crop rotation with legume crops in the next rotation cycle.</li>
-                          </ul>
+                          {scanResult?.preventive_measures ? (
+                            <p className="text-muted-foreground">{scanResult.preventive_measures}</p>
+                          ) : (
+                            <ul className="list-disc list-inside space-y-1.5 text-muted-foreground">
+                              <li>Avoid excess nitrogen fertilizers (causes lush, disease-susceptible foliage).</li>
+                              <li>Switch overhead sprinklers to drip irrigation to keep leaf surfaces dry.</li>
+                              <li>Adopt crop rotation with legume crops in the next rotation cycle.</li>
+                            </ul>
+                          )}
                         </div>
                       </div>
                     </div>

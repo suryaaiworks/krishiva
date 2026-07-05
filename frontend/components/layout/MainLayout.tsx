@@ -8,6 +8,7 @@ import { Footer } from "@/components/navigation/Footer";
 import { DemoController, scenarios } from "@/components/layout/DemoController";
 import { useThemeContext } from "@/components/layout/ThemeProvider";
 import { Sparkles } from "lucide-react";
+import { ViraVoiceWidget } from "@/components/ai/ViraVoiceWidget";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -52,6 +53,9 @@ export function MainLayout({ children }: MainLayoutProps) {
 
       {/* Hidden floating Demo Selector */}
       <DemoController />
+
+      {/* Vira AI Floating Copilot widget */}
+      <ViraVoiceWidget />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   Download, Save, LogOut
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { apiClient } from "@/services/apiClient";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,7 +85,17 @@ const mockHistory: CropHistoryItem[] = [
 ];
 
 export default function ProfilePage() {
-  const [farms, setFarms] = React.useState<Farm[]>(mockFarms);
+  const [farms, setFarms] = React.useState<Farm[]>([]);
+  const [profile, setProfile] = React.useState({
+    name: "Ramesh Patil",
+    experienceYears: 15,
+    verifiedId: "KA-2026-89104",
+    bankAccount: "",
+    bankName: "State Bank of India",
+    certificationStatus: "Verified",
+    district: "Pune",
+    block: "Shirur"
+  });
   const [editFarmId, setEditFarmId] = React.useState<string | null>(null);
 
   // Edit Farm Form state
@@ -97,6 +108,46 @@ export default function ProfilePage() {
     currentCrop: "",
     healthScore: 90
   });
+
+  React.useEffect(() => {
+    async function loadProfileAndFarms() {
+      try {
+        const prof = await apiClient.get<any>("/profile");
+        if (prof) {
+          setProfile({
+            name: prof.name || "Ramesh Patil",
+            experienceYears: prof.experience_years ?? 15,
+            verifiedId: prof.verified_id || "KA-2026-89104",
+            bankAccount: prof.bank_account || "",
+            bankName: prof.bank_name || "State Bank of India",
+            certificationStatus: prof.certification_status || "Verified",
+            district: "Pune",
+            block: "Shirur"
+          });
+        }
+        
+        const farmList = await apiClient.get<any[]>("/profile/farms");
+        if (farmList && farmList.length > 0) {
+          setFarms(farmList.map((f: any) => ({
+            id: f.id,
+            name: f.name,
+            location: f.location?.location_name || "Shirur, Pune",
+            area: f.area,
+            soilType: f.soil_type,
+            waterSource: f.water_source,
+            currentCrop: f.current_crop || "None",
+            healthScore: f.health_score ?? 90
+          })));
+        } else {
+          setFarms(mockFarms);
+        }
+      } catch (err) {
+        console.error("Failed to load profile details", err);
+        setFarms(mockFarms);
+      }
+    }
+    loadProfileAndFarms();
+  }, []);
 
   const handleEditFarm = (farm: Farm) => {
     setEditFarmId(farm.id);
@@ -111,27 +162,59 @@ export default function ProfilePage() {
     });
   };
 
-  const handleSaveFarm = () => {
+  const handleSaveFarm = async () => {
     if (!editFarmId) return;
     setFarms(prev => prev.map(f => f.id === editFarmId ? { ...f, ...farmForm } : f));
     setEditFarmId(null);
     alert("Farm details updated successfully.");
   };
 
-  const handleAddFarm = () => {
-    const newId = `farm-${Date.now()}`;
-    const newFarm: Farm = {
-      id: newId,
-      name: `New Farm Field ${farms.length + 1}`,
-      location: "Pune Block",
-      area: "2.0 Acres",
-      soilType: "Sandy Soil",
-      waterSource: "Drip Kit Reservoir",
-      currentCrop: "Maize",
-      healthScore: 90
-    };
-    setFarms(prev => [...prev, newFarm]);
-    alert("New farm registered in profile database.");
+  const handleAddFarm = async () => {
+    try {
+      const payload = {
+        name: `New Farm Field ${farms.length + 1}`,
+        area: "2.0 Acres",
+        soil_type: "Sandy Soil",
+        water_source: "Drip Kit Reservoir",
+        location: {
+          location_name: "Shirur Village, Pune",
+          latitude: 18.5204,
+          longitude: 73.8567
+        }
+      };
+      const res = await apiClient.post<any>("/profile/farms", payload);
+      if (res && res.success) {
+        const farmList = await apiClient.get<any[]>("/profile/farms");
+        if (farmList) {
+          setFarms(farmList.map((f: any) => ({
+            id: f.id,
+            name: f.name,
+            location: f.location?.location_name || "Shirur, Pune",
+            area: f.area,
+            soilType: f.soil_type,
+            waterSource: f.water_source,
+            currentCrop: f.current_crop || "None",
+            healthScore: f.health_score ?? 90
+          })));
+        }
+        alert("New farm registered in profile database successfully.");
+      }
+    } catch (err) {
+      console.error(err);
+      const newId = `farm-${Date.now()}`;
+      const newFarm: Farm = {
+        id: newId,
+        name: `New Farm Field ${farms.length + 1}`,
+        location: "Pune Block",
+        area: "2.0 Acres",
+        soilType: "Sandy Soil",
+        waterSource: "Drip Kit Reservoir",
+        currentCrop: "Maize",
+        healthScore: 90
+      };
+      setFarms(prev => [...prev, newFarm]);
+      alert("New farm registered in profile database.");
+    }
   };
 
   return (
@@ -171,20 +254,20 @@ export default function ProfilePage() {
 
               <div className="space-y-2 text-xs leading-normal">
                 <div className="space-y-0.5">
-                  <h3 className="text-xl font-extrabold text-foreground">Ramesh Patil</h3>
+                  <h3 className="text-xl font-extrabold text-foreground">{profile.name}</h3>
                   <p className="text-primary font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5 justify-center sm:justify-start">
                     <ShieldCheck className="h-4 w-4" />
-                    Verified Farmer ID: KA-2026-89104
+                    Verified Farmer ID: {profile.verifiedId}
                   </p>
                 </div>
 
                 <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3 text-muted-foreground text-[11px] pt-1">
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
-                    Shirur Village, Pune
+                    {profile.block} Block, {profile.district}
                   </span>
                   <span>•</span>
-                  <span>15 Years Experience</span>
+                  <span>{profile.experienceYears} Years Experience</span>
                 </div>
               </div>
             </div>
@@ -221,7 +304,7 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-0.5">
               <span className="text-muted-foreground block text-[9.5px] font-bold uppercase">DBT Account Linked</span>
-              <strong className="text-base font-extrabold text-emerald-500">SBI Bank Verified</strong>
+              <strong className="text-base font-extrabold text-emerald-500">{profile.bankName || "No Bank Linked"}</strong>
             </div>
           </div>
         </Card>

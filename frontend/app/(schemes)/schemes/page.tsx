@@ -8,6 +8,7 @@ import {
   CheckCircle2, ShieldAlert, MapPin
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { apiClient } from "@/services/apiClient";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,6 +85,7 @@ export default function SchemesPage() {
   const [wizardStep, setWizardStep] = React.useState(1);
   const [loadingProgress, setLoadingProgress] = React.useState(0);
   const [activeLogIndex, setActiveLogIndex] = React.useState(0);
+  const [matchedSchemes, setMatchedSchemes] = React.useState<any[]>([]);
 
   // Wizard form state
   const [form, setForm] = React.useState<WizardState>({
@@ -134,10 +136,27 @@ export default function SchemesPage() {
     setWizardStep(prev => prev - 1);
   };
 
-  const startAnalysis = () => {
+  const startAnalysis = async () => {
     setPhase("loading");
     setLoadingProgress(0);
     setActiveLogIndex(0);
+    try {
+      const res = await apiClient.get<any[]>("/schemes/match");
+      if (res && res.length > 0) {
+        setMatchedSchemes(res.map((s: any) => ({
+          name: s.name,
+          benefit: s.benefit,
+          score: s.eligibility_score,
+          deadline: s.deadline,
+          approval: s.approval_time,
+          priority: s.priority,
+          desc: s.description,
+          documents: s.required_documents ? s.required_documents.join(", ") : "Aadhaar, Land Records"
+        })));
+      }
+    } catch (err) {
+      console.error("Failed to load matching schemes from backend", err);
+    }
   };
 
   React.useEffect(() => {
@@ -758,7 +777,7 @@ export default function SchemesPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {schemesDatabase.map((scheme, idx) => (
+                  {(matchedSchemes.length > 0 ? matchedSchemes : schemesDatabase).map((scheme, idx) => (
                     <div 
                       key={idx}
                       className="p-5 rounded-card border border-border bg-card flex flex-col justify-between h-56 hover:border-primary/30 transition-all shadow-sm text-xs leading-relaxed"

@@ -9,6 +9,7 @@ import {
   ChevronLeft, Save, Share2, HelpingHand, Store
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { apiClient } from "@/services/apiClient";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,8 +79,7 @@ export default function CropRecommendationPage() {
   // Analysis Animation States
   const [analysisProgress, setAnalysisProgress] = React.useState(0);
   const [activeLogIndex, setActiveLogIndex] = React.useState(0);
-
-
+  const [recommendations, setRecommendations] = React.useState<any[]>([]);
 
   // Geolocation mock
   const handleAutoDetectGps = () => {
@@ -98,10 +98,23 @@ export default function CropRecommendationPage() {
   };
 
   // Run AI Analysis simulation
-  const startAIAnalysis = () => {
+  const startAIAnalysis = async () => {
     setCurrentStep("analysis");
     setAnalysisProgress(0);
     setActiveLogIndex(0);
+    try {
+      const res = await apiClient.post<any>("/crops/recommend", {
+        soilType: details.soilType,
+        waterSource: details.waterSource,
+        previousCrop: details.previousCrop,
+        preferredCategory: details.preferredCategory
+      });
+      if (res && res.success && res.crop_recommendations) {
+        setRecommendations(res.crop_recommendations);
+      }
+    } catch (err) {
+      console.error("AI Analysis recommendation failed", err);
+    }
   };
 
   React.useEffect(() => {
@@ -779,7 +792,7 @@ export default function CropRecommendationPage() {
                   <Card title="" animate={false} className="p-6 bg-gradient-to-br from-emerald-500/10 via-card to-card border-emerald-500/20 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-3">
                       <Badge variant="success" className="font-bold text-xs py-1 px-3 bg-emerald-500 text-white shadow-sm">
-                        96% MATCH
+                        {recommendations[0]?.suitability_score || 96}% MATCH
                       </Badge>
                     </div>
 
@@ -787,7 +800,7 @@ export default function CropRecommendationPage() {
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block">Top Suggested Crop</span>
                         <h3 className="text-2xl font-extrabold text-foreground flex items-center gap-1.5">
-                          Groundnut <span className="text-xs font-medium text-muted-foreground">(TAG-24)</span>
+                          {recommendations[0]?.name || "Groundnut (TAG-24)"}
                         </h3>
                       </div>
 
@@ -799,7 +812,7 @@ export default function CropRecommendationPage() {
                         </div>
                         <div className="space-y-0.5">
                           <span className="text-[10px] text-muted-foreground block uppercase font-bold">Expected Yield</span>
-                          <span className="text-2xl font-extrabold text-foreground">2.0 Tons<span className="text-xs font-semibold text-muted-foreground">/Ac</span></span>
+                          <span className="text-2xl font-extrabold text-foreground">{recommendations[0]?.estimated_yield || "2.0 Tons"}<span className="text-xs font-semibold text-muted-foreground">/Ac</span></span>
                         </div>
                       </div>
 
@@ -812,7 +825,7 @@ export default function CropRecommendationPage() {
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">Water Requirement:</span>
                           <span className="font-bold text-foreground flex items-center gap-1">
-                            <Droplet className="h-3 w-3 text-primary" /> Medium
+                            <Droplet className="h-3 w-3 text-primary" /> {recommendations[0]?.water_requirement || "Medium"}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -839,10 +852,7 @@ export default function CropRecommendationPage() {
                         AI Advisor Reasoning
                       </span>
                       <p className="text-muted-foreground">
-                        We recommend <strong className="text-foreground">Groundnut (TAG-24)</strong> because your soil type (<strong className="text-foreground">Black Clayey</strong>) features excellent moisture-holding traits, which will help bypass the dry spell warning starting June 28.
-                      </p>
-                      <p className="text-muted-foreground">
-                        Since your previous crop was sugarcane, planting groundnuts will naturally fix nitrogen reserves back into your field. Currently, groundnuts are trading at ₹6,800/quintal in Pune Mandi—which is a 12% price premium.
+                        {recommendations[0]?.reasoning || "We recommend Groundnut (TAG-24) because your soil type (Black Clayey) features excellent moisture-holding traits, which will help bypass the dry spell warning starting June 28. Since your previous crop was sugarcane, planting groundnuts will naturally fix nitrogen reserves back into your field."}
                       </p>
                     </div>
                   </Card>
@@ -915,33 +925,50 @@ export default function CropRecommendationPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <CropCard 
-                        cropName="Soybean (JS-335)"
-                        category="Oilseeds"
-                        matchPercentage={88}
-                        soilType="Black Clayey"
-                        waterRequirement="Medium"
-                        season="Kharif"
-                        onSelect={() => alert("Loading Soybean growth guidelines...")}
-                      />
-                      <CropCard 
-                        cropName="Pearl Millet (Bajra)"
-                        category="Grains"
-                        matchPercentage={80}
-                        soilType="Sandy / Loamy"
-                        waterRequirement="Low"
-                        season="Kharif"
-                        onSelect={() => alert("Loading Pearl Millet growth guidelines...")}
-                      />
-                      <CropCard 
-                        cropName="Sunflower (KBSH)"
-                        category="Oilseeds"
-                        matchPercentage={74}
-                        soilType="Loamy"
-                        waterRequirement="Medium"
-                        season="Kharif"
-                        onSelect={() => alert("Loading Sunflower growth guidelines...")}
-                      />
+                      {recommendations.length > 1 ? (
+                        recommendations.slice(1, 4).map((crop, idx) => (
+                          <CropCard 
+                            key={idx}
+                            cropName={crop.name}
+                            category={crop.category || "Crops"}
+                            matchPercentage={crop.suitability_score || 85}
+                            soilType={crop.soil_type || "Loamy"}
+                            waterRequirement={crop.water_requirement || "Medium"}
+                            season={crop.season || "Kharif"}
+                            onSelect={() => alert(`Loading ${crop.name} growth guidelines...`)}
+                          />
+                        ))
+                      ) : (
+                        <>
+                          <CropCard 
+                            cropName="Soybean (JS-335)"
+                            category="Oilseeds"
+                            matchPercentage={88}
+                            soilType="Black Clayey"
+                            waterRequirement="Medium"
+                            season="Kharif"
+                            onSelect={() => alert("Loading Soybean growth guidelines...")}
+                          />
+                          <CropCard 
+                            cropName="Pearl Millet (Bajra)"
+                            category="Grains"
+                            matchPercentage={80}
+                            soilType="Sandy / Loamy"
+                            waterRequirement="Low"
+                            season="Kharif"
+                            onSelect={() => alert("Loading Pearl Millet growth guidelines...")}
+                          />
+                          <CropCard 
+                            cropName="Sunflower (KBSH)"
+                            category="Oilseeds"
+                            matchPercentage={74}
+                            soilType="Loamy"
+                            waterRequirement="Medium"
+                            season="Kharif"
+                            onSelect={() => alert("Loading Sunflower growth guidelines...")}
+                          />
+                        </>
+                      )}
                     </div>
                   </div>
 

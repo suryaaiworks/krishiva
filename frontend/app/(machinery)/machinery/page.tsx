@@ -7,6 +7,7 @@ import {
   Phone, CheckCircle2, User, Clock
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { apiClient } from "@/services/apiClient";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,21 +32,54 @@ const MACHINERY_RENTALS: Machinery[] = [
 
 export default function MachineryRentalPage() {
   const router = useRouter();
-  const [rentals, setRentals] = React.useState<Machinery[]>(MACHINERY_RENTALS);
+  const [rentals, setRentals] = React.useState<Machinery[]>([]);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [bookedId, setBookedId] = React.useState<string | null>(null);
+
+  const loadRentals = async () => {
+    try {
+      const list = await apiClient.get<any[]>("/machinery");
+      if (list && list.length > 0) {
+        setRentals(list.map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          price: m.price,
+          dist: m.dist,
+          owner: m.owner,
+          phone: m.phone,
+          status: m.status,
+          rating: m.rating
+        })));
+      } else {
+        setRentals(MACHINERY_RENTALS);
+      }
+    } catch (err) {
+      console.error("Failed to load machinery rentals", err);
+      setRentals(MACHINERY_RENTALS);
+    }
+  };
+
+  React.useEffect(() => {
+    loadRentals();
+  }, []);
 
   const filteredRentals = rentals.filter(m => 
     m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     m.owner.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleBookNow = (id: string) => {
+  const handleBookNow = async (id: string) => {
     setBookedId(id);
     setRentals(prev => prev.map(m => m.id === id ? { ...m, status: "rented" } : m));
+    try {
+      await apiClient.post("/machinery/book", { machinery_id: id });
+      alert("Machinery booking registered in database successfully!");
+    } catch (err) {
+      console.error("Failed to register machinery booking", err);
+    }
     setTimeout(() => {
       setBookedId(null);
-    }, 4000);
+    }, 3000);
   };
 
   return (

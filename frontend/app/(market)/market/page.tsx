@@ -8,6 +8,7 @@ import {
   Search, ShieldAlert, DollarSign, Store, HelpingHand
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { apiClient } from "@/services/apiClient";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -293,13 +294,62 @@ export default function MarketIntelligencePage() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedDistrict, setSelectedDistrict] = React.useState("Pune");
   const [selectedCategory, setSelectedCategory] = React.useState("all");
+  const [liveMarketData, setLiveMarketData] = React.useState<Record<CropType, CropData>>(cropMarketData);
 
-  const activeData = cropMarketData[selectedCrop];
+  React.useEffect(() => {
+    async function loadSpotPrices() {
+      try {
+        const prices = await apiClient.get<any[]>("/market/prices");
+        if (prices && prices.length > 0) {
+          const mapped: Partial<Record<CropType, CropData>> = {};
+          prices.forEach((item: any) => {
+            const key = item.cropName.toLowerCase();
+            let cropKey: CropType | null = null;
+            if (key.includes("groundnut")) cropKey = "groundnut";
+            else if (key.includes("cotton")) cropKey = "cotton";
+            else if (key.includes("paddy") || key.includes("rice")) cropKey = "paddy";
+            else if (key.includes("maize")) cropKey = "maize";
+            else if (key.includes("tomato")) cropKey = "tomato";
+
+            if (cropKey) {
+              mapped[cropKey] = {
+                cropName: item.cropName,
+                price: item.price,
+                yesterday: item.yesterday,
+                weeklyChange: item.weeklyChange,
+                monthlyChange: item.monthlyChange,
+                trend: item.trend,
+                demand: item.demand,
+                supply: item.supply,
+                confidence: item.confidence,
+                nextWeek: item.nextWeek,
+                nextMonth: item.nextMonth,
+                reasoning: item.reasoning,
+                decision: item.decision,
+                decisionReason: item.decisionReason,
+                expectedDiff: item.expectedDiff,
+                risk: item.risk,
+                buyers: item.buyers,
+                mandis: item.mandis,
+                insights: item.insights
+              };
+            }
+          });
+          setLiveMarketData(prev => ({ ...prev, ...mapped }));
+        }
+      } catch (err) {
+        console.error("Failed to load spot prices", err);
+      }
+    }
+    loadSpotPrices();
+  }, []);
+
+  const activeData = liveMarketData[selectedCrop];
 
   // List of crops matching search
   const cropKeys: CropType[] = ["groundnut", "cotton", "paddy", "maize", "tomato"];
   const filteredCrops = cropKeys.filter(key => {
-    const cropName = cropMarketData[key].cropName.toLowerCase();
+    const cropName = liveMarketData[key].cropName.toLowerCase();
     const queryMatch = cropName.includes(searchQuery.toLowerCase());
     
     if (selectedCategory === "all") return queryMatch;
