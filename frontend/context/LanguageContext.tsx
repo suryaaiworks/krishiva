@@ -22,6 +22,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     async function initializeLanguage() {
       if (typeof window === "undefined") return;
 
+      // Hackathon Demo Mode: Ensure demo session is always initialized on startup
+      if (!localStorage.getItem("krishiva_token")) {
+        localStorage.setItem("krishiva_token", "mock_token_farmer");
+        localStorage.setItem("krishiva_role", "farmer");
+        localStorage.setItem("krishiva_user_id", "11111111-1111-1111-1111-111111111111");
+      }
+
       const savedLang = localStorage.getItem("krishiva_language") as Language;
       if (savedLang && ["en", "te", "hi"].includes(savedLang)) {
         setLanguageState(savedLang);

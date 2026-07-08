@@ -38,6 +38,11 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+
+  React.useEffect(() => {
+    router.replace("/dashboard/farmer");
+  }, [router]);
+
   const { theme, setTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const [mounted, setMounted] = React.useState(false);
