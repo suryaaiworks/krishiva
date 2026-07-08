@@ -158,10 +158,18 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Root endpoint
 @app.get("/")
 def read_root():
+    commit_hash = "unknown"
+    try:
+        import subprocess
+        commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("utf-8").strip()
+    except Exception:
+        commit_hash = os.environ.get("RENDER_GIT_COMMIT", "unknown")
+        
     return {
         "success": True,
         "message": f"Welcome to {settings.APP_NAME} APIs",
-        "docs": "/docs" if settings.DEBUG else "disabled"
+        "docs": "/docs" if settings.DEBUG else "disabled",
+        "commit_hash": commit_hash
     }
 
 # Register Routers
