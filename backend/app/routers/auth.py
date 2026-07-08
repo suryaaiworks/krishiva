@@ -58,12 +58,8 @@ def google_login(payload: GoogleLoginRequest, db: Session = Depends(get_db)):
 
 @router.post("/guest", response_model=TokenResponse)
 def guest_login(payload: GuestLoginRequest = GuestLoginRequest(), db: Session = Depends(get_db)):
-    res = AuthController.guest_login(db, payload.role)
-    return TokenResponse(
-        access_token=res["access_token"],
-        role=res["role"],
-        user_id=res["user_id"]
-    )
+    from fastapi import HTTPException
+    raise HTTPException(status_code=403, detail="Guest access is disabled.")
 
 @router.post("/forgot-password", response_model=StandardResponse)
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):

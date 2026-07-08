@@ -60,9 +60,7 @@ def test_google_and_guest_logins(client, db_session):
     
     # Guest Login
     guest_res = client.post("/api/v1/auth/guest")
-    assert guest_res.status_code == 200
-    assert "access_token" in guest_res.json()
-    assert guest_res.json()["role"] == "Farmer"
+    assert guest_res.status_code == 403
 
 def test_invalid_and_expired_jwt(client):
     # Unauthorized Request (No token)

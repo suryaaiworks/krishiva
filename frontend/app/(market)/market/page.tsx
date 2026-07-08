@@ -514,8 +514,10 @@ export default function MarketIntelligencePage() {
               return (
                 <div 
                   key={key}
+                  role="button"
+                  aria-label={`Select ${data.cropName} commodity details`}
                   onClick={() => setSelectedCrop(key)}
-                  className={`p-4 rounded-card border cursor-pointer transition-all flex flex-col justify-between h-40 shadow-sm relative ${
+                  className={`p-4 rounded-card border cursor-pointer transition-all flex flex-col justify-between h-40 shadow-sm relative active:scale-[0.99] ${
                     isSelected 
                       ? "border-primary bg-primary/5 ring-1 ring-primary" 
                       : "border-border bg-card hover:bg-muted/10"
@@ -630,10 +632,10 @@ export default function MarketIntelligencePage() {
                     <span className="text-[10px] text-muted-foreground">{buyer.dist} away</span>
                     <Button 
                       onClick={() => alert(`Initiating direct procurement contact with ${buyer.name}...`)}
-                      size="sm" 
-                      className="text-[10px] font-bold h-7 rounded-btn cursor-pointer bg-primary px-3 text-white"
+                      aria-label={`Contact buyer ${buyer.name}`}
+                      className="text-[10.5px] font-extrabold h-8 rounded-btn cursor-pointer bg-primary hover:bg-primary/90 px-3.5 text-white active:scale-[0.97] transition-all"
                     >
-                      Contact
+                      Contact Buyer
                     </Button>
                   </div>
                 </div>
@@ -835,7 +837,8 @@ export default function MarketIntelligencePage() {
             <Button
               onClick={() => window.location.href = "/assistant"}
               variant="outline"
-              className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+              aria-label="Talk to AI Assistant Vira"
+              className="text-xs font-bold h-10 px-4 rounded-btn cursor-pointer bg-card hover:bg-muted/10 active:scale-[0.98] transition-all"
             >
               <Sparkles className="mr-1.5 h-4 w-4 text-primary" />
               Talk to AI
@@ -843,7 +846,8 @@ export default function MarketIntelligencePage() {
             <Button
               onClick={() => alert("Loading buyer matching overlay...")}
               variant="outline"
-              className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+              aria-label="Find commercial buyers"
+              className="text-xs font-bold h-10 px-4 rounded-btn cursor-pointer bg-card hover:bg-muted/10 active:scale-[0.98] transition-all"
             >
               <Store className="mr-1.5 h-4 w-4 text-primary" />
               Find Buyers
@@ -851,7 +855,8 @@ export default function MarketIntelligencePage() {
             <Button
               onClick={() => alert("Mandi price comparative report downloaded.")}
               variant="outline"
-              className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+              aria-label="Download comparative mandi report"
+              className="text-xs font-bold h-10 px-4 rounded-btn cursor-pointer bg-card hover:bg-muted/10 active:scale-[0.98] transition-all"
             >
               <Save className="mr-1.5 h-4 w-4 text-primary" />
               Download Report
@@ -859,14 +864,16 @@ export default function MarketIntelligencePage() {
             <Button
               onClick={() => alert("Report shared with direct transport agents.")}
               variant="outline"
-              className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+              aria-label="Share price report"
+              className="text-xs font-bold h-10 px-4 rounded-btn cursor-pointer bg-card hover:bg-muted/10 active:scale-[0.98] transition-all"
             >
               <Share2 className="mr-1.5 h-4 w-4 text-primary" />
               Share Report
             </Button>
             <Button
               onClick={() => alert("Opening mandi arbitrage calculator...")}
-              className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-primary"
+              aria-label="Compare different mandi prices"
+              className="text-xs font-bold h-10 px-4 rounded-btn cursor-pointer bg-primary hover:bg-primary/95 text-white active:scale-[0.98] transition-all"
             >
               <Activity className="mr-1.5 h-4 w-4 text-white" />
               Compare Markets

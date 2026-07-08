@@ -150,7 +150,7 @@ def test_machinery_rentals(client, db_session):
     mach_id = list_mach[0]["id"]
     
     # 2. Rent/Book machinery
-    book_res = client.post("/api/v1/machinery/book", json={"machinery_id": mach_id}, headers=headers)
+    book_res = client.post("/api/v1/machinery/book", json={"machinery_id": mach_id, "booking_date": "2026-07-15"}, headers=headers)
     assert book_res.status_code == 200
     assert book_res.json()["status"] == "booked"
 
@@ -171,6 +171,16 @@ def test_government_schemes_matching(client, db_session):
     }, headers=headers)
     assert apply_res.status_code == 200
     assert apply_res.json()["status"] == "Pending"
+
+def test_government_scheme_document_upload(client, db_session):
+    headers = get_auth_headers(db_session, "upload_doc@krishiva.com")
+    import io
+    file_data = {"file": ("test_doc.pdf", io.BytesIO(b"dummy pdf contents"), "application/pdf")}
+    res = client.post("/api/v1/schemes/upload", files=file_data, headers=headers)
+    assert res.status_code == 200
+    json_data = res.json()
+    assert json_data["success"] is True
+    assert "file_path" in json_data
 
 def test_support_offices_locator(client, db_session):
     headers = get_auth_headers(db_session, "offices@krishiva.com")

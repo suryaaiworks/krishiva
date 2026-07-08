@@ -17,6 +17,13 @@ interface BuyerLayoutProps {
 export function BuyerLayout({ children }: BuyerLayoutProps) {
   const pathname = usePathname();
 
+  React.useEffect(() => {
+    const token = localStorage.getItem("krishiva_token");
+    if (!token) {
+      window.location.href = "/login";
+    }
+  }, []);
+
   const mobileItems = [
     { href: "/buyer/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/buyer/requests", label: "Requests", icon: ShoppingCart },

@@ -90,6 +90,16 @@ async def startup_event():
                         api_logger.info(f"Added column {col_name} to settings table.")
                     except Exception:
                         pass
+                
+                for col_name, col_type in [
+                    ("booking_date", "VARCHAR"),
+                    ("booking_time", "VARCHAR")
+                ]:
+                    try:
+                        conn.execute(text(f"ALTER TABLE machinery_bookings ADD COLUMN {col_name} {col_type}"))
+                        api_logger.info(f"Added column {col_name} to machinery_bookings table.")
+                    except Exception:
+                        pass
         except Exception as e:
             error_logger.error(f"Database connection or table sync failed on startup: {e}")
     else:

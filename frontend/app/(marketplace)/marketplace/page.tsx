@@ -800,7 +800,8 @@ export default function BuyerMarketplacePage() {
                 <Button
                   onClick={() => window.location.href = "/assistant"}
                   variant="outline"
-                  className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                  aria-label="Ask Vira AI Advisor"
+                  className="text-xs font-bold h-10 px-4 rounded-btn cursor-pointer bg-card hover:bg-muted/10 active:scale-[0.98] transition-all"
                 >
                   <Sparkles className="mr-1.5 h-4 w-4 text-primary" />
                   Ask AI Advisor
@@ -808,7 +809,8 @@ export default function BuyerMarketplacePage() {
                 <Button
                   onClick={() => alert(`Offer sheet of ${selectedBuyer.companyName} downloaded.`)}
                   variant="outline"
-                  className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                  aria-label="Download buyer offer details"
+                  className="text-xs font-bold h-10 px-4 rounded-btn cursor-pointer bg-card hover:bg-muted/10 active:scale-[0.98] transition-all"
                 >
                   <FileText className="mr-1.5 h-4 w-4 text-primary" />
                   Download Offer
@@ -816,7 +818,8 @@ export default function BuyerMarketplacePage() {
                 <Button
                   onClick={() => alert("Buyer added to your favorites.")}
                   variant="outline"
-                  className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                  aria-label="Save buyer to favorites"
+                  className="text-xs font-bold h-10 px-4 rounded-btn cursor-pointer bg-card hover:bg-muted/10 active:scale-[0.98] transition-all"
                 >
                   <Star className="mr-1.5 h-4 w-4 text-primary" />
                   Save Buyer
@@ -824,7 +827,8 @@ export default function BuyerMarketplacePage() {
                 <Button
                   onClick={() => alert(`Shared ${selectedBuyer.companyName}'s request details.`)}
                   variant="outline"
-                  className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                  aria-label="Share buyer offer"
+                  className="text-xs font-bold h-10 px-4 rounded-btn cursor-pointer bg-card hover:bg-muted/10 active:scale-[0.98] transition-all"
                 >
                   <Globe className="mr-1.5 h-4 w-4 text-primary" />
                   Share Offer

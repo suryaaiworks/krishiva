@@ -10,6 +10,13 @@ interface OwnerLayoutProps {
 }
 
 export function OwnerLayout({ children }: OwnerLayoutProps) {
+  React.useEffect(() => {
+    const token = localStorage.getItem("krishiva_token");
+    if (!token) {
+      window.location.href = "/login";
+    }
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}

@@ -17,6 +17,13 @@ interface MachineryOwnerLayoutProps {
 export function MachineryOwnerLayout({ children }: MachineryOwnerLayoutProps) {
   const pathname = usePathname();
 
+  React.useEffect(() => {
+    const token = localStorage.getItem("krishiva_token");
+    if (!token) {
+      window.location.href = "/login";
+    }
+  }, []);
+
   const mobileItems = [
     { href: "/machinery-owner/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/machinery-owner/machines", label: "Machines", icon: Tractor },

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 from app.middleware.auth_middleware import get_current_user
@@ -96,3 +96,43 @@ def submit_scheme_claim(
 ):
     app = SchemeRepository.create_application(db, payload.scheme_id, current_user.id, payload.submitted_documents)
     return app
+
+@router.post("/upload")
+async def upload_scheme_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    import os
+    import uuid
+    # Validate format
+    allowed_extensions = {".pdf", ".jpg", ".jpeg", ".png"}
+    file_ext = os.path.splitext(file.filename)[1].lower()
+    if file_ext not in allowed_extensions:
+        raise HTTPException(status_code=400, detail="Invalid file format. Only PDF, JPG, and PNG allowed.")
+    
+    # Validate size (< 5MB = 5 * 1024 * 1024 bytes)
+    max_size = 5 * 1024 * 1024
+    
+    # Read file content to check size
+    contents = await file.read()
+    if len(contents) > max_size:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size allowed is 5MB.")
+    
+    # Save file to STATIC_DIR
+    static_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), "static_uploads"))
+    os.makedirs(static_dir, exist_ok=True)
+    
+    # Create unique filename
+    new_filename = f"{uuid.uuid4()}{file_ext}"
+    file_path = os.path.join(static_dir, new_filename)
+    
+    with open(file_path, "wb") as f:
+        f.write(contents)
+        
+    return {
+        "success": True,
+        "filename": file.filename,
+        "file_path": f"/static_uploads/{new_filename}",
+        "size": len(contents),
+        "content_type": file.content_type
+    }

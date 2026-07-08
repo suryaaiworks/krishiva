@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from uuid import UUID
 from datetime import datetime
+from typing import Optional
 
 class MachineryResponse(BaseModel):
     id: UUID
@@ -17,6 +18,8 @@ class MachineryResponse(BaseModel):
 
 class MachineryBookingCreate(BaseModel):
     machinery_id: UUID
+    booking_date: str
+    booking_time: Optional[str] = None
 
 class MachineryBookingResponse(BaseModel):
     id: UUID
@@ -24,6 +27,8 @@ class MachineryBookingResponse(BaseModel):
     user_id: UUID
     status: str
     booked_at: datetime
+    booking_date: Optional[str] = None
+    booking_time: Optional[str] = None
 
     class Config:
         from_attributes = True

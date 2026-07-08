@@ -29,7 +29,7 @@ class MachineryController:
         ]
 
     @staticmethod
-    def book_machinery(db: Session, machinery_id: UUID, user_id: UUID) -> dict:
+    def book_machinery(db: Session, machinery_id: UUID, user_id: UUID, booking_date: str, booking_time: str = None) -> dict:
         """Books a specific machinery and updates status."""
         mach = MachineryRepository.get_by_id(db, machinery_id)
         if not mach:
@@ -38,7 +38,7 @@ class MachineryController:
         if mach.status != "available":
             raise HTTPException(status_code=400, detail="Machinery is currently unavailable.")
             
-        MachineryRepository.create_booking(db, machinery_id, user_id)
+        MachineryRepository.create_booking(db, machinery_id, user_id, booking_date, booking_time)
         return {
             "success": True,
             "message": "Booking confirmed successfully. Owner has been notified."

@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { 
   Tractor, ArrowLeft, Search, MapPin, 
-  Phone, CheckCircle2, User, Clock
+  Phone, CheckCircle2, User, Clock, CalendarRange, X
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { apiClient } from "@/services/apiClient";
@@ -35,6 +35,17 @@ export default function MachineryRentalPage() {
   const [rentals, setRentals] = React.useState<Machinery[]>([]);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [bookedId, setBookedId] = React.useState<string | null>(null);
+  
+  // Date picker selection states
+  const [bookingMachinery, setBookingMachinery] = React.useState<Machinery | null>(null);
+  const [selectedDate, setSelectedDate] = React.useState("");
+  const [selectedTime, setSelectedTime] = React.useState("");
+  const [bookingHistory, setBookingHistory] = React.useState<any[]>([]);
+  const [bookedDetails, setBookedDetails] = React.useState<{ name: string; date: string; time?: string } | null>(null);
+
+  const todayStr = React.useMemo(() => {
+    return new Date().toISOString().split("T")[0];
+  }, []);
 
   const loadRentals = async () => {
     try {
@@ -59,8 +70,18 @@ export default function MachineryRentalPage() {
     }
   };
 
+  const loadBookingHistory = async () => {
+    try {
+      const history = await apiClient.get<any[]>("/machinery/bookings");
+      setBookingHistory(history || []);
+    } catch (err) {
+      console.warn("Failed to load booking history", err);
+    }
+  };
+
   React.useEffect(() => {
     loadRentals();
+    loadBookingHistory();
   }, []);
 
   const filteredRentals = rentals.filter(m => 
@@ -68,18 +89,49 @@ export default function MachineryRentalPage() {
     m.owner.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleBookNow = async (id: string) => {
-    setBookedId(id);
-    setRentals(prev => prev.map(m => m.id === id ? { ...m, status: "rented" } : m));
+  const handleBookClick = (machinery: Machinery) => {
+    setBookingMachinery(machinery);
+    setSelectedDate("");
+    setSelectedTime("");
+  };
+
+  const handleConfirmBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bookingMachinery || !selectedDate) return;
+
     try {
-      await apiClient.post("/machinery/book", { machinery_id: id });
-      alert("Machinery booking registered in database successfully!");
+      await apiClient.post("/machinery/book", {
+        machinery_id: bookingMachinery.id,
+        booking_date: selectedDate,
+        booking_time: selectedTime || null
+      });
+      
+      setBookedDetails({
+        name: bookingMachinery.name,
+        date: selectedDate,
+        time: selectedTime || undefined
+      });
+      setBookedId(bookingMachinery.id);
+      
+      // Update local rentals status
+      setRentals(prev => prev.map(m => m.id === bookingMachinery.id ? { ...m, status: "rented" } : m));
+      
+      // Reload booking history
+      await loadBookingHistory();
+      
+      // Reset state
+      setBookingMachinery(null);
+      setSelectedDate("");
+      setSelectedTime("");
+      
+      setTimeout(() => {
+        setBookedId(null);
+        setBookedDetails(null);
+      }, 5000);
     } catch (err) {
-      console.error("Failed to register machinery booking", err);
+      alert("Failed to confirm booking. Please try again.");
+      console.error("Booking error:", err);
     }
-    setTimeout(() => {
-      setBookedId(null);
-    }, 3000);
   };
 
   return (
@@ -187,7 +239,7 @@ export default function MachineryRentalPage() {
 
                 <div className="mt-4 pt-3 border-t border-border/20 flex gap-2">
                   <Button
-                    onClick={() => handleBookNow(machinery.id)}
+                    onClick={() => handleBookClick(machinery)}
                     disabled={machinery.status !== "available"}
                     className="flex-1 rounded-btn h-9 font-bold bg-primary text-white text-xs cursor-pointer disabled:bg-muted disabled:text-muted-foreground"
                   >
@@ -199,13 +251,129 @@ export default function MachineryRentalPage() {
           )}
         </div>
 
+        {/* Booking Date/Time Modal */}
+        {bookingMachinery && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
+            <div className="bg-card w-full max-w-md border border-border rounded-card p-6 shadow-2xl space-y-4 text-left">
+              <div className="flex justify-between items-center pb-2 border-b border-border">
+                <h3 className="font-heading text-base font-bold text-foreground flex items-center gap-2">
+                  <CalendarRange className="h-5 w-5 text-primary" />
+                  Select Booking Schedule
+                </h3>
+                <button 
+                  onClick={() => setBookingMachinery(null)}
+                  className="p-1.5 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="text-xs space-y-1">
+                <span className="text-muted-foreground">Machine:</span>
+                <span className="font-bold text-foreground block">{bookingMachinery.name}</span>
+                <span className="text-muted-foreground block mt-1">Rate: <strong className="text-primary">{bookingMachinery.price}</strong></span>
+              </div>
+
+              <form onSubmit={handleConfirmBooking} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide block">
+                    Choose Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={selectedDate}
+                    min={todayStr}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="w-full bg-background border border-border rounded-btn px-3.5 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide block">
+                    Choose Time (Optional)
+                  </label>
+                  <input
+                    type="time"
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                    className="w-full bg-background border border-border rounded-btn px-3.5 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                  />
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setBookingMachinery(null)}
+                    className="flex-1 h-10 text-xs font-semibold rounded-btn"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1 h-10 text-xs font-bold rounded-btn bg-primary text-white"
+                  >
+                    Confirm Booking
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Booking History Section */}
+        <div className="bg-card p-6 rounded-card border border-border/80 shadow-sm text-left space-y-4 mt-8">
+          <h3 className="font-heading text-base font-bold text-foreground flex items-center gap-2">
+            <CalendarRange className="h-5 w-5 text-primary" />
+            Your Booking History
+          </h3>
+          {bookingHistory.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-6 text-center border border-dashed border-border rounded-btn">
+              You haven&apos;t booked any machinery yet.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead>
+                  <tr className="border-b border-border text-muted-foreground">
+                    <th className="py-2 font-semibold">Machine</th>
+                    <th className="py-2 font-semibold">Scheduled Date</th>
+                    <th className="py-2 font-semibold">Time</th>
+                    <th className="py-2 font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {bookingHistory.map((historyItem) => {
+                    const matchedName = rentals.find(r => r.id === historyItem.machinery_id)?.name || "Agricultural Machine";
+                    return (
+                      <tr key={historyItem.id} className="text-foreground">
+                        <td className="py-2.5 font-bold">{matchedName}</td>
+                        <td className="py-2.5 font-semibold text-muted-foreground">{historyItem.booking_date}</td>
+                        <td className="py-2.5 text-muted-foreground">{historyItem.booking_time || "Not specified"}</td>
+                        <td className="py-2.5">
+                          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-none capitalize font-bold text-[9px] px-2 py-0.5">
+                            {historyItem.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         {/* Success toast simulation */}
-        {bookedId && (
+        {bookedId && bookedDetails && (
           <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white p-4 rounded-card shadow-2xl flex items-center gap-2 text-xs border border-emerald-500/20">
             <CheckCircle2 className="h-5 w-5 shrink-0" />
-            <div>
+            <div className="text-left">
               <span className="font-bold block">Booking Confirmed!</span>
-              <span className="text-[10px] text-emerald-100 block">We have messaged the machinery owner. Expect a callback.</span>
+              <span className="text-[10px] text-emerald-100 block mt-0.5">
+                {bookedDetails.name} is booked for {bookedDetails.date} {bookedDetails.time ? `at ${bookedDetails.time}` : ""}.
+              </span>
             </div>
           </div>
         )}

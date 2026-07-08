@@ -26,6 +26,8 @@ class MachineryBooking(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     status = Column(String, default="booked")
     booked_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    booking_date = Column(String, nullable=True)
+    booking_time = Column(String, nullable=True)
     
     user = relationship("User", back_populates="machinery_bookings")
     machinery = relationship("Machinery")

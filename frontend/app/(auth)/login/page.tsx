@@ -43,18 +43,18 @@ export default function LoginPage() {
   const [mounted, setMounted] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isOffline, setIsOffline] = React.useState(false);
-  const [selectedRole, setSelectedRoleState] = React.useState<"farmer" | "buyer" | "owner" | "guest">("farmer");
+  const [selectedRole, setSelectedRoleState] = React.useState<"farmer" | "buyer" | "owner">("farmer");
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       const savedRole = localStorage.getItem("krishiva_role");
-      if (savedRole && ["farmer", "buyer", "owner", "guest"].includes(savedRole.toLowerCase())) {
+      if (savedRole && ["farmer", "buyer", "owner"].includes(savedRole.toLowerCase())) {
         setSelectedRoleState(savedRole.toLowerCase() as any);
       }
     }
   }, []);
 
-  const setSelectedRole = (role: "farmer" | "buyer" | "owner" | "guest") => {
+  const setSelectedRole = (role: "farmer" | "buyer" | "owner") => {
     setSelectedRoleState(role);
     if (typeof window !== "undefined") {
       localStorage.setItem("krishiva_role", role);
@@ -206,28 +206,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleGuestLogin = async () => {
-    setIsLoading(true);
-    try {
-      const roleMapped = selectedRole === "farmer" ? "Farmer" : 
-                         (selectedRole === "buyer" ? "Buyer" : 
-                          (selectedRole === "owner" ? "Owner" : "Guest"));
-                          
-      const res: any = await apiClient.post("/auth/guest", { role: roleMapped });
-      localStorage.setItem("krishiva_token", res.access_token);
-      localStorage.setItem("krishiva_role", selectedRole);
-      localStorage.setItem("krishiva_user_id", res.user_id);
-      
-      const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
-                              (selectedRole === "buyer" ? "/dashboard/buyer" :
-                               (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
-      router.push(targetDashboard);
-    } catch (err: any) {
-      alert(err.message || "Guest authentication failed.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   return (
     <div className="relative min-h-screen w-full flex flex-col lg:grid lg:grid-cols-2 bg-background overflow-x-hidden font-sans">
@@ -381,19 +360,18 @@ export default function LoginPage() {
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
                 {t("Select Your Role")}
               </span>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {[
                   { id: "farmer", label: t("Farmer"), desc: t("Grow & Trade") },
                   { id: "buyer", label: t("Buyer"), desc: t("Procure Crops") },
-                  { id: "owner", label: t("Owner"), desc: t("Rent Machines") },
-                  { id: "guest", label: t("Guest"), desc: t("Demo View") }
+                  { id: "owner", label: t("Owner"), desc: t("Rent Machines") }
                 ].map((role) => {
                   const isSelected = selectedRole === role.id;
                   return (
                     <button
                       key={role.id}
                       type="button"
-                      onClick={() => setSelectedRole(role.id as "farmer" | "buyer" | "owner" | "guest")}
+                      onClick={() => setSelectedRole(role.id as "farmer" | "buyer" | "owner")}
                       className={`p-2 rounded-btn border text-left transition-all ${
                         isSelected 
                           ? "border-primary bg-primary/5 ring-1 ring-primary" 
@@ -409,30 +387,7 @@ export default function LoginPage() {
             </div>
 
             {/* Conditional form rendering */}
-            {selectedRole === "guest" ? (
-              <div className="space-y-4 pt-2">
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {t("Enter the platform as a Guest to preview trade and rental statistics without creating an account.")}
-                </p>
-                <Button
-                  onClick={handleGuestLogin}
-                  disabled={isLoading}
-                  className="w-full h-11 justify-center rounded-btn font-bold cursor-pointer transition-all duration-200 active:scale-[0.98]"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4.5 w-4.5 animate-spin" />
-                      {t("Please Wait")}
-                    </>
-                  ) : (
-                    <>
-                      {t("Enter Guest Platform")}
-                      <ArrowRight className="ml-1.5 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            ) : !otpSent ? (
+            {!otpSent ? (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="space-y-1">
                   <Input
@@ -553,36 +508,6 @@ export default function LoginPage() {
                 </svg>
                 {t("Sign in with Google")}
               </Button>
-
-              <div className="relative flex items-center justify-center my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border" />
-                </div>
-                <span className="relative px-3 text-[10px] font-extrabold text-muted-foreground bg-card uppercase tracking-wider">
-                  {t("Or continue with")}
-                </span>
-              </div>
-
-              {/* Guest / Continue without account row */}
-              <div className="flex items-center gap-2.5">
-                <Button
-                  onClick={handleGuestLogin}
-                  disabled={isLoading}
-                  variant="secondary"
-                  className="flex-1 h-10 rounded-btn font-semibold text-xs cursor-pointer"
-                >
-                  Guest Login
-                </Button>
-                
-                <Button
-                  onClick={() => router.push("/dashboard")}
-                  disabled={isLoading}
-                  variant="ghost"
-                  className="flex-1 h-10 rounded-btn font-semibold text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  Skip for Now
-                </Button>
-              </div>
             </div>
           </motion.div>
         </div>

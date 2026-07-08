@@ -18,6 +18,13 @@ export function MainLayout({ children }: MainLayoutProps) {
   const { activeScenarioId } = useThemeContext();
   const activeScenario = scenarios.find((s) => s.id === activeScenarioId) || scenarios[0];
 
+  React.useEffect(() => {
+    const token = localStorage.getItem("krishiva_token");
+    if (!token) {
+      window.location.href = "/login";
+    }
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Brain, Clock, Sparkles, Save, Share2, 
   HelpingHand, Landmark, ChevronRight, ChevronLeft, 
-  CheckCircle2, ShieldAlert, MapPin
+  CheckCircle2, ShieldAlert, MapPin, FileText, Upload, Trash2
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { apiClient } from "@/services/apiClient";
@@ -98,6 +98,87 @@ export default function SchemesPage() {
     incomeRange: "mid-low",
     insuranceStatus: "insured"
   });
+
+  // Document Upload States
+  const [docFile, setDocFile] = React.useState<any>(null);
+  const [isUploadingDoc, setIsUploadingDoc] = React.useState(false);
+  const [docProgress, setDocProgress] = React.useState(0);
+  const [docError, setDocError] = React.useState("");
+  const docInputRef = React.useRef<HTMLInputElement>(null);
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+  };
+
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Validate file size (< 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setDocError("File is too large. Max size allowed is 5MB.");
+        return;
+      }
+      
+      // Validate file type
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
+      if (!allowedTypes.includes(file.type) && !file.name.endsWith(".pdf") && !file.name.endsWith(".jpg") && !file.name.endsWith(".jpeg") && !file.name.endsWith(".png")) {
+        setDocError("Invalid file type. Only PDF, JPG, and PNG are allowed.");
+        return;
+      }
+      
+      setDocError("");
+      setIsUploadingDoc(true);
+      setDocProgress(10);
+      
+      // Simulate progress intervals
+      const progressInterval = setInterval(() => {
+        setDocProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 15;
+        });
+      }, 100);
+      
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        
+        const res = await apiClient.post<any>("/schemes/upload", formData);
+        
+        clearInterval(progressInterval);
+        setDocProgress(100);
+        setTimeout(() => {
+          setDocFile({
+            filename: res.filename || file.name,
+            file_path: res.file_path,
+            size: res.size || file.size,
+            content_type: res.content_type || file.type
+          });
+          setIsUploadingDoc(false);
+        }, 200);
+      } catch (err: any) {
+        clearInterval(progressInterval);
+        setIsUploadingDoc(false);
+        setDocError(err.message || "Failed to upload document.");
+      }
+    }
+  };
+
+  const handleDocDelete = () => {
+    setDocFile(null);
+    setDocProgress(0);
+    setDocError("");
+    if (docInputRef.current) {
+      docInputRef.current.value = "";
+    }
+  };
 
   // Document checklist state
   const [checklist, setChecklist] = React.useState({
@@ -720,6 +801,100 @@ export default function SchemesPage() {
                       <CheckCircle2 className={`h-5 w-5 shrink-0 ${checklist.insurance ? "text-primary" : "text-muted-foreground/30"}`} />
                     </div>
 
+                  </div>
+
+                  {/* Document Upload Area */}
+                  <div className="border-t border-border/50 pt-5 space-y-4 text-left">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Upload Document & Apply</span>
+                    
+                    <input
+                      type="file"
+                      ref={docInputRef}
+                      onChange={handleDocUpload}
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                    />
+
+                    {docError && (
+                      <div className="p-3 bg-destructive/10 text-destructive text-xs font-semibold rounded-btn">
+                        {docError}
+                      </div>
+                    )}
+
+                    {isUploadingDoc && (
+                      <div className="p-4 bg-muted/40 border border-border rounded-btn space-y-2">
+                        <div className="flex justify-between items-center text-xs text-muted-foreground font-semibold">
+                          <span>Uploading scheme document...</span>
+                          <span>{docProgress}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary transition-all duration-100 ease-out" 
+                            style={{ width: `${docProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {!isUploadingDoc && !docFile && (
+                      <div 
+                        onClick={() => docInputRef.current?.click()}
+                        className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border/80 hover:border-primary/50 transition-all rounded-card cursor-pointer bg-card/20 space-y-2.5 text-center"
+                      >
+                        <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                          <Upload className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-foreground">Upload your Aadhaar, Land Records, or Insurance Document</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Supports PDF, JPG, and PNG formats up to 5MB</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {docFile && (
+                      <div className="flex flex-col sm:flex-row gap-4 p-4 bg-muted/20 border border-border/60 rounded-card items-center w-full text-left">
+                        {/* Preview icon/thumbnail */}
+                        <div className="h-14 w-14 rounded-btn border border-border/80 bg-background flex items-center justify-center text-primary shrink-0 overflow-hidden">
+                          {docFile.content_type && docFile.content_type.includes("pdf") ? (
+                            <FileText className="h-7 w-7" />
+                          ) : (
+                            <img src={docFile.file_path} alt="document preview" className="h-full w-full object-cover" />
+                          )}
+                        </div>
+                        
+                        {/* File Details */}
+                        <div className="flex-1 space-y-1 w-full text-center sm:text-left">
+                          <h5 className="font-bold text-xs text-foreground truncate max-w-[240px] mx-auto sm:mx-0">
+                            {docFile.filename}
+                          </h5>
+                          <p className="text-[10px] text-muted-foreground font-medium">
+                            {formatFileSize(docFile.size)} • Verified
+                          </p>
+                        </div>
+
+                        {/* Replace/Delete Actions */}
+                        <div className="flex gap-2 shrink-0">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => docInputRef.current?.click()}
+                            className="h-8 text-[11px] font-semibold px-3 rounded-btn border-border/80 hover:bg-muted cursor-pointer"
+                          >
+                            Replace
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleDocDelete}
+                            className="h-8 text-[11px] font-semibold px-3 rounded-btn bg-destructive hover:bg-destructive/90 cursor-pointer"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </Card>
 

@@ -34,8 +34,14 @@ class MachineryRepository:
         return db.query(MachineryBooking).filter(MachineryBooking.user_id == user_id).all()
 
     @staticmethod
-    def create_booking(db: Session, machinery_id: UUID, user_id: UUID) -> MachineryBooking:
-        booking = MachineryBooking(machinery_id=machinery_id, user_id=user_id, status="booked")
+    def create_booking(db: Session, machinery_id: UUID, user_id: UUID, booking_date: str, booking_time: Optional[str] = None) -> MachineryBooking:
+        booking = MachineryBooking(
+            machinery_id=machinery_id, 
+            user_id=user_id, 
+            status="booked",
+            booking_date=booking_date,
+            booking_time=booking_time
+        )
         db.add(booking)
         
         # Mark machinery as rented

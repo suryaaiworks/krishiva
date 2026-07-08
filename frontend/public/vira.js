@@ -92,7 +92,11 @@
         speak(welcomeText);
     };
 
-    button.onclick = () => {
+    button.onclick = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         console.log("Launcher button clicked. Popup open state toggled.");
         open = !open;
         popup.style.display = open ? "flex" : "none";
@@ -329,7 +333,11 @@
         recognition.continuous = false;
         recognition.interimResults = false;
 
-        mic.onclick = () => {
+        mic.onclick = (e) => {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             console.log("[Vira Pipeline Audit] Stage 1: Microphone triggered.");
             // Interrupt active TTS if clicked during speaking
             if (currentState === "speaking") {
