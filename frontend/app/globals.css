@@ -54,38 +54,38 @@
 }
 
 :root {
-  --background: oklch(0.985 0.005 120); /* #F8FAF7 */
-  --foreground: oklch(0.12 0.01 250);   /* #111827 */
+  --background: oklch(0.98 0.004 120); /* Sleek off-white/grey bg */
+  --foreground: oklch(0.12 0.01 250);   /* High contrast dark text */
   
-  --card: oklch(1 0 0);                 /* #FFFFFF */
+  --card: oklch(0.995 0.002 120);       /* Premium off-white card */
   --card-foreground: oklch(0.12 0.01 250);
   
-  --popover: oklch(1 0 0);
+  --popover: oklch(0.995 0.002 120);
   --popover-foreground: oklch(0.12 0.01 250);
   
-  --primary: oklch(0.47 0.15 142);      /* Forest Green #2E7D32 */
+  --primary: oklch(0.47 0.15 142);      /* Premium Forest Green */
   --primary-foreground: oklch(1 0 0);
   
-  --secondary: oklch(0.67 0.18 142);    /* Green #4CAF50 */
+  --secondary: oklch(0.62 0.16 142);    /* Contrasted Green */
   --secondary-foreground: oklch(1 0 0);
   
-  --muted: oklch(0.94 0.01 120);
-  --muted-foreground: oklch(0.50 0.01 250); /* #6B7280 */
+  --muted: oklch(0.94 0.006 120);       /* Muted grey */
+  --muted-foreground: oklch(0.42 0.01 250); /* Darker muted text for contrast */
   
-  --accent: oklch(0.77 0.19 135);       /* Accent #8BC34A */
+  --accent: oklch(0.72 0.18 135);       /* Muted Accent Lime */
   --accent-foreground: oklch(0.12 0.01 250);
   
-  --destructive: oklch(0.58 0.22 25);   /* Error #EF4444 */
+  --destructive: oklch(0.58 0.22 25);
   --destructive-foreground: oklch(1 0 0);
   
-  --success: oklch(0.60 0.18 142);       /* Success #16A34A */
+  --success: oklch(0.55 0.17 142);      /* Forest success green */
   --success-foreground: oklch(1 0 0);
   
-  --warning: oklch(0.75 0.18 70);       /* Warning #F59E0B */
+  --warning: oklch(0.72 0.18 70);       /* Visible Warning Amber */
   --warning-foreground: oklch(0.12 0.01 250);
   
-  --border: oklch(0.90 0.01 120);       /* #E5E7EB style */
-  --input: oklch(0.90 0.01 120);
+  --border: oklch(0.86 0.006 120);      /* Contrasted light-grey border */
+  --input: oklch(0.86 0.006 120);
   --ring: oklch(0.47 0.15 142);
   
   --radius: 1.25rem;

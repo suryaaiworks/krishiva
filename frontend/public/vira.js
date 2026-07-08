@@ -42,6 +42,11 @@
                 <span></span>
                 <span></span>
             </div>
+            <div class="vira-thinking-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
             <div class="vira-user-text"></div>
             <div class="vira-ai-text"></div>
         </div>
@@ -72,6 +77,16 @@
         .trim() + ` state-${state}`;
     };
 
+    const getWelcomeText = () => {
+        if (farmerLanguage === "te") {
+            return "నమస్తే! నేను వీరా. మీ వ్యవసాయ సహాయకురాలిని. ఈరోజు నేను మీకు ఎలా సహాయం చేయగలను?";
+        } else if (farmerLanguage === "hi") {
+            return "नमस्ते! मैं वीरा हूँ। मैं आपकी कृषि सहायक हूँ। आज मैं आपकी क्या मदद कर सकती हूँ?";
+        } else {
+            return "Hello! I'm Vira. I'm your AI farming assistant. How can I help you today?";
+        }
+    };
+
     const triggerWelcomeSpeech = () => {
         console.log("triggerWelcomeSpeech triggered. hasGreetedOnOpen:", hasGreetedOnOpen);
         if (hasGreetedOnOpen) return;
@@ -81,14 +96,8 @@
         document.removeEventListener("click", triggerWelcomeSpeech);
         document.removeEventListener("keydown", triggerWelcomeSpeech);
 
-        const welcomeText = farmerLanguage === "te" 
-          ? "నమస్తే! నేను వీరాని. మీ వ్యవసాయ సహాయకుడిని. మీకు ఈరోజు నేను ఎలా సహాయం చేయగలను?" 
-          : farmerLanguage === "hi" 
-            ? "नमस्ते! मैं वीरा हूँ। आपकी कृषि सलाहकार। आज मैं आपकी क्या मदद कर सकती हूँ?" 
-            : "Namaste. I'm Vira. Welcome to Krishiva. I'm here to help you make smarter decisions. How can I help you today?";
-        
-        console.log("GREETING EXECUTED");
-        console.log("Text to speak:", welcomeText);
+        const welcomeText = getWelcomeText();
+        console.log("GREETING EXECUTED: ", welcomeText);
         speak(welcomeText);
     };
 
@@ -112,14 +121,10 @@
             open = true;
             popup.style.display = "flex";
             
-            const welcomeText = farmerLanguage === "te" 
-              ? "నమస్తే! నేను వీరాని. మీ వ్యవసాయ సహాయకుడిని. మీకు ఈరోజు నేను ఎలా సహాయం చేయగలను?" 
-              : farmerLanguage === "hi" 
-                ? "नमस्ते! मैं वीरा हूँ। आपकी कृषि सलाहकार। आज मैं आपकी क्या मदद कर सकती हूँ?" 
-                : "Namaste. I'm Vira. Welcome to Krishiva. I'm here to help you make smarter decisions. How can I help you today?";
-            
+            const welcomeText = getWelcomeText();
             aiText.innerText = welcomeText;
             setWidgetState("speaking");
+            
             if (farmerLanguage === "te") {
               statusText.innerText = "సమాధానం ఇస్తోంది...";
             } else if (farmerLanguage === "hi") {
@@ -169,16 +174,21 @@
         button.className = `vira-btn theme-${assistantConfig.theme || "earth"}`;
 
         const title = popup.querySelector(".vira-title");
-        title.innerHTML = `Namaste! I'm ${assistantConfig.assistantName}`;
+        if (farmerLanguage === "te") {
+          title.innerHTML = "నమస్తే! నేను వీరా";
+        } else if (farmerLanguage === "hi") {
+          title.innerHTML = "नमस्ते! मैं वीरा हूँ";
+        } else {
+          title.innerHTML = "Hello! I'm Vira";
+        }
 
         const subTitle = popup.querySelector(".vira-sub");
-        const farmerName = farmer.name ? `, ${farmer.name}` : "";
         if (farmerLanguage === "te") {
-          subTitle.innerHTML = `స్వాగతం ${farmerName}.<br/>మీ వ్యవసాయ సహాయకుడిని.`;
+          subTitle.innerHTML = "మీ వ్యవసాయ సహాయకురాలిని.";
         } else if (farmerLanguage === "hi") {
-          subTitle.innerHTML = `स्वागत है ${farmerName}।<br/>आपकी कृषि सहायिका।`;
+          subTitle.innerHTML = "मैं आपकी कृषि सहायक हूँ।";
         } else {
-          subTitle.innerHTML = `Welcome ${farmerName}.<br/>Your AI Farming Companion.`;
+          subTitle.innerHTML = "I'm your AI farming assistant.";
         }
     };
 
@@ -192,19 +202,22 @@
     const mic = popup.querySelector(".vira-mic");
 
     // Text to Speech (TTS)
+    let retryAttempted = false;
+
     const speak = (text) => {
         if (!window.speechSynthesis) {
             console.error("[Vira Pipeline Audit] Stage 8 Failed: Speech synthesis not supported.");
+            statusText.innerText = "Voice unavailable. Displaying text response.";
             return;
         }
 
-        console.log("[Vira Pipeline Audit] Stage 8: Speech synthesis (TTS) requested. Text to speak:", text);
-        console.log("speechSynthesis state - speaking:", window.speechSynthesis.speaking);
-        console.log("speechSynthesis state - pending:", window.speechSynthesis.pending);
-        console.log("speechSynthesis state - paused:", window.speechSynthesis.paused);
-
-        console.log("Executing speechSynthesis.cancel() to clear the queue.");
-        window.speechSynthesis.cancel();
+        console.log("[Vira Pipeline Audit] Stage 8: Speech synthesis (TTS) requested. Text:", text);
+        
+        try {
+            window.speechSynthesis.cancel();
+        } catch (e) {
+            console.warn("speechSynthesis.cancel failed", e);
+        }
 
         aiText.innerText = text;
         setWidgetState("speaking");
@@ -218,9 +231,7 @@
         }
 
         const utterance = new SpeechSynthesisUtterance(text);
-        console.log("SpeechSynthesisUtterance successfully created. Text:", text);
-        
-        utterance.rate = 0.95; // Soft natural speed
+        utterance.rate = 0.95; 
         utterance.pitch = 1.0;
 
         // Callback Event Listeners
@@ -244,34 +255,44 @@
         utterance.onerror = (event) => {
             console.error("TTS Event Error: Speech synthesis encountered an error:", event);
             setWidgetState("idle");
+            if (event.error !== "interrupted") {
+                statusText.innerText = "Voice unavailable. Displaying text response.";
+                setTimeout(() => {
+                    statusText.innerText = (farmerLanguage === "te" ? "మాట్లాడటానికి బటన్ నొక్కండి" : farmerLanguage === "hi" ? "बोलने के लिए बटन दबाएं" : "Tap microphone to speak");
+                }, 3000);
+            }
         };
 
         const configureVoiceAndRun = () => {
             const voices = window.speechSynthesis.getVoices();
             console.log(`TTS System: ${voices.length} voices loaded in browser.`);
-            if (voices.length > 0) {
-                // Log all system voices for debugging
-                console.log("Available Voices:");
-                voices.forEach((v, index) => console.log(`  [${index}] ${v.name} (${v.lang}) - local:${v.localService}`));
+            
+            if (voices.length === 0 && !retryAttempted) {
+                retryAttempted = true;
+                console.log("No voices loaded yet. Retrying fetch in 500ms...");
+                setTimeout(configureVoiceAndRun, 500);
+                return;
+            }
+
+            if (voices.length === 0) {
+                console.warn("Voices still unavailable after retry. Displaying text.");
+                statusText.innerText = "Voice unavailable. Displaying text response.";
+                setWidgetState("idle");
+                return;
             }
 
             let targetLang = farmerLanguage === "te" ? "te-IN" : farmerLanguage === "hi" ? "hi-IN" : "en-IN";
             let selectedVoice = voices.find(v => v.lang.toLowerCase().includes(targetLang.toLowerCase()));
             
             if (!selectedVoice) {
-                console.warn(`Preferred language voice (${targetLang}) not available.`);
-                // Search for generic lang match
                 selectedVoice = voices.find(v => v.lang.toLowerCase().startsWith(farmerLanguage.toLowerCase()));
             }
 
             if (!selectedVoice) {
-                console.warn("Preferred generic language voice not available. Falling back to English voice.");
-                // Fallback to English
                 selectedVoice = voices.find(v => v.lang.toLowerCase().includes("en-"));
             }
 
             if (!selectedVoice && voices.length > 0) {
-                console.warn("English voice fallback not found. Falling back to first system voice.");
                 selectedVoice = voices[0];
             }
 
@@ -280,26 +301,26 @@
                 utterance.lang = selectedVoice.lang;
                 console.log(`Setting Utterance voice to: ${selectedVoice.name} (${selectedVoice.lang})`);
             } else {
-                console.warn("No voices loaded/found. Relying on default system voice.");
                 utterance.lang = targetLang;
             }
 
-            console.log("Executing window.speechSynthesis.speak(utterance)");
-            window.speechSynthesis.speak(utterance);
+            try {
+                window.speechSynthesis.speak(utterance);
+            } catch (err) {
+                console.error("speechSynthesis.speak execution failed:", err);
+                statusText.innerText = "Voice unavailable. Displaying text response.";
+                setWidgetState("idle");
+            }
         };
 
-        // If voices are empty, Chrome is loading them asynchronously. Wait for event.
+        // Handle async voice loading
         if (window.speechSynthesis.getVoices().length === 0) {
-            console.log("Voices not loaded yet. Registering onvoiceschanged listener.");
             window.speechSynthesis.onvoiceschanged = () => {
-                console.log("onvoiceschanged event fired.");
                 configureVoiceAndRun();
-                window.speechSynthesis.onvoiceschanged = null; // Unregister listener
+                window.speechSynthesis.onvoiceschanged = null;
             };
-            // Fallback trigger if event never fires in 250ms
             setTimeout(() => {
-                if (!utterance.voice && window.speechSynthesis.getVoices().length > 0) {
-                    console.log("onvoiceschanged timeout fallback triggered.");
+                if (window.speechSynthesis.getVoices().length > 0) {
                     configureVoiceAndRun();
                 }
             }, 250);
@@ -339,16 +360,15 @@
                 e.stopPropagation();
             }
             console.log("[Vira Pipeline Audit] Stage 1: Microphone triggered.");
-            // Interrupt active TTS if clicked during speaking
             if (currentState === "speaking") {
-              window.speechSynthesis.cancel();
+              try {
+                window.speechSynthesis.cancel();
+              } catch (err) {}
             }
 
-            applyConfig(); // Sync on-the-fly config updates
+            applyConfig();
 
-            // Check if Offline
             if (!navigator.onLine) {
-              console.error("[Vira Pipeline Audit] Stage 1 Failed: Device is offline.");
               setWidgetState("offline");
               const offlineText = farmerLanguage === "te"
                 ? "ఇంటర్నెట్ లేదు. నేను ప్రస్తుతం సమాచారాన్ని సేకరించలేను."
@@ -368,7 +388,7 @@
               recognition.lang = "hi-IN";
               statusText.innerText = "सुन रही हूँ...";
             } else {
-              recognition.lang = "en-US";
+              recognition.lang = "en-IN";
               statusText.innerText = "Listening...";
             }
 
@@ -387,13 +407,11 @@
         recognition.onresult = (e) => {
             const text = e.results[0][0].transcript;
             console.log(`[Vira Pipeline Audit] Stage 2: Speech recognition complete. Transcript: "${text}"`);
-            console.log(`[Vira Pipeline Audit] Stage 3: Language preference: "${farmerLanguage}"`);
             
             userText.innerText = (farmerLanguage === "te" ? "మీరు: " : farmerLanguage === "hi" ? "आप: " : "You: ") + text;
             recognition.stop();
             setWidgetState("thinking");
 
-            // Dynamic progress indicators to feel like a premium copilot
             let cycle = 0;
             const progressMsgs = farmerLanguage === "te"
               ? ["ఆలోచిస్తోంది...", "సమాచారం సేకరిస్తోంది...", "వివరాలు విశ్లేషిస్తోంది..."]
@@ -442,10 +460,6 @@
                     geminiApiKey: localStorage.getItem("krishiva_gemini_api_key") || ""
                 };
 
-                console.log(`[Vira Pipeline Audit] Stage 4: Dispatched HTTP payload to Backend API: "${url}"`);
-                console.log("Headers:", headers);
-                console.log("Request Payload:", JSON.stringify(requestBody));
-
                 let res;
                 try {
                     res = await fetch(url, {
@@ -454,23 +468,19 @@
                         body: JSON.stringify(requestBody)
                     });
                 } catch (netErr) {
-                    console.error("[Vira Pipeline Audit] Stage 4 Failed: Network connection error:", netErr);
+                    console.error("[Vira Pipeline Audit] Network connection error:", netErr);
                     clearInterval(timer);
                     setWidgetState("error");
                     speak("Server connection issue. Please check network.");
                     return;
                 }
 
-                console.log(`[Vira Pipeline Audit] Stage 5: Received response. Status: ${res.status}`);
+                clearInterval(timer);
 
                 let responseBodyText = "";
                 try {
                     responseBodyText = await res.text();
-                } catch (readErr) {
-                    console.error("[Vira Pipeline Audit] Failed to read response stream:", readErr);
-                }
-
-                clearInterval(timer);
+                } catch (readErr) {}
 
                 if (!res.ok) {
                     setWidgetState("error");
@@ -479,7 +489,6 @@
                         const errObj = JSON.parse(responseBodyText);
                         errDetail = errObj.detail || errDetail;
                     } catch (e) {}
-                    console.error(`[Vira Pipeline Audit] Stage 5 Failed: Backend API error (${res.status}): ${errDetail}`);
                     speak(`Backend error: ${errDetail}`);
                     return;
                 }
@@ -488,22 +497,18 @@
                 try {
                     data = JSON.parse(responseBodyText);
                 } catch (jsonErr) {
-                    console.error("[Vira Pipeline Audit] Stage 5 Failed: Invalid JSON response:", jsonErr);
                     setWidgetState("error");
                     speak("Server returned invalid response format.");
                     return;
                 }
 
                 if (data.success) {
-                    console.log(`[Vira Pipeline Audit] Stage 6 & 7: Vira Agent execution and translation success. Action: "${data.action}". Route: "${data.route}"`);
                     speak(data.speech || data.aiResponse);
 
-                    // Save dialog context state in session memory
                     sessionHistory.push({ role: "user", text: text });
                     sessionHistory.push({ role: "model", text: data.speech || data.aiResponse });
-                    if (sessionHistory.length > 10) sessionHistory.shift(); // Cap history to last 5 turns
+                    if (sessionHistory.length > 10) sessionHistory.shift();
 
-                    // Dispatch structured event to host app
                     const actionEvent = new CustomEvent("vira-action", {
                         detail: {
                             action: data.action,
@@ -514,7 +519,6 @@
                     });
                     window.dispatchEvent(actionEvent);
 
-                    // Handle page navigation routing directly
                     if (data.route) {
                         const cleanRoute = data.route.replace(/^\//, "");
                         const navEvent = new CustomEvent("vira-action", {
@@ -534,7 +538,7 @@
 
         recognition.onerror = () => {
             setWidgetState("idle");
-            statusText.innerText = farmerLanguage === "te" ? "నొక్కండి" : farmerLanguage === "hi" ? "दबाएं" : "Tap microphone to speak";
+            statusText.innerText = farmerLanguage === "te" ? "మాట్లాడటానికి బటన్ నొక్కండి" : farmerLanguage === "hi" ? "बोलने के लिए बटन दबाएं" : "Tap microphone to speak";
             wave.classList.remove("active");
         };
     } else {

@@ -1,12 +1,12 @@
-/* floating launch button */
+/* Vira Floating Launch Button */
 .vira-btn {
   position: fixed;
   right: 24px;
   bottom: 24px;
-  width: 68px;
-  height: 68px;
+  width: 64px;
+  height: 64px;
   border: none;
-  border-radius: 999px;
+  border-radius: 50%;
   cursor: pointer;
   z-index: 999999;
   display: flex;
@@ -14,31 +14,31 @@
   justify-content: center;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 10px 30px rgba(16, 128, 61, 0.3);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.35);
 }
 .vira-btn:hover {
-  transform: scale(1.1) rotate(8deg);
+  transform: scale(1.08) rotate(8deg);
 }
 .vira-btn img {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
-/* popup chat drawer */
+/* Vira Chat Popup Drawer */
 .vira-popup {
   position: fixed;
   right: 24px;
-  bottom: 108px;
-  width: 360px;
-  height: 580px;
-  border-radius: 36px;
+  bottom: 104px;
+  width: 380px;
+  height: 560px;
+  border-radius: 28px;
   overflow: hidden;
   z-index: 999999;
   display: none;
   flex-direction: column;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
-  font-family: system-ui, -apple-system, sans-serif;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.16);
+  font-family: inherit;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -46,14 +46,16 @@
   position: absolute;
   inset: 0;
   z-index: 1;
+  pointer-events: none;
 }
 
+/* Vertically Center Content Layout */
 .vira-content {
   position: relative;
   z-index: 2;
   width: 100%;
   height: 100%;
-  padding: 26px;
+  padding: 32px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -63,57 +65,66 @@
 
 .vira-top {
   width: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
+  gap: 12px;
 }
 
+/* Animated Orb */
 .vira-orb-wrap {
   position: relative;
-  margin-top: 5px;
-  margin-bottom: 18px;
+  margin-bottom: 8px;
 }
 
 .vira-orb-glow {
   position: absolute;
   inset: -12px;
-  border-radius: 999px;
-  filter: blur(45px);
-  opacity: 0.65;
+  border-radius: 50%;
+  filter: blur(24px);
+  opacity: 0.6;
   transition: all 0.5s ease;
 }
 
 .vira-orb {
   position: relative;
-  width: 100px;
-  height: 100px;
-  border-radius: 999px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Orb Animations based on active speech states */
+/* State-based animations */
 .state-idle .vira-orb {
   animation: viraPulse 3s infinite ease-in-out;
 }
 .state-listening .vira-orb {
-  transform: scale(1.1);
+  transform: scale(1.05);
   animation: viraListening 1.2s infinite ease-in-out;
 }
 .state-thinking .vira-orb {
-  animation: viraThinking 1.6s infinite linear;
+  animation: viraThinking 2s infinite linear;
 }
 .state-speaking .vira-orb {
-  animation: viraSpeaking 1s infinite alternate;
+  animation: viraSpeaking 1s infinite alternate ease-in-out;
+}
+.state-speaking .vira-orb-glow {
+  transform: scale(1.25);
+  opacity: 0.85;
+  filter: blur(16px);
+  animation: viraGlowPulse 1.2s infinite alternate ease-in-out;
 }
 
 @keyframes viraPulse {
   0%, 100% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.04); filter: brightness(1.08); }
+  50% { transform: scale(1.03); filter: brightness(1.05); }
 }
 @keyframes viraListening {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
-  50% { box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+  50% { box-shadow: 0 0 0 16px rgba(34, 197, 94, 0); }
 }
 @keyframes viraThinking {
   0% { transform: rotate(0deg); }
@@ -121,53 +132,54 @@
 }
 @keyframes viraSpeaking {
   0% { transform: scale(1); }
-  100% { transform: scale(1.08); }
+  100% { transform: scale(1.06); }
+}
+@keyframes viraGlowPulse {
+  0% { filter: blur(20px); opacity: 0.5; }
+  100% { filter: blur(12px); opacity: 0.9; }
 }
 
+/* Typography & Layout Spacing */
 .vira-title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
-  margin: 8px 0 6px;
+  margin: 0;
   letter-spacing: -0.3px;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .vira-sub {
   font-size: 13px;
   margin: 0;
-  line-height: 1.6;
-  opacity: 0.82;
+  line-height: 1.5;
+  opacity: 0.8;
 }
 
 .vira-status {
-  margin-top: 20px;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 1px;
+  margin-top: 12px;
 }
 
+/* Voice Bars Wave */
 .vira-wave {
-  margin-top: 12px;
-  display: flex;
+  display: none;
   align-items: flex-end;
   gap: 5px;
   height: 24px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  margin-top: 4px;
 }
-
-.vira-wave.active {
-  opacity: 1;
+.state-listening .vira-wave {
+  display: flex;
 }
-
 .vira-wave span {
   width: 4px;
   background-color: currentColor;
   border-radius: 999px;
   animation: viraWave 1.2s infinite ease-in-out;
 }
-
 .vira-wave span:nth-child(1) { height: 10px; animation-delay: 0.1s; }
 .vira-wave span:nth-child(2) { height: 20px; animation-delay: 0.2s; }
 .vira-wave span:nth-child(3) { height: 12px; animation-delay: 0.3s; }
@@ -180,125 +192,175 @@
   50% { transform: scaleY(1.3); }
 }
 
+/* Thinking Indicator Dots */
+.vira-thinking-dots {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 16px;
+  margin-top: 4px;
+}
+.state-thinking .vira-thinking-dots {
+  display: flex;
+}
+.vira-thinking-dots span {
+  width: 6px;
+  height: 6px;
+  background-color: currentColor;
+  border-radius: 50%;
+  animation: viraThinkingDot 1.4s infinite ease-in-out both;
+}
+.vira-thinking-dots span:nth-child(1) { animation-delay: -0.32s; }
+.vira-thinking-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes viraThinkingDot {
+  0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* Response Scroll Areas */
 .vira-user-text {
-  margin-top: 22px;
-  font-size: 14px;
+  margin-top: 14px;
+  font-size: 13px;
   font-weight: 600;
   max-width: 100%;
   overflow-wrap: break-word;
 }
 
 .vira-ai-text {
-  margin-top: 8px;
-  font-size: 13px;
-  line-height: 1.5;
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.55;
   opacity: 0.9;
   max-width: 100%;
   overflow-wrap: break-word;
-  max-height: 120px;
+  max-height: 110px;
   overflow-y: auto;
+  padding: 0 4px;
 }
 
+/* Mic Action Wrapper */
 .vira-bottom {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-bottom: 6px;
+  margin-top: 8px;
 }
 
 .vira-mic {
-  width: 76px;
-  height: 76px;
+  width: 72px;
+  height: 72px;
   border: none;
-  border-radius: 999px;
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
-
 .vira-mic:hover {
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
-
 .vira-mic-icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
-/* ==================================================
-   THEME: EARTH (FOREST GREEN, CREAM & GOLD ACCENTS)
-   ================================================== */
+/* ==========================================
+   THEMES (PREMIUM GLASSMORPHISM & CONTRAST)
+   ========================================== */
+
+/* Theme Light (Earth / Green Accent) */
 .theme-earth {
-  background: linear-gradient(135deg, #fbfcf9 0%, #f1f6ed 100%);
-  border: 1px solid #d5dfd1;
+  background: rgba(251, 252, 249, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(213, 223, 209, 0.65);
 }
-
 .theme-earth .vira-overlay {
-  background: radial-gradient(circle at top, rgba(16, 128, 61, 0.08), transparent 50%);
+  background: radial-gradient(circle at top, rgba(22, 163, 74, 0.08), transparent 60%);
 }
-
-.theme-earth .vira-orb,
 .theme-earth .vira-orb-glow {
-  background: linear-gradient(135deg, #15803d, #22c55e, #fbbf24);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.5), rgba(76, 175, 80, 0.5));
 }
-
+.theme-earth .vira-orb {
+  background: linear-gradient(135deg, #16a34a, #4caf50, #eab308);
+}
 .theme-earth .vira-title { color: #14532d; }
-.theme-earth .vira-sub { color: #223f22; }
-.theme-earth .vira-status { color: #15803d; }
+.theme-earth .vira-sub { color: #1e3a1e; }
+.theme-earth .vira-status { color: #16a34a; }
 .theme-earth .vira-wave span { background-color: #16a34a; }
-.theme-earth .vira-user-text { color: #14532d; }
-.theme-earth .vira-ai-text { color: #2f4f2f; }
+.theme-earth .vira-thinking-dots span { background-color: #16a34a; }
+.theme-earth .vira-user-text { color: #15803d; }
+.theme-earth .vira-ai-text { color: #1e293b; }
 .theme-earth .vira-mic,
 .theme-earth.vira-btn {
   background: linear-gradient(135deg, #16a34a, #15803d);
   color: #ffffff;
-  box-shadow: 0 8px 24px rgba(21, 128, 61, 0.35);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.3);
 }
 
-/* ==================================================
-   THEME: DARK
-   ================================================== */
+/* Theme Dark */
 .theme-dark {
-  background: #090d16;
+  background: rgba(9, 13, 22, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .theme-dark .vira-overlay {
-  background: radial-gradient(circle at top, rgba(34, 197, 94, 0.12), transparent 50%);
+  background: radial-gradient(circle at top, rgba(34, 197, 94, 0.12), transparent 60%);
 }
-.theme-dark .vira-orb,
 .theme-dark .vira-orb-glow {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.5), rgba(16, 185, 129, 0.5));
+}
+.theme-dark .vira-orb {
   background: linear-gradient(135deg, #10b981, #059669, #eab308);
 }
 .theme-dark .vira-title { color: #f8fafc; }
-.theme-dark .vira-sub { color: #94a3b8; }
+.theme-dark .vira-sub { color: #cbd5e1; }
 .theme-dark .vira-status { color: #34d399; }
 .theme-dark .vira-wave span { background-color: #34d399; }
+.theme-dark .vira-thinking-dots span { background-color: #34d399; }
 .theme-dark .vira-user-text { color: #ffffff; }
-.theme-dark .vira-ai-text { color: #cbd5e1; }
+.theme-dark .vira-ai-text { color: #e2e8f0; }
 .theme-dark .vira-mic,
 .theme-dark.vira-btn {
   background: linear-gradient(135deg, #10b981, #047857);
-  color: white;
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
 }
 
-/* Responsive constraints */
+/* ==========================================
+   MOBILE & RESPONSIVE BREAKPOINTS
+   ========================================== */
 @media (max-width: 640px) {
   .vira-popup {
-    width: 320px;
-    height: 520px;
-    right: 50%;
-    transform: translateX(50%);
+    width: calc(100% - 32px);
+    height: 480px;
+    right: 16px;
+    left: 16px;
     bottom: 96px;
-    border-radius: 28px;
+    border-radius: 24px;
+  }
+  .vira-content {
+    padding: 24px 16px;
+  }
+  .vira-orb {
+    width: 80px;
+    height: 80px;
+  }
+  .vira-title {
+    font-size: 20px;
+  }
+  .vira-sub {
+    font-size: 12.5px;
   }
   .vira-btn {
-    width: 62px;
-    height: 62px;
+    width: 58px;
+    height: 58px;
     right: 16px;
     bottom: 16px;
   }

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/services/apiClient";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface KrishivaFarmerContext {
   id: string;
@@ -21,16 +22,18 @@ declare global {
 
 export function ViraVoiceWidget() {
   const router = useRouter();
+  const { language } = useLanguage();
 
   React.useEffect(() => {
     let script: HTMLScriptElement | null = null;
 
     async function initializeVira() {
+      const savedLang = typeof window !== "undefined" ? localStorage.getItem("krishiva_language") : "te";
       let farmerContext: KrishivaFarmerContext = {
         id: "demo-farmer",
         name: "Ramesh Patil",
         phone: "9876543210",
-        language: "te",
+        language: savedLang || "te",
         location: "Pune",
         crops: ["Sugarcane", "Groundnut"]
       };
@@ -97,12 +100,15 @@ export function ViraVoiceWidget() {
       if (script && document.body.contains(script)) {
         document.body.removeChild(script);
       }
+      if (typeof window !== "undefined") {
+        (window as any).__ViraScriptRunning = false;
+      }
       const popup = document.querySelector(".vira-popup");
       const btn = document.querySelector(".vira-btn");
       if (popup) popup.remove();
       if (btn) btn.remove();
     };
-  }, [router]);
+  }, [router, language]);
 
   return null;
 }

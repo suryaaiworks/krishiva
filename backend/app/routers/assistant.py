@@ -20,6 +20,16 @@ async def get_optional_user(authorization: Optional[str] = Header(None), db: Ses
     if not authorization or not authorization.startswith("Bearer "):
         return None
     token = authorization.split(" ")[1]
+    
+    if "mock_token" in token:
+        try:
+            from app.middleware.auth_middleware import get_current_user
+            from fastapi.security import HTTPAuthorizationCredentials
+            creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
+            return get_current_user(credentials=creds, db=db)
+        except Exception:
+            pass
+            
     try:
         from app.middleware.auth_middleware import decode_token
         payload = decode_token(token)
