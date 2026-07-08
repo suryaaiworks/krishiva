@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Krishiva - Empowering Farmers with AI",
   description: "Krishiva is a premium AI-powered agricultural companion designed to optimize harvests, detect crop diseases, match direct B2B buyers, and automate relief resources.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

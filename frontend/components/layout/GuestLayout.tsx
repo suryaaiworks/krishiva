@@ -10,6 +10,17 @@ interface GuestLayoutProps {
 
 export function GuestLayout({ children }: GuestLayoutProps) {
   React.useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get("access_token");
+      if (accessToken) {
+        localStorage.setItem("krishiva_token", accessToken);
+        localStorage.setItem("krishiva_role", "guest");
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    }
+
     const token = localStorage.getItem("krishiva_token");
     if (!token) {
       window.location.href = "/login";

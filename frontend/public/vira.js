@@ -7,7 +7,7 @@
 
     const script = document.currentScript;
     const userId = script?.dataset?.userId || "demo";
-    const apiUrl = script?.dataset?.apiUrl || "http://127.0.0.1:8001/api/v1";
+    const apiUrl = script?.dataset?.apiUrl || "";
     
     let farmerLanguage = "te"; 
     let assistantConfig = null;
