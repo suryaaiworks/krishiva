@@ -13,7 +13,7 @@ from jwt import PyJWK
 
 logger = logging.getLogger(__name__)
 
-security_agent = HTTPBearer()
+security_agent = HTTPBearer(auto_error=False)
 
 # JWKS cache to minimize API calls
 JWKS_CACHE = {
@@ -81,54 +81,34 @@ def get_current_user(
     db: Session = Depends(get_db)
 ) -> User:
     """
-    Decodes Supabase JWT token and extracts public.users record.
-    Supports asymmetric JWKS keys (RS256/ES256) and legacy HS256 secrets.
-    Injects the active User object as a dependency context.
+    Overridden for Hackathon Demo Mode:
+    Bypasses Supabase JWT check and returns a mock user according to the parsed role.
     """
-    token = credentials.credentials
-    try:
-        payload = decode_token(token)
-        user_uuid = payload.get("sub")
-        if not user_uuid:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token payload is missing user ID (sub)."
-            )
-            
-        import uuid
-        try:
-            user_uuid = uuid.UUID(user_uuid)
-        except ValueError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid user ID format in token."
-            )
-            
-        # Get user from local cache / database
-        user = UserRepository.get_by_id(db, user_uuid)
-        if not user:
-            # Sync user dynamically if they authenticated through Supabase Auth
-            email = payload.get("email", "")
-            phone = payload.get("phone", None)
-            role = payload.get("user_metadata", {}).get("role", "Farmer")
-            user = UserRepository.create_user(db, user_uuid, email, phone, role)
-            # Seed default profile
-            name = email.split("@")[0].capitalize()
-            UserRepository.create_or_update_profile(db, user_uuid, name)
-            
-        return user
-        
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token signature has expired."
+    import uuid
+    role = "Farmer"
+    user_id_str = "11111111-1111-1111-1111-111111111111"
+    
+    if credentials and credentials.credentials:
+        token = credentials.credentials
+        if "buyer" in token.lower():
+            role = "Buyer"
+            user_id_str = "22222222-2222-2222-2222-222222222222"
+        elif "owner" in token.lower():
+            role = "Owner"
+            user_id_str = "33333333-3333-3333-3333-333333333333"
+
+    mock_id = uuid.UUID(user_id_str)
+    user = UserRepository.get_by_id(db, mock_id)
+    if not user:
+        user = UserRepository.create_user(
+            db, 
+            user_id=mock_id, 
+            email=f"{role.lower().replace(' ', '_')}@krishiva.com", 
+            phone="9876543210", 
+            role=role
         )
-    except jwt.InvalidTokenError as e:
-        logger.error(f"JWT Verification failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid security token."
-        )
+        UserRepository.create_or_update_profile(db, mock_id, f"Demo {role}")
+    return user
 
 def require_role(allowed_roles: list):
     """Factory helper to enforce endpoint access constraints by role."""
