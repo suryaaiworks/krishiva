@@ -101,10 +101,21 @@ export default function LoginPage() {
     try {
       // 1. Try Supabase OTP sign in
       const formattedPhone = `+91${data.phone}`;
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
-      });
-      if (error) {
+      let useFallback = true;
+      if (supabase && supabase.auth) {
+        try {
+          const { error } = await supabase.auth.signInWithOtp({
+            phone: formattedPhone,
+          });
+          if (!error) {
+            useFallback = false;
+          }
+        } catch (e) {
+          console.warn("Supabase OTP sign-in failed, using API fallback:", e);
+        }
+      }
+      
+      if (useFallback) {
         // Fallback to backend API
         await apiClient.post("/auth/otp/send", { phone: data.phone });
       }
@@ -130,22 +141,26 @@ export default function LoginPage() {
                           (selectedRole === "owner" ? "Owner" : "Guest"));
       
       // 1. Try Supabase verification
-      if (otpCode !== "123456") {
-        const { data, error } = await supabase.auth.verifyOtp({
-          phone: formattedPhone,
-          token: otpCode,
-          type: "sms"
-        });
-        if (!error && data.session) {
-          localStorage.setItem("krishiva_token", data.session.access_token);
-          localStorage.setItem("krishiva_role", selectedRole);
-          localStorage.setItem("krishiva_user_id", data.session.user?.id || "");
-          
-          const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
-                                  (selectedRole === "buyer" ? "/dashboard/buyer" :
-                                   (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
-          router.push(targetDashboard);
-          return;
+      if (otpCode !== "123456" && supabase && supabase.auth) {
+        try {
+          const { data, error } = await supabase.auth.verifyOtp({
+            phone: formattedPhone,
+            token: otpCode,
+            type: "sms"
+          });
+          if (!error && data.session) {
+            localStorage.setItem("krishiva_token", data.session.access_token);
+            localStorage.setItem("krishiva_role", selectedRole);
+            localStorage.setItem("krishiva_user_id", data.session.user?.id || "");
+            
+            const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
+                                    (selectedRole === "buyer" ? "/dashboard/buyer" :
+                                     (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
+            router.push(targetDashboard);
+            return;
+          }
+        } catch (e) {
+          console.warn("Supabase OTP verification failed, using API fallback:", e);
         }
       }
 
@@ -180,6 +195,12 @@ export default function LoginPage() {
       const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
                               (selectedRole === "buyer" ? "/dashboard/buyer" :
                                (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
+
+      if (!supabase || !supabase.auth) {
+        alert("Google Login is currently unavailable (Supabase configuration is missing). Please check your environment variables.");
+        setIsLoading(false);
+        return;
+      }
 
       // Try Supabase Google OAuth provider redirection
       const { error } = await supabase.auth.signInWithOAuth({
@@ -313,7 +334,6 @@ export default function LoginPage() {
                   <SelectItem value="en">{t("English")}</SelectItem>
                   <SelectItem value="hi">{t("Hindi")}</SelectItem>
                   <SelectItem value="te">{t("Telugu")}</SelectItem>
-                  <SelectItem value="ta">{t("Tamil")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -388,7 +408,7 @@ export default function LoginPage() {
 
             {/* Conditional form rendering */}
             {!otpSent ? (
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" autoComplete="off">
                 <div className="space-y-1">
                   <Input
                     {...register("phone")}
@@ -398,6 +418,10 @@ export default function LoginPage() {
                     error={errors.phone?.message}
                     disabled={isLoading}
                     maxLength={10}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
                   />
                 </div>
 
@@ -434,7 +458,7 @@ export default function LoginPage() {
                 </Button>
               </form>
             ) : (
-              <form onSubmit={handleVerifyOtpSubmit} className="space-y-4">
+              <form onSubmit={handleVerifyOtpSubmit} className="space-y-4" autoComplete="off">
                 <div className="space-y-1">
                   <Input
                     value={otpCode}
