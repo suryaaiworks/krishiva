@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Chip } from "@/components/ui/chip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/context/LanguageContext";
 
 // Chat message interface
 interface Message {
@@ -39,10 +40,10 @@ const INITIAL_MESSAGES: Message[] = [
 
 export default function AssistantPage() {
   const router = useRouter();
+  const { language, setLanguage } = useLanguage();
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [inputValue, setInputValue] = React.useState("");
   const [isTyping, setIsTyping] = React.useState(false);
-  const [language, setLanguage] = React.useState("en");
   const [isVoiceActive, setIsVoiceActive] = React.useState(false);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
 
@@ -238,7 +239,7 @@ export default function AssistantPage() {
 
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-muted-foreground hidden sm:block" />
-            <Select value={language} onValueChange={(val) => { if (val) setLanguage(val); }}>
+            <Select value={language} onValueChange={(val) => { if (val) setLanguage(val as "en" | "te" | "hi"); }}>
               <SelectTrigger className="w-[100px] h-8 text-[11px] font-bold rounded-btn border border-border">
                 <SelectValue placeholder="Language" />
               </SelectTrigger>

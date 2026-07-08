@@ -133,8 +133,14 @@
   }
   body {
     @apply bg-background text-foreground transition-colors duration-300;
+    overflow-x: hidden;
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
   }
+  /* Hide native scrollbar in overflow-x containers (cross-browser) */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
