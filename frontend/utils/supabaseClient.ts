@@ -19,6 +19,16 @@ if (typeof window === "undefined") {
 // Strict URL check to prevent createClient throwing errors on empty/malformed URLs
 const isValidUrl = supabaseUrl.startsWith("http://") || supabaseUrl.startsWith("https://");
 
-export const supabase = isValidUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : (null as any);
+let client = null;
+
+if (isValidUrl && supabaseAnonKey) {
+  try {
+    client = createClient(supabaseUrl, supabaseAnonKey);
+  } catch (err) {
+    if (typeof window === "undefined") {
+      console.warn("Supabase client initialization failed inside try-catch block:", err);
+    }
+  }
+}
+
+export const supabase = client as any;
