@@ -1,547 +1,429 @@
-(function () {
+﻿(function () {
     if (window.__ViraScriptRunning) {
-        console.log("Vira script already executing. Exiting to prevent duplication.");
+        console.log("[Vira] Script already running. Skipping duplicate init.");
         return;
     }
     window.__ViraScriptRunning = true;
 
     const script = document.currentScript;
-    const userId = script?.dataset?.userId || "demo";
-    const apiUrl = script?.dataset?.apiUrl || "";
-    
-    let farmerLanguage = "te"; 
-    let assistantConfig = null;
-    let sessionHistory = []; // In-memory session history
-    let currentState = "idle"; // idle | listening | thinking | speaking | error | offline
+    const userId   = script?.dataset?.userId  || "demo";
+    const apiUrl   = script?.dataset?.apiUrl  || "";
 
-    // Load Vira CSS
+    // Language resolution — always live from localStorage
+    const getLang = () => {
+        const saved = (typeof localStorage !== "undefined")
+            ? localStorage.getItem("krishiva_language") : null;
+        return (saved && ["en", "te", "hi"].includes(saved)) ? saved : "te";
+    };
+
+    // BCP-47 locale codes for STT / TTS
+    const LANG_BCP47 = { en: "en-IN", te: "te-IN", hi: "hi-IN" };
+
+    // UI strings keyed by language
+    const UI = {
+        title:    { en: "Hello! I'm Vira",          hi: "नमस्ते! मैं वीरा हूँ",         te: "నమస్తే! నేను వీరా" },
+        sub:      { en: "Your AI farming companion", hi: "आपकी कृषि सहायक",            te: "మీ వ్యవసాయ సహాయకురాలు" },
+        tapMic:   { en: "Tap microphone to speak",   hi: "बोलने के लिए बटन दबाएं",      te: "మాట్లాడటానికి బటన్ నొక్కండి" },
+        listening:{ en: "Listening…",               hi: "सुन रही हूँ…",                te: "వింటున్నాను…" },
+        speaking: { en: "Vira is speaking…",         hi: "जवाब दे रही हूँ…",            te: "సమాధానం ఇస్తోంది…" },
+        you:      { en: "You: ",  hi: "आप: ",  te: "మీరు: " },
+        noVoice:  { en: "Voice unavailable. Displaying text response.",
+                    hi: "आवाज उपलब्ध नहीं। टेक्स्ट प्रतिक्रिया दिखाई जा रही है।",
+                    te: "వాయిస్ అందుబాటులో లేదు. టెక్స్ట్ ప్రతిస్పందన చూపుతోంది." },
+        offline:  { en: "Internet is unavailable. I cannot reach the server right now.",
+                    hi: "इंटरनेट उपलब्ध नहीं है। मैं अभी सर्वर तक पहुँच नहीं सकती।",
+                    te: "ఇంటర్నెట్ లేదు. నేను ప్రస్తుతం సర్వర్‌ను యాక్సెస్ చేయలేను." },
+        greeting: { en: "Hello! I am Vira, your AI farming assistant. How can I help you today?",
+                    hi: "नमस्ते! मैं वीरा हूँ, आपकी कृषि सहायक। आज मैं आपकी क्या मदद कर सकती हूँ?",
+                    te: "నమస్తే! నేను వీరా, మీ వ్యవసాయ సహాయకురాలిని. ఈరోజు నేను మీకు ఎలా సహాయం చేయగలను?" },
+        netError: { en: "Server connection issue. Please check your network.",
+                    hi: "सर्वर से कनेक्शन नहीं हो सका। कृपया नेटवर्क जाँचें।",
+                    te: "సర్వర్ కనెక్షన్ సమస్య. దయచేసి నెట్‌వర్క్ తనిఖీ చేయండి." },
+        thinking: [
+            { en: "Vira is thinking…",   hi: "सोच रही हूँ…",          te: "ఆలోచిస్తోంది…"           },
+            { en: "Retrieving records…", hi: "जानकारी जुटा रही हूँ…",  te: "సమాచారం సేకరిస్తోంది…"  },
+            { en: "Analysing context…",  hi: "विवरण जाँच रही हूँ…",    te: "వివరాలు విశ్లేషిస్తోంది…" }
+        ]
+    };
+    const u = (key, lang) => {
+        const obj = UI[key];
+        if (!obj) return "";
+        if (Array.isArray(obj)) return obj.map(o => o[lang] || o.en);
+        return obj[lang] || obj.en;
+    };
+
+    // State
+    let assistantConfig = null;
+    let sessionHistory  = [];
+    let currentState    = "idle";
+    let hasGreeted      = false;
+
+    // Load CSS
     const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "/vira.css";
+    link.rel   = "stylesheet";
+    link.href  = "/vira.css";
     document.head.appendChild(link);
 
-    // Create Widget Markup
+    // Widget HTML
     const popup = document.createElement("div");
-    popup.className = `vira-popup theme-earth state-idle`;
+    popup.className = "vira-popup theme-earth state-idle";
     popup.innerHTML = `
-    <div class="vira-overlay"></div>
-    <div class="vira-content">
-       <div class="vira-top">
-            <div class="vira-orb-wrap">
-                <div class="vira-orb-glow"></div>
-                <div class="vira-orb"></div>
-            </div>
-            <h2 class="vira-title">Namaste! I'm Vira</h2>
-            <p class="vira-sub">Your AI Farming Companion</p>
-            <div class="vira-status">Tap microphone to talk</div>
-            <div class="vira-wave">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <div class="vira-thinking-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <div class="vira-user-text"></div>
-            <div class="vira-ai-text"></div>
+      <div class="vira-overlay"></div>
+      <div class="vira-content">
+        <div class="vira-top">
+          <div class="vira-orb-wrap">
+            <div class="vira-orb-glow"></div>
+            <div class="vira-orb"></div>
+          </div>
+          <h2 class="vira-title"></h2>
+          <p  class="vira-sub"></p>
+          <div class="vira-status"></div>
+          <div class="vira-wave">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+          </div>
+          <div class="vira-thinking-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="vira-user-text"></div>
+          <div class="vira-ai-text"></div>
         </div>
         <div class="vira-bottom">
-            <button class="vira-mic">
-               <img src="/mic.svg" alt="mic" class="vira-mic-icon"/>
-            </button>
+          <button class="vira-mic">
+            <img src="/mic.svg" alt="mic" class="vira-mic-icon"/>
+          </button>
         </div>
-    </div>
-    `;
+      </div>`;
     document.body.appendChild(popup);
 
-    // Floating launcher button
+    // Launcher button
     const button = document.createElement("button");
-    button.className = `vira-btn theme-earth`;
-    button.innerHTML = `<img src="/logo.png" alt="logo"/>`;
+    button.className = "vira-btn theme-earth";
+    button.innerHTML = `<img src="/logo.png" alt="Open Vira"/>`;
     document.body.appendChild(button);
 
-    let open = false;
-    let hasGreetedOnOpen = false;
+    // DOM refs
+    const domTitle  = popup.querySelector(".vira-title");
+    const domSub    = popup.querySelector(".vira-sub");
+    const domStatus = popup.querySelector(".vira-status");
+    const domWave   = popup.querySelector(".vira-wave");
+    const domUser   = popup.querySelector(".vira-user-text");
+    const domAi     = popup.querySelector(".vira-ai-text");
+    const domMic    = popup.querySelector(".vira-mic");
 
-    // Transition widget states
-    const setWidgetState = (state) => {
-      currentState = state;
-      // Strip old state classes and apply new one
-      popup.className = popup.className
-        .replace(/state-\w+/g, "")
-        .trim() + ` state-${state}`;
+    // State machine
+    const setState = (state) => {
+        currentState = state;
+        popup.className = popup.className.replace(/state-\w+/g, "").trim() + ` state-${state}`;
     };
 
-    const getWelcomeText = () => {
-        if (farmerLanguage === "te") {
-            return "నమస్తే! నేను వీరా. మీ వ్యవసాయ సహాయకురాలిని. ఈరోజు నేను మీకు ఎలా సహాయం చేయగలను?";
-        } else if (farmerLanguage === "hi") {
-            return "नमस्ते! मैं वीरा हूँ। मैं आपकी कृषि सहायक हूँ। आज मैं आपकी क्या मदद कर सकती हूँ?";
-        } else {
-            return "Hello! I'm Vira. I'm your AI farming assistant. How can I help you today?";
-        }
+    // Refresh UI labels to current language
+    const applyLang = () => {
+        const lang = getLang();
+        domTitle.textContent  = u("title",  lang);
+        domSub.textContent    = u("sub",    lang);
+        if (currentState === "idle") domStatus.textContent = u("tapMic", lang);
     };
 
-    const triggerWelcomeSpeech = () => {
-        console.log("triggerWelcomeSpeech triggered. hasGreetedOnOpen:", hasGreetedOnOpen);
-        if (hasGreetedOnOpen) return;
-        hasGreetedOnOpen = true;
-
-        console.log("Removing document click/keydown interaction listeners.");
-        document.removeEventListener("click", triggerWelcomeSpeech);
-        document.removeEventListener("keydown", triggerWelcomeSpeech);
-
-        const welcomeText = getWelcomeText();
-        console.log("GREETING EXECUTED: ", welcomeText);
-        speak(welcomeText);
-    };
-
-    button.onclick = (e) => {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        console.log("Launcher button clicked. Popup open state toggled.");
-        open = !open;
-        popup.style.display = open ? "flex" : "none";
-        
-        if (open && !hasGreetedOnOpen) {
-            triggerWelcomeSpeech();
-        }
-    };
-
-    const autoGreet = () => {
-        console.log("autoGreet called. hasGreetedOnOpen:", hasGreetedOnOpen);
-        if (!hasGreetedOnOpen) {
-            open = true;
-            popup.style.display = "flex";
-            
-            const welcomeText = getWelcomeText();
-            aiText.innerText = welcomeText;
-            setWidgetState("speaking");
-            
-            if (farmerLanguage === "te") {
-              statusText.innerText = "సమాధానం ఇస్తోంది...";
-            } else if (farmerLanguage === "hi") {
-              statusText.innerText = "जवाब दे रही हूँ...";
-            } else {
-              statusText.innerText = "Vira Speaking...";
-            }
-
-            console.log("Registering document interaction click listeners.");
-            document.addEventListener("click", triggerWelcomeSpeech);
-            document.addEventListener("keydown", triggerWelcomeSpeech);
-        }
-    };
-
-    // Load config
-    const loadAssistant = async () => {
-        try {
-            const token = localStorage.getItem("krishiva_token");
-            const headers = {};
-            if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-            }
-            const res = await fetch(`${apiUrl}/assistant/config/${userId}`, { headers });
-            const data = await res.json();
-            if (data && data.user) {
-                assistantConfig = data.user;
-                applyConfig();
-            }
-        } catch (error) {
-            console.warn("Vira Offline Config Initialized");
-            assistantConfig = {
-                assistantName: "Vira",
-                theme: "earth",
-                farmer: { language: "te", location: "Visakhapatnam", name: "Ramesh" }
-            };
-            applyConfig();
-        }
-        autoGreet();
-    };
-
+    // Apply config from backend (theme, etc.)
     const applyConfig = () => {
         if (!assistantConfig) return;
-        const farmer = window.KrishivaFarmer || assistantConfig.farmer || {};
-        farmerLanguage = farmer.language || "te";
+        const theme = assistantConfig.theme || "earth";
+        popup.className  = popup.className.replace(/theme-\w+/, "").trim() + ` theme-${theme}`;
+        button.className = button.className.replace(/theme-\w+/, "").trim() + ` theme-${theme}`;
+        applyLang();
+    };
 
-        popup.className = `vira-popup theme-${assistantConfig.theme || "earth"} state-${currentState}`;
-        button.className = `vira-btn theme-${assistantConfig.theme || "earth"}`;
-
-        const title = popup.querySelector(".vira-title");
-        if (farmerLanguage === "te") {
-          title.innerHTML = "నమస్తే! నేను వీరా";
-        } else if (farmerLanguage === "hi") {
-          title.innerHTML = "नमस्ते! मैं वीरा हूँ";
-        } else {
-          title.innerHTML = "Hello! I'm Vira";
-        }
-
-        const subTitle = popup.querySelector(".vira-sub");
-        if (farmerLanguage === "te") {
-          subTitle.innerHTML = "మీ వ్యవసాయ సహాయకురాలిని.";
-        } else if (farmerLanguage === "hi") {
-          subTitle.innerHTML = "मैं आपकी कृषि सहायक हूँ।";
-        } else {
-          subTitle.innerHTML = "I'm your AI farming assistant.";
+    const loadAssistant = async () => {
+        try {
+            const token   = localStorage.getItem("krishiva_token");
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            const res  = await fetch(`${apiUrl}/assistant/config/${userId}`, { headers });
+            const data = await res.json();
+            if (data?.user) { assistantConfig = data.user; applyConfig(); }
+        } catch {
+            assistantConfig = { assistantName: "Vira", theme: "earth" };
+            applyConfig();
         }
     };
 
+    applyLang();
     loadAssistant();
 
-    // DOM selectors
-    const statusText = popup.querySelector(".vira-status");
-    const wave = popup.querySelector(".vira-wave");
-    const userText = popup.querySelector(".vira-user-text");
-    const aiText = popup.querySelector(".vira-ai-text");
-    const mic = popup.querySelector(".vira-mic");
-
-    // Text to Speech (TTS)
-    let retryAttempted = false;
-
+    // ───────────────────────────── TTS ───────────────────────────────────────
+    // text arrives ALREADY translated by the backend — just speak it
     const speak = (text) => {
         if (!window.speechSynthesis) {
-            console.error("[Vira Pipeline Audit] Stage 8 Failed: Speech synthesis not supported.");
-            statusText.innerText = "Voice unavailable. Displaying text response.";
+            domStatus.textContent = u("noVoice", getLang());
+            domAi.textContent     = text;
+            console.warn("[Vira TTS] speechSynthesis not available.");
             return;
         }
 
-        console.log("[Vira Pipeline Audit] Stage 8: Speech synthesis (TTS) requested. Text:", text);
-        
-        try {
-            window.speechSynthesis.cancel();
-        } catch (e) {
-            console.warn("speechSynthesis.cancel failed", e);
-        }
+        const lang = getLang();
+        const bcp  = LANG_BCP47[lang] || "en-IN";
 
-        aiText.innerText = text;
-        setWidgetState("speaking");
+        console.log(`[Vira TTS] lang=${lang} bcp47=${bcp} text="${text.substring(0,80)}…"`);
 
-        if (farmerLanguage === "te") {
-          statusText.innerText = "సమాధానం ఇస్తోంది...";
-        } else if (farmerLanguage === "hi") {
-          statusText.innerText = "जवाब दे रही हूँ...";
-        } else {
-          statusText.innerText = "Vira Speaking...";
-        }
+        try { window.speechSynthesis.cancel(); } catch (_) {}
 
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.95; 
-        utterance.pitch = 1.0;
+        domAi.textContent     = text;
+        domStatus.textContent = u("speaking", lang);
+        setState("speaking");
 
-        // Callback Event Listeners
-        utterance.onstart = (event) => {
-            console.log("TTS Event: Speech started successfully.", event);
+        const utter    = new SpeechSynthesisUtterance(text);
+        utter.lang     = bcp;
+        utter.rate     = 0.92;
+        utter.pitch    = 1.0;
+
+        utter.onstart = () => console.log(`[Vira TTS] Speaking (${utter.lang}): "${utter.text.substring(0,50)}"`);
+
+        utter.onend = () => {
+            console.log("[Vira TTS] Done.");
+            setState("idle");
+            domStatus.textContent = u("tapMic", getLang());
+            domWave.classList.remove("active");
         };
 
-        utterance.onend = (event) => {
-            console.log("TTS Event: Speech finished.", event);
-            setWidgetState("idle");
-            if (farmerLanguage === "te") {
-              statusText.innerText = "మాట్లాడటానికి బటన్ నొక్కండి";
-            } else if (farmerLanguage === "hi") {
-              statusText.innerText = "बोलने के लिए बटन दबाएं";
-            } else {
-              statusText.innerText = "Tap microphone to speak";
-            }
-            wave.classList.remove("active");
-        };
-
-        utterance.onerror = (event) => {
-            console.error("TTS Event Error: Speech synthesis encountered an error:", event);
-            setWidgetState("idle");
-            if (event.error !== "interrupted") {
-                statusText.innerText = "Voice unavailable. Displaying text response.";
-                setTimeout(() => {
-                    statusText.innerText = (farmerLanguage === "te" ? "మాట్లాడటానికి బటన్ నొక్కండి" : farmerLanguage === "hi" ? "बोलने के लिए बटन दबाएं" : "Tap microphone to speak");
-                }, 3000);
+        utter.onerror = (ev) => {
+            console.error("[Vira TTS] Error:", ev.error);
+            setState("idle");
+            if (ev.error !== "interrupted") {
+                domStatus.textContent = u("noVoice", getLang());
+                setTimeout(() => { domStatus.textContent = u("tapMic", getLang()); }, 3500);
             }
         };
 
-        const configureVoiceAndRun = () => {
+        const pickVoiceAndSpeak = () => {
             const voices = window.speechSynthesis.getVoices();
-            console.log(`TTS System: ${voices.length} voices loaded in browser.`);
-            
-            if (voices.length === 0 && !retryAttempted) {
-                retryAttempted = true;
-                console.log("No voices loaded yet. Retrying fetch in 500ms...");
-                setTimeout(configureVoiceAndRun, 500);
-                return;
-            }
+            console.log(`[Vira TTS] ${voices.length} voices available.`);
 
-            if (voices.length === 0) {
-                console.warn("Voices still unavailable after retry. Displaying text.");
-                statusText.innerText = "Voice unavailable. Displaying text response.";
-                setWidgetState("idle");
-                return;
-            }
+            if (voices.length === 0) return; // wait for voiceschanged
 
-            let targetLang = farmerLanguage === "te" ? "te-IN" : farmerLanguage === "hi" ? "hi-IN" : "en-IN";
-            let selectedVoice = voices.find(v => v.lang.toLowerCase().includes(targetLang.toLowerCase()));
-            
-            if (!selectedVoice) {
-                selectedVoice = voices.find(v => v.lang.toLowerCase().startsWith(farmerLanguage.toLowerCase()));
-            }
+            // Voice priority: exact BCP-47 → lang prefix → en-IN → en-* → first
+            let voice =
+                voices.find(v => v.lang.toLowerCase() === bcp.toLowerCase()) ||
+                voices.find(v => v.lang.toLowerCase().startsWith(lang + "-")) ||
+                voices.find(v => v.lang.toLowerCase().startsWith(lang)) ||
+                voices.find(v => v.lang.toLowerCase() === "en-in") ||
+                voices.find(v => v.lang.toLowerCase().startsWith("en-")) ||
+                voices[0];
 
-            if (!selectedVoice) {
-                selectedVoice = voices.find(v => v.lang.toLowerCase().includes("en-"));
-            }
-
-            if (!selectedVoice && voices.length > 0) {
-                selectedVoice = voices[0];
-            }
-
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-                utterance.lang = selectedVoice.lang;
-                console.log(`Setting Utterance voice to: ${selectedVoice.name} (${selectedVoice.lang})`);
+            if (voice) {
+                utter.voice = voice;
+                utter.lang  = voice.lang;
+                console.log(`[Vira TTS] Selected voice: "${voice.name}" (${voice.lang})`);
             } else {
-                utterance.lang = targetLang;
+                console.warn(`[Vira TTS] No suitable voice for ${bcp}. Using lang attr only.`);
             }
 
             try {
-                window.speechSynthesis.speak(utterance);
+                window.speechSynthesis.speak(utter);
             } catch (err) {
-                console.error("speechSynthesis.speak execution failed:", err);
-                statusText.innerText = "Voice unavailable. Displaying text response.";
-                setWidgetState("idle");
+                console.error("[Vira TTS] speak() threw:", err);
+                domStatus.textContent = u("noVoice", getLang());
+                setState("idle");
             }
         };
 
-        // Handle async voice loading
-        if (window.speechSynthesis.getVoices().length === 0) {
+        if (window.speechSynthesis.getVoices().length > 0) {
+            pickVoiceAndSpeak();
+        } else {
             window.speechSynthesis.onvoiceschanged = () => {
-                configureVoiceAndRun();
                 window.speechSynthesis.onvoiceschanged = null;
+                pickVoiceAndSpeak();
             };
+            // Chrome sometimes fires voiceschanged before we hook it
             setTimeout(() => {
                 if (window.speechSynthesis.getVoices().length > 0) {
-                    configureVoiceAndRun();
+                    window.speechSynthesis.onvoiceschanged = null;
+                    pickVoiceAndSpeak();
                 }
-            }, 250);
-        } else {
-            configureVoiceAndRun();
+            }, 300);
         }
 
-        // Fire local speaking events for playground logs
-        const speakEvent = new CustomEvent("vira-action", {
-          detail: {
-            action: "speak",
-            response: text,
-            pipeline: {
-              language: farmerLanguage,
-              intent: "synthesize_speech",
-              selectedTool: "speechSynthesis",
-              pluginCalled: "TTS",
-              executionTimeMs: 40,
-              confidence: 100
-            }
-          }
-        });
-        window.dispatchEvent(speakEvent);
+        window.dispatchEvent(new CustomEvent("vira-action", {
+            detail: { action: "speak", response: text,
+                      pipeline: { language: lang, bcp47: bcp, selectedTool: "speechSynthesis" } }
+        }));
     };
 
-    // Speech Recognition (STT)
+    // ─── Greeting ─────────────────────────────────────────────────────────────
+    const doGreet = () => {
+        if (hasGreeted) return;
+        hasGreeted = true;
+        document.removeEventListener("click",   doGreet);
+        document.removeEventListener("keydown", doGreet);
+        applyLang();
+        const lang = getLang();
+        console.log(`[Vira] Greeting in ${lang}`);
+        speak(u("greeting", lang));
+    };
+
+    // ─── Launcher toggle ──────────────────────────────────────────────────────
+    let popupOpen = false;
+    button.onclick = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        popupOpen = !popupOpen;
+        popup.style.display = popupOpen ? "flex" : "none";
+        if (popupOpen) {
+            applyLang();
+            if (!hasGreeted) {
+                const lang = getLang();
+                domAi.textContent     = u("greeting", lang);
+                domStatus.textContent = u("speaking", lang);
+                setState("speaking");
+                // Try immediate speech; also listen for next gesture in case autoplay is blocked
+                doGreet();
+                document.addEventListener("click",   doGreet, { once: true });
+                document.addEventListener("keydown", doGreet, { once: true });
+            }
+        }
+    };
+
+    // ─── STT + Backend call ───────────────────────────────────────────────────
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = false;
+    if (!SpeechRecognition) {
+        domStatus.textContent = "Voice input is not supported in this browser.";
+    } else {
+        const recognition          = new SpeechRecognition();
+        recognition.continuous     = false;
         recognition.interimResults = false;
 
-        mic.onclick = (e) => {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            console.log("[Vira Pipeline Audit] Stage 1: Microphone triggered.");
-            if (currentState === "speaking") {
-              try {
-                window.speechSynthesis.cancel();
-              } catch (err) {}
-            }
+        domMic.onclick = (e) => {
+            e.preventDefault(); e.stopPropagation();
 
-            applyConfig();
+            try { window.speechSynthesis.cancel(); } catch (_) {}
+
+            const lang = getLang();
+            applyLang();
 
             if (!navigator.onLine) {
-              setWidgetState("offline");
-              const offlineText = farmerLanguage === "te"
-                ? "ఇంటర్నెట్ లేదు. నేను ప్రస్తుతం సమాచారాన్ని సేకరించలేను."
-                : farmerLanguage === "hi"
-                  ? "इंटरनेट कनेक्शन उपलब्ध नहीं है। मैं जानकारी प्राप्त नहीं कर सकती।"
-                  : "Internet is unavailable. I cannot consult the database right now.";
-              speak(offlineText);
-              return;
+                setState("offline");
+                speak(u("offline", lang));
+                return;
             }
 
-            setWidgetState("listening");
-            
-            if (farmerLanguage === "te") {
-              recognition.lang = "te-IN";
-              statusText.innerText = "వింటున్నాను...";
-            } else if (farmerLanguage === "hi") {
-              recognition.lang = "hi-IN";
-              statusText.innerText = "सुन रही हूँ...";
-            } else {
-              recognition.lang = "en-IN";
-              statusText.innerText = "Listening...";
-            }
+            recognition.lang = LANG_BCP47[lang] || "en-IN";
+            setState("listening");
+            domStatus.textContent = u("listening", lang);
+            domWave.classList.add("active");
+            domUser.textContent = "";
+            domAi.textContent   = "";
 
-            wave.classList.add("active");
-            userText.innerText = "";
-            aiText.innerText = "";
-            
-            try {
-              recognition.start();
-              console.log(`[Vira Pipeline Audit] Speech recognition started. Target Language: ${recognition.lang}`);
-            } catch (err) {
-              console.warn("STT already running");
+            console.log(`[Vira STT] Starting. lang=${recognition.lang}`);
+            try { recognition.start(); } catch (err) {
+                console.warn("[Vira STT] Start error (may already be running):", err);
             }
         };
 
-        recognition.onresult = (e) => {
-            const text = e.results[0][0].transcript;
-            console.log(`[Vira Pipeline Audit] Stage 2: Speech recognition complete. Transcript: "${text}"`);
-            
-            userText.innerText = (farmerLanguage === "te" ? "మీరు: " : farmerLanguage === "hi" ? "आप: " : "You: ") + text;
+        recognition.onresult = async (e) => {
+            const transcript = e.results[0][0].transcript;
+            console.log(`[Vira STT] Transcript: "${transcript}"`);
+
+            const lang = getLang();
+            domUser.textContent = u("you", lang) + transcript;
             recognition.stop();
-            setWidgetState("thinking");
+            setState("thinking");
 
             let cycle = 0;
-            const progressMsgs = farmerLanguage === "te"
-              ? ["ఆలోచిస్తోంది...", "సమాచారం సేకరిస్తోంది...", "వివరాలు విశ్లేషిస్తోంది..."]
-              : farmerLanguage === "hi"
-                ? ["सोच रही हूँ...", "जानकारी जुटा रही हूँ...", "विवरण जाँच रही हूँ..."]
-                : ["Vira is thinking...", "Retrieving records...", "Analyzing context..."];
-            
+            const thinkMsgs = u("thinking", lang);
             const timer = setInterval(() => {
-              if (currentState === "thinking") {
-                statusText.innerText = progressMsgs[cycle % progressMsgs.length];
-                cycle++;
-              } else {
+                if (currentState === "thinking") {
+                    domStatus.textContent = thinkMsgs[cycle % thinkMsgs.length];
+                    cycle++;
+                } else { clearInterval(timer); }
+            }, 650);
+
+            window.dispatchEvent(new CustomEvent("vira-action", {
+                detail: { action: "stt", response: transcript,
+                          pipeline: { language: lang, intent: "speech_to_text" } }
+            }));
+
+            // ── API request ──────────────────────────────────────────────────
+            const token   = localStorage.getItem("krishiva_token");
+            const headers = { "Content-Type": "application/json" };
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+
+            // CRITICAL: merge farmer context and override language from localStorage
+            // This tells the backend which language to translate the response into.
+            const farmerCtx = Object.assign({}, window.KrishivaFarmer || {}, { language: lang });
+
+            console.log(`[Vira API] POST /assistant/ask — farmer.language="${farmerCtx.language}"`);
+
+            let res;
+            try {
+                res = await fetch(`${apiUrl}/assistant/ask`, {
+                    method: "POST",
+                    headers,
+                    body: JSON.stringify({
+                        message:      transcript,
+                        history:      sessionHistory,
+                        farmer:       farmerCtx,
+                        geminiApiKey: localStorage.getItem("krishiva_gemini_api_key") || ""
+                    })
+                });
+            } catch (netErr) {
                 clearInterval(timer);
-              }
-            }, 600);
+                console.error("[Vira API] Network error:", netErr);
+                setState("error");
+                speak(u("netError", getLang()));
+                return;
+            }
 
-            // Fire STT log event for the playground
-            const sttEvent = new CustomEvent("vira-action", {
-              detail: {
-                action: "stt",
-                response: text,
-                pipeline: {
-                  language: farmerLanguage,
-                  intent: "speech_to_text",
-                  selectedTool: "SpeechRecognition",
-                  pluginCalled: "STT",
-                  executionTimeMs: 150,
-                  confidence: 95
+            clearInterval(timer);
+
+            let bodyText = "";
+            try { bodyText = await res.text(); } catch (_) {}
+
+            if (!res.ok) {
+                setState("error");
+                let detail = "Server returned an error.";
+                try { detail = JSON.parse(bodyText).detail || detail; } catch (_) {}
+                speak(detail);
+                return;
+            }
+
+            let data = {};
+            try { data = JSON.parse(bodyText); } catch (_) {
+                setState("error");
+                speak("Server returned an invalid response format.");
+                return;
+            }
+
+            if (data.success) {
+                // data.speech is ALREADY translated by the backend into farmer.language
+                const responseText = data.speech || data.aiResponse || "";
+                console.log(`[Vira API] Response (${lang}): "${responseText.substring(0,80)}"`);
+
+                speak(responseText);
+
+                sessionHistory.push({ role: "user",  text: transcript   });
+                sessionHistory.push({ role: "model", text: responseText });
+                if (sessionHistory.length > 10) sessionHistory.shift();
+
+                window.dispatchEvent(new CustomEvent("vira-action", {
+                    detail: { action: data.action, page: data.page,
+                              response: responseText, pipeline: data.pipeline }
+                }));
+
+                if (data.route) {
+                    window.dispatchEvent(new CustomEvent("vira-action", {
+                        detail: { action: "navigate", page: data.route.replace(/^\//, "") }
+                    }));
                 }
-              }
-            });
-            window.dispatchEvent(sttEvent);
-
-            setTimeout(async () => {
-                const token = localStorage.getItem("krishiva_token");
-                const headers = { "Content-Type": "application/json" };
-                if (token) {
-                    headers["Authorization"] = `Bearer ${token}`;
-                }
-
-                const url = `${apiUrl}/assistant/ask`;
-                const requestBody = {
-                    message: text,
-                    history: sessionHistory,
-                    farmer: window.KrishivaFarmer || assistantConfig?.farmer,
-                    geminiApiKey: localStorage.getItem("krishiva_gemini_api_key") || ""
-                };
-
-                let res;
-                try {
-                    res = await fetch(url, {
-                        method: "POST",
-                        headers,
-                        body: JSON.stringify(requestBody)
-                    });
-                } catch (netErr) {
-                    console.error("[Vira Pipeline Audit] Network connection error:", netErr);
-                    clearInterval(timer);
-                    setWidgetState("error");
-                    speak("Server connection issue. Please check network.");
-                    return;
-                }
-
-                clearInterval(timer);
-
-                let responseBodyText = "";
-                try {
-                    responseBodyText = await res.text();
-                } catch (readErr) {}
-
-                if (!res.ok) {
-                    setWidgetState("error");
-                    let errDetail = "Server returned an error status.";
-                    try {
-                        const errObj = JSON.parse(responseBodyText);
-                        errDetail = errObj.detail || errDetail;
-                    } catch (e) {}
-                    speak(`Backend error: ${errDetail}`);
-                    return;
-                }
-
-                let data = {};
-                try {
-                    data = JSON.parse(responseBodyText);
-                } catch (jsonErr) {
-                    setWidgetState("error");
-                    speak("Server returned invalid response format.");
-                    return;
-                }
-
-                if (data.success) {
-                    speak(data.speech || data.aiResponse);
-
-                    sessionHistory.push({ role: "user", text: text });
-                    sessionHistory.push({ role: "model", text: data.speech || data.aiResponse });
-                    if (sessionHistory.length > 10) sessionHistory.shift();
-
-                    const actionEvent = new CustomEvent("vira-action", {
-                        detail: {
-                            action: data.action,
-                            page: data.page,
-                            response: data.speech || data.aiResponse,
-                            pipeline: data.pipeline
-                        }
-                    });
-                    window.dispatchEvent(actionEvent);
-
-                    if (data.route) {
-                        const cleanRoute = data.route.replace(/^\//, "");
-                        const navEvent = new CustomEvent("vira-action", {
-                            detail: {
-                                action: "navigate",
-                                page: cleanRoute
-                            }
-                        });
-                        window.dispatchEvent(navEvent);
-                    }
-                } else {
-                    setWidgetState("error");
-                    speak(data.reasoning || data.speech || "I encountered an issue processing the request.");
-                }
-            }, 800);
+            } else {
+                setState("error");
+                speak(data.reasoning || data.speech || "I encountered an issue. Please try again.");
+            }
         };
 
-        recognition.onerror = () => {
-            setWidgetState("idle");
-            statusText.innerText = farmerLanguage === "te" ? "మాట్లాడటానికి బటన్ నొక్కండి" : farmerLanguage === "hi" ? "बोलने के लिए बटन दबाएं" : "Tap microphone to speak";
-            wave.classList.remove("active");
+        recognition.onerror = (ev) => {
+            console.error("[Vira STT] Error:", ev.error);
+            setState("idle");
+            domStatus.textContent = u("tapMic", getLang());
+            domWave.classList.remove("active");
         };
-    } else {
-        statusText.innerText = "Voice input unsupported in browser";
     }
 })();
