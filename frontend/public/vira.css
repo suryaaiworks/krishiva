@@ -1,4 +1,4 @@
-/* Vira Floating Launch Button */
+/* Vira Floating Launch Button — Premium Agriculture Identity */
 .vira-btn {
   position: fixed;
   right: 24px;
@@ -12,18 +12,60 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.35);
+  overflow: visible;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.35s ease;
+  box-shadow:
+    0 4px 12px rgba(22, 101, 52, 0.30),
+    0 1px 3px rgba(0, 0, 0, 0.14),
+    0 0 0 1px rgba(22, 101, 52, 0.10);
+}
+.vira-btn::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(22, 163, 74, 0.35);
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
 }
 .vira-btn:hover {
-  transform: scale(1.08) rotate(8deg);
+  transform: scale(1.06);
+  box-shadow:
+    0 8px 24px rgba(22, 101, 52, 0.38),
+    0 2px 6px rgba(0, 0, 0, 0.16),
+    0 0 0 1px rgba(22, 101, 52, 0.12);
 }
-.vira-btn img {
-  width: 32px;
-  height: 32px;
+.vira-btn:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+/* Periodic ambient pulse — JS adds/removes .vira-pulse class every 4s */
+.vira-btn.vira-pulse {
+  animation: viraBtnPulse 2.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes viraBtnPulse {
+  0%   { box-shadow: 0 4px 12px rgba(22, 101, 52, 0.30), 0 1px 3px rgba(0,0,0,0.14), 0 0 0 0   rgba(22,163,74,0.55); }
+  40%  { box-shadow: 0 4px 12px rgba(22, 101, 52, 0.30), 0 1px 3px rgba(0,0,0,0.14), 0 0 0 14px rgba(22,163,74,0.12); }
+  70%  { box-shadow: 0 4px 12px rgba(22, 101, 52, 0.30), 0 1px 3px rgba(0,0,0,0.14), 0 0 0 22px rgba(22,163,74,0.04); }
+  100% { box-shadow: 0 4px 12px rgba(22, 101, 52, 0.30), 0 1px 3px rgba(0,0,0,0.14), 0 0 0 28px rgba(22,163,74,0); }
+}
+/* SVG icon inside the button */
+.vira-btn-icon {
+  width: 36px;
+  height: 36px;
+  display: block;
+  pointer-events: none;
+}
+/* Legacy logo img support (hidden when SVG is used) */
+.vira-btn img.vira-btn-logo {
+  width: 34px;
+  height: 34px;
   object-fit: contain;
 }
+
 
 /* Vira Chat Popup Drawer */
 .vira-popup {

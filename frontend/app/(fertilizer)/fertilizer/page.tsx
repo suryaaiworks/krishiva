@@ -69,21 +69,29 @@ export default function FertilizerAdvisorPage() {
         </div>
 
         {/* AI Recommendations panel */}
-        <Card title="" animate={false} className="p-6 bg-gradient-to-tr from-primary/10 via-card to-accent/5 border-primary/20 shadow-sm">
-          <div className="flex items-start gap-3 text-xs leading-relaxed text-left">
-            <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-            <div className="space-y-2">
-              <h4 className="font-extrabold text-foreground text-sm">Vira AI Fertilizer Recommendation</h4>
-              <p className="text-muted-foreground leading-normal font-medium">
+        <Card title="" animate={false} className="p-6 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.02] border-l-4 border-l-primary border-y-0 border-r-0 shadow-sm rounded-r-card rounded-l-none">
+          <div className="flex items-start gap-3.5 text-xs leading-relaxed text-left">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 shadow-inner">
+              <Sparkles className="h-4.5 w-4.5" />
+            </div>
+            <div className="space-y-2 flex-1">
+              <div className="flex items-center gap-2">
+                <h4 className="font-extrabold text-foreground text-sm">Vira AI Fertilizer Recommendation</h4>
+                <Badge variant="outline" className="text-[9px] font-black border-primary/20 bg-primary/10 text-primary px-2 py-0.5 shrink-0 rounded-full select-none">
+                  ✨ VIRA ADVISOR
+                </Badge>
+              </div>
+              <p className="text-muted-foreground leading-normal font-semibold">
                 To balance the phosphorus deficiency, apply **12 kg of Diammonium Phosphate (DAP)** or **25 kg of Single Superphosphate (SSP)** per acre. Add organic compost (neem cake) to Zone A to enhance nitrogen retention before sowing next week.
               </p>
-              <div className="pt-2 border-t border-border/30 flex justify-between items-center text-[10px]">
-                <span className="text-muted-foreground">Last Soil Test Date: **June 12, 2026**</span>
+              <div className="pt-2 border-t border-border/30 flex justify-between items-center text-[10px] text-muted-foreground font-semibold">
+                <span>Last Soil Test Date: **June 12, 2026**</span>
                 <span className="text-primary font-bold cursor-pointer hover:underline" onClick={() => router.push("/profile")}>View Soil Report</span>
               </div>
             </div>
           </div>
         </Card>
+
 
         {/* Dynamic Calculator Widget */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -155,11 +163,19 @@ export default function FertilizerAdvisorPage() {
                     </div>
                   </motion.div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-                    <Info className="h-8 w-8 text-muted-foreground/45 mb-2" />
-                    <span>Run the calculator to generate crop-specific chemical blends.</span>
+                  <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground bg-muted/10 rounded-[16px] p-6 border border-dashed border-border/60">
+                    <svg className="h-16 w-16 text-primary/30 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 21 3c-1.5 4-2 5.5-3.1 11.2A7 7 0 0 1 11 20z" />
+                      <path d="M9 22L11 20" />
+                      <path d="M11 20c2.5-2.5 5-3.5 7-7" />
+                    </svg>
+                    <h5 className="font-extrabold text-foreground text-xs">Calculator Idle</h5>
+                    <p className="text-[10.5px] text-muted-foreground max-w-[200px] mt-1 leading-normal">
+                      Run the calculator to generate crop-specific recommendations.
+                    </p>
                   </div>
                 )}
+
               </div>
             </div>
 

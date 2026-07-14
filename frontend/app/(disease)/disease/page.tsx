@@ -339,46 +339,65 @@ export default function DiseaseDetectionPage() {
                   <h3 className="text-base font-bold text-foreground">Crop Recovery Timeline</h3>
                 </div>
 
-                <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                  {/* Horizontal line for desktop */}
-                  <div className="hidden md:block absolute top-[15px] left-8 right-8 h-0.5 bg-border pointer-events-none z-0" />
+                <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mt-4">
+                  {/* Progress Line for desktop */}
+                  <div className="hidden md:block absolute top-[15px] left-8 right-8 h-1 bg-muted pointer-events-none z-0 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: "50%" }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className="h-full bg-primary"
+                    />
+                  </div>
                   
-                  {/* Timeline step 1 */}
+                  {/* Timeline step 1 (Completed) */}
                   <div className="relative z-10 flex md:flex-col items-center gap-3.5 text-left md:text-center md:flex-1">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-sm">
+                    <motion.div 
+                      initial={{ scale: 0.8 }}
+                      animate={{ scale: 1 }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-md border-2 border-primary/20"
+                    >
                       ✓
-                    </div>
+                    </motion.div>
                     <div className="space-y-0.5">
                       <span className="font-bold text-xs text-foreground block">1. Leaf Photo Scanned</span>
                       <span className="text-[10px] text-muted-foreground">June 27, 01:13 AM</span>
                     </div>
                   </div>
 
-                  {/* Timeline step 2 */}
+                  {/* Timeline step 2 (Completed) */}
                   <div className="relative z-10 flex md:flex-col items-center gap-3.5 text-left md:text-center md:flex-1">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-sm">
+                    <motion.div 
+                      initial={{ scale: 0.8 }}
+                      animate={{ scale: 1 }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-md border-2 border-primary/20"
+                    >
                       ✓
-                    </div>
+                    </motion.div>
                     <div className="space-y-0.5">
                       <span className="font-bold text-xs text-foreground block">2. AI Rust Confirmed</span>
                       <span className="text-[10px] text-muted-foreground">94% Confidence</span>
                     </div>
                   </div>
 
-                  {/* Timeline step 3 */}
+                  {/* Timeline step 3 (Current / Active) */}
                   <div className="relative z-10 flex md:flex-col items-center gap-3.5 text-left md:text-center md:flex-1">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-sm animate-pulse">
+                    <motion.div 
+                      animate={{ scale: [1, 1.08, 1] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-md border-2 border-primary/20"
+                    >
                       3
-                    </div>
+                    </motion.div>
                     <div className="space-y-0.5">
                       <span className="font-bold text-xs text-foreground block">3. Fungicide Spraying</span>
                       <span className="text-[10px] text-primary font-semibold">Start: Within 48 hours</span>
                     </div>
                   </div>
 
-                  {/* Timeline step 4 */}
-                  <div className="relative z-10 flex md:flex-col items-center gap-3.5 text-left md:text-center md:flex-1 opacity-50">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold text-xs">
+                  {/* Timeline step 4 (Upcoming / Grey) */}
+                  <div className="relative z-10 flex md:flex-col items-center gap-3.5 text-left md:text-center md:flex-1 opacity-60">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold text-xs border-2 border-border/40">
                       4
                     </div>
                     <div className="space-y-0.5">
@@ -387,9 +406,9 @@ export default function DiseaseDetectionPage() {
                     </div>
                   </div>
 
-                  {/* Timeline step 5 */}
-                  <div className="relative z-10 flex md:flex-col items-center gap-3.5 text-left md:text-center md:flex-1 opacity-50">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold text-xs">
+                  {/* Timeline step 5 (Upcoming / Grey) */}
+                  <div className="relative z-10 flex md:flex-col items-center gap-3.5 text-left md:text-center md:flex-1 opacity-60">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold text-xs border-2 border-border/40">
                       5
                     </div>
                     <div className="space-y-0.5">
@@ -398,6 +417,7 @@ export default function DiseaseDetectionPage() {
                     </div>
                   </div>
                 </div>
+
               </Card>
 
               {/* SECTION: SMART ACTIONS PANEL */}

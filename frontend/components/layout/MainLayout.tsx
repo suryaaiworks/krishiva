@@ -46,12 +46,25 @@ export function MainLayout({ children }: MainLayoutProps) {
         {/* Top Navigation */}
         <TopBar />
 
-        {/* Sticky Demo Banner */}
-        <div className="sticky top-16 z-20 w-full border-b border-emerald-500/10 bg-emerald-500/5 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-200">
-          <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-2 text-xs font-bold text-center">
-            <Sparkles className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-            <span className="leading-snug break-words max-w-full">
+        {/* Premium Demo Status Banner */}
+        <div className="sticky top-16 z-20 w-full border-b border-emerald-500/15 bg-emerald-50/80 dark:bg-emerald-950/20 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-3 flex-wrap">
+            {/* Farm Active pill */}
+            <span className="inline-flex items-center gap-1.5 text-[10.5px] font-bold text-emerald-800 dark:text-emerald-300">
+              <span className="relative flex h-2 w-2">
+                <span className="kv-ping-slow absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+              </span>
+              🌱 Demo Farm Active
+            </span>
+            <span className="hidden sm:block text-emerald-500/40 text-xs">|</span>
+            <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400">
+              <Sparkles className="h-3 w-3 text-emerald-500" />
               {activeScenario.alert}
+            </span>
+            <span className="hidden md:block text-emerald-500/40 text-xs">|</span>
+            <span className="hidden md:inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400">
+              ☀️ Sunny · Crop Health: 92% · AI Monitoring: ON
             </span>
           </div>
         </div>

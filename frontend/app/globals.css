@@ -134,6 +134,7 @@
   body {
     @apply bg-background text-foreground transition-colors duration-300;
     overflow-x: hidden;
+    line-height: 1.65;
   }
   html {
     @apply font-sans;
@@ -143,4 +144,93 @@
   /* Hide native scrollbar in overflow-x containers (cross-browser) */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* ─── Premium Elevation Shadow Tokens ─────────────────────────────────── */
+:root {
+  --shadow-card:     0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-elevated: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-floating: 0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-vira:     0 4px 12px rgba(22,101,52,0.25), 0 1px 3px rgba(0,0,0,0.12), 0 0 0 1px rgba(22,101,52,0.08);
+}
+
+/* ─── Keyframe Animations ──────────────────────────────────────────────── */
+@keyframes kv-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes kv-slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes kv-slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes kv-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(22,101,52,0.30); }
+  50%       { box-shadow: 0 0 0 8px rgba(22,101,52,0);    }
+}
+@keyframes kv-ping-slow {
+  0%   { transform: scale(1);   opacity: 0.8; }
+  75%  { transform: scale(2);   opacity: 0;   }
+  100% { transform: scale(2.2); opacity: 0;   }
+}
+@keyframes kv-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes kv-bounce-dot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%            { transform: scale(1);   opacity: 1;   }
+}
+@keyframes kv-spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes kv-accordion-down {
+  from { opacity: 0; height: 0; }
+  to   { opacity: 1; height: var(--kv-radix-accordion-content-height, auto); }
+}
+@keyframes kv-accordion-up {
+  from { opacity: 1; height: var(--kv-radix-accordion-content-height, auto); }
+  to   { opacity: 0; height: 0; }
+}
+
+/* ─── Animation Utility Classes ────────────────────────────────────────── */
+.kv-fade-in          { animation: kv-fade-in  0.35s ease both; }
+.kv-slide-up         { animation: kv-slide-up 0.4s  cubic-bezier(0.16, 1, 0.3, 1) both; }
+.kv-slide-down       { animation: kv-slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.kv-pulse-glow       { animation: kv-pulse-glow 2.5s ease-in-out infinite; }
+.kv-ping-slow        { animation: kv-ping-slow  3s   ease-in-out infinite; }
+.kv-spin-slow        { animation: kv-spin-slow  8s   linear infinite; }
+
+/* Stagger helpers for list animations */
+.kv-stagger > *:nth-child(1) { animation-delay: 0ms;   }
+.kv-stagger > *:nth-child(2) { animation-delay: 60ms;  }
+.kv-stagger > *:nth-child(3) { animation-delay: 120ms; }
+.kv-stagger > *:nth-child(4) { animation-delay: 180ms; }
+.kv-stagger > *:nth-child(5) { animation-delay: 240ms; }
+.kv-stagger > *:nth-child(6) { animation-delay: 300ms; }
+.kv-stagger > *:nth-child(7) { animation-delay: 360ms; }
+.kv-stagger > *:nth-child(8) { animation-delay: 420ms; }
+
+/* Card elevation on hover */
+.kv-card-hover {
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 220ms ease;
+}
+.kv-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* ─── Respect prefers-reduced-motion ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:   0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration:  0.01ms !important;
+  }
+  .kv-pulse-glow, .kv-ping-slow, .kv-spin-slow { animation: none !important; }
 }

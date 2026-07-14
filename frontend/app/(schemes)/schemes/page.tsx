@@ -328,16 +328,24 @@ export default function SchemesPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-foreground">State</label>
-                        <select 
-                          value={form.state}
-                          onChange={(e) => setForm({ ...form, state: e.target.value })}
-                          className="w-full bg-card border border-border rounded-btn px-3.5 h-11 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none"
-                        >
-                          <option value="Maharashtra">Maharashtra (Western Zone)</option>
-                          <option value="Punjab">Punjab (Northern Granary)</option>
-                          <option value="Gujarat">Gujarat (West Coast)</option>
-                        </select>
+                        <div className="relative">
+                          <select 
+                            value={form.state}
+                            onChange={(e) => setForm({ ...form, state: e.target.value })}
+                            className="w-full bg-card border border-border rounded-btn pl-4 pr-10 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none appearance-none cursor-pointer transition-all duration-200"
+                          >
+                            <option value="Maharashtra">Maharashtra (Western Zone)</option>
+                            <option value="Punjab">Punjab (Northern Granary)</option>
+                            <option value="Gujarat">Gujarat (West Coast)</option>
+                          </select>
+                          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
                       </div>
+
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-foreground">District</label>
@@ -409,18 +417,26 @@ export default function SchemesPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-foreground">Active Crop Type</label>
-                        <select 
-                          value={form.cropType}
-                          onChange={(e) => setForm({ ...form, cropType: e.target.value })}
-                          className="w-full bg-card border border-border rounded-btn px-3.5 h-11 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none"
-                        >
-                          <option value="Sugarcane">Sugarcane (Cash crop)</option>
-                          <option value="Cotton">Cotton (Cash crop)</option>
-                          <option value="Paddy">Paddy / Rice (Grains)</option>
-                          <option value="Groundnut">Groundnut (Oilseeds)</option>
-                          <option value="Vegetables">Vegetables</option>
-                        </select>
+                        <div className="relative">
+                          <select 
+                            value={form.cropType}
+                            onChange={(e) => setForm({ ...form, cropType: e.target.value })}
+                            className="w-full bg-card border border-border rounded-btn pl-4 pr-10 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none appearance-none cursor-pointer transition-all duration-200"
+                          >
+                            <option value="Sugarcane">Sugarcane (Cash crop)</option>
+                            <option value="Cotton">Cotton (Cash crop)</option>
+                            <option value="Paddy">Paddy / Rice (Grains)</option>
+                            <option value="Groundnut">Groundnut (Oilseeds)</option>
+                            <option value="Vegetables">Vegetables</option>
+                          </select>
+                          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
                       </div>
+
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-foreground">District Head Office</label>
@@ -645,12 +661,23 @@ export default function SchemesPage() {
                     </div>
 
                     {/* AI Recommendation */}
-                    <div className="mt-5 pt-3 border-t border-border/40 flex items-start gap-2.5 text-xs">
-                      <Sparkles className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5 animate-pulse" />
-                      <p className="text-muted-foreground leading-relaxed">
-                        <strong className="text-foreground">Vira AI Recommendation:</strong> You are eligible for RKVY, PM-KISAN, and the Solar Pump Subsidy. Priority is high for **Solar Pump Subsidy** since applications close June 30. Applying for both PM-KISAN and Micro Irrigation could save you ₹30,500 this season.
-                      </p>
+                    <div className="mt-5 pt-3.5 border-t border-border/40 flex items-start gap-3.5 text-xs bg-emerald-500/[0.03] dark:bg-emerald-500/[0.01] p-4.5 rounded-[12px] border-l-4 border-l-primary">
+                      <div className="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 shadow-inner">
+                        <Sparkles className="h-4 w-4 animate-pulse" />
+                      </div>
+                      <div className="space-y-1 text-left flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <strong className="text-foreground">Vira AI Recommendation</strong>
+                          <Badge variant="outline" className="text-[8px] font-black border-primary/20 bg-primary/10 text-primary px-1.5 py-0.5 shrink-0 rounded-full select-none">
+                            ✨ VIRA AI
+                          </Badge>
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed font-semibold">
+                          You are eligible for RKVY, PM-KISAN, and the Solar Pump Subsidy. Priority is high for **Solar Pump Subsidy** since applications close June 30. Applying for both PM-KISAN and Micro Irrigation could save you ₹30,500 this season.
+                        </p>
+                      </div>
                     </div>
+
                   </Card>
                 </div>
 

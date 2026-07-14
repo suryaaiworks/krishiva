@@ -128,14 +128,14 @@ export default function SettingsPage() {
         {/* MAIN SETTINGS GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* LEFT COLUMN: Configurations & Preferences (Col Span 7) */}
+          {/* LEFT COLUMN: General, Accessibility & Notifications (Col Span 7) */}
           <div className="lg:col-span-7 space-y-6">
             
-            {/* Preferences Section (Theme, Language, Fonts) */}
-            <Card title="" animate={false} className="p-5 space-y-4">
+            {/* 1. General Preferences Section */}
+            <Card title="" animate={false} className="p-6 space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                 <Globe className="h-5 w-5 text-primary shrink-0" />
-                <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Interface Preferences</h4>
+                <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">General Preferences</h4>
               </div>
 
               <div className="space-y-4 text-xs leading-normal">
@@ -167,7 +167,7 @@ export default function SettingsPage() {
                         onClick={() => setTheme(t.id)}
                         className={`p-3 rounded-btn border text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 ${
                           theme === t.id
-                            ? "border-primary bg-primary/5 text-primary font-bold"
+                            ? "border-primary bg-primary/5 text-primary font-bold shadow-sm"
                             : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
                         }`}
                       >
@@ -192,9 +192,9 @@ export default function SettingsPage() {
                       <div
                         key={acc.id}
                         onClick={() => setAccentColor(acc.id as AccentColor)}
-                        className={`p-2.5 rounded-btn border text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 ${
+                        className={`p-2 rounded-btn border text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 ${
                           accentColor === acc.id
-                            ? "border-primary bg-primary/5 text-primary font-bold animate-pulse-once"
+                            ? "border-primary bg-primary/5 text-primary font-bold shadow-sm"
                             : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
                         }`}
                       >
@@ -204,7 +204,17 @@ export default function SettingsPage() {
                     ))}
                   </div>
                 </div>
+              </div>
+            </Card>
 
+            {/* 2. Accessibility Section */}
+            <Card title="" animate={false} className="p-6 space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                <Smartphone className="h-5 w-5 text-primary shrink-0" />
+                <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Accessibility &amp; Assistive Tools</h4>
+              </div>
+
+              <div className="space-y-4 text-xs leading-normal">
                 {/* Font Size Selection */}
                 <div className="space-y-1.5">
                   <label className="font-bold text-foreground">Accessibility Font Size</label>
@@ -215,7 +225,7 @@ export default function SettingsPage() {
                         onClick={() => setFontSize(size)}
                         className={`flex-1 h-9 rounded-btn text-xs font-bold transition-all border cursor-pointer capitalize ${
                           fontSize === size
-                            ? "bg-primary text-white border-primary"
+                            ? "bg-primary text-white border-primary shadow-sm"
                             : "bg-card text-muted-foreground hover:bg-muted/30 border-border"
                         }`}
                       >
@@ -225,7 +235,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                {/* Offline Mode & Voice Assistant switches */}
+                {/* Voice & Offline Toggles */}
                 <div className="space-y-3.5 pt-3 border-t border-border/20">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
@@ -236,7 +246,7 @@ export default function SettingsPage() {
                       type="checkbox" 
                       checked={voiceEnabled} 
                       onChange={() => setVoiceEnabled(!voiceEnabled)}
-                      className="h-4.5 w-9 rounded-full appearance-none bg-muted checked:bg-primary transition-all cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-3.5 after:w-3.5 after:rounded-full after:bg-card after:transition-all checked:after:translate-x-4.5"
+                      className="h-5 w-10 rounded-full appearance-none bg-muted checked:bg-primary transition-all duration-300 ease-in-out cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4 after:rounded-full after:bg-card after:transition-all duration-300 checked:after:translate-x-5 after:shadow-sm"
                     />
                   </div>
 
@@ -249,15 +259,15 @@ export default function SettingsPage() {
                       type="checkbox" 
                       checked={offlineMode} 
                       onChange={() => setOfflineMode(!offlineMode)}
-                      className="h-4.5 w-9 rounded-full appearance-none bg-muted checked:bg-primary transition-all cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-3.5 after:w-3.5 after:rounded-full after:bg-card after:transition-all checked:after:translate-x-4.5"
+                      className="h-5 w-10 rounded-full appearance-none bg-muted checked:bg-primary transition-all duration-300 ease-in-out cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4 after:rounded-full after:bg-card after:transition-all duration-300 checked:after:translate-x-5 after:shadow-sm"
                     />
                   </div>
                 </div>
               </div>
             </Card>
 
-            {/* Notification Preferences */}
-            <Card title="" animate={false} className="p-5 space-y-4">
+            {/* 3. Notifications Section */}
+            <Card title="" animate={false} className="p-6 space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                 <Bell className="h-5 w-5 text-primary shrink-0" />
                 <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Advisory Notifications Configuration</h4>
@@ -265,7 +275,7 @@ export default function SettingsPage() {
 
               <div className="divide-y divide-border/20">
                 {notifications.map((setting) => (
-                  <div key={setting.id} className="flex items-center justify-between py-3 text-xs leading-normal">
+                  <div key={setting.id} className="flex items-center justify-between py-3.5 text-xs leading-normal">
                     <div className="space-y-0.5 pr-4">
                       <span className="font-bold text-foreground">{setting.label}</span>
                       <span className="text-[10.5px] text-muted-foreground block">{setting.description}</span>
@@ -274,7 +284,7 @@ export default function SettingsPage() {
                       type="checkbox" 
                       checked={setting.enabled} 
                       onChange={() => handleToggleNotification(setting.id)}
-                      className="h-4.5 w-9 rounded-full appearance-none bg-muted checked:bg-primary transition-all cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-3.5 after:w-3.5 after:rounded-full after:bg-card after:transition-all checked:after:translate-x-4.5 shrink-0"
+                      className="h-5 w-10 rounded-full appearance-none bg-muted checked:bg-primary transition-all duration-300 ease-in-out cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4 after:rounded-full after:bg-card after:transition-all duration-300 checked:after:translate-x-5 after:shadow-sm shrink-0"
                     />
                   </div>
                 ))}
@@ -285,21 +295,21 @@ export default function SettingsPage() {
             <div className="flex gap-4">
               <Button
                 onClick={handleSaveSettings}
-                className="flex-1 text-xs font-bold h-10 rounded-btn cursor-pointer bg-primary text-white"
+                className="flex-1 text-xs font-bold h-11 rounded-btn cursor-pointer bg-primary text-white hover:bg-primary/95 shadow-md transition-all duration-150 active:scale-[0.98]"
               >
-                Save Settings
+                Save All Preferences
               </Button>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Security, Support & FAQ Desk (Col Span 5) */}
+          {/* RIGHT COLUMN: Security & Support (Col Span 5) */}
           <div className="lg:col-span-5 space-y-6">
             
-            {/* Security Settings Card */}
-            <Card title="" animate={false} className="p-5 space-y-4">
+            {/* 4. Security Settings Card */}
+            <Card title="" animate={false} className="p-6 space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                 <Lock className="h-5 w-5 text-primary shrink-0" />
-                <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Device Security & Biometrics</h4>
+                <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Device Security &amp; Credentials</h4>
               </div>
 
               <div className="space-y-4 text-xs leading-normal">
@@ -312,7 +322,7 @@ export default function SettingsPage() {
                     type="checkbox" 
                     checked={biometricsEnabled} 
                     onChange={() => setBiometricsEnabled(!biometricsEnabled)}
-                    className="h-4.5 w-9 rounded-full appearance-none bg-muted checked:bg-primary transition-all cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-3.5 after:w-3.5 after:rounded-full after:bg-card after:transition-all checked:after:translate-x-4.5"
+                    className="h-5 w-10 rounded-full appearance-none bg-muted checked:bg-primary transition-all duration-300 ease-in-out cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4 after:rounded-full after:bg-card after:transition-all duration-300 checked:after:translate-x-5 after:shadow-sm"
                   />
                 </div>
 
@@ -325,23 +335,23 @@ export default function SettingsPage() {
                     type="checkbox" 
                     checked={pinLockEnabled} 
                     onChange={() => setPinLockEnabled(!pinLockEnabled)}
-                    className="h-4.5 w-9 rounded-full appearance-none bg-muted checked:bg-primary transition-all cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-3.5 after:w-3.5 after:rounded-full after:bg-card after:transition-all checked:after:translate-x-4.5"
+                    className="h-5 w-10 rounded-full appearance-none bg-muted checked:bg-primary transition-all duration-300 ease-in-out cursor-pointer relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4 after:rounded-full after:bg-card after:transition-all duration-300 checked:after:translate-x-5 after:shadow-sm"
                   />
                 </div>
 
                 {/* Device sessions log */}
-                <div className="pt-3 border-t border-border/20 space-y-2">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Active Device Sessions</span>
+                <div className="pt-4 border-t border-border/20 space-y-2.5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Active Device Sessions</span>
                   
-                  <div className="flex items-center justify-between p-2.5 bg-muted/30 border border-border/60 rounded-btn">
+                  <div className="flex items-center justify-between p-3 bg-muted/30 border border-border/60 rounded-[14px] shadow-sm">
                     <div className="flex items-center gap-2">
-                      <Smartphone className="h-4.5 w-4.5 text-primary shrink-0" />
+                      <Smartphone className="h-5 w-5 text-primary shrink-0" />
                       <div className="space-y-0.5">
                         <span className="font-bold block text-[10.5px] text-foreground">OnePlus 11R (Primary)</span>
                         <span className="text-[9.5px] text-muted-foreground">Shirur, Pune • Active Now</span>
                       </div>
                     </div>
-                    <Badge variant="outline" className="font-bold px-2 text-[9px] bg-card border border-border text-foreground">
+                    <Badge variant="outline" className="font-bold px-2 py-0.5 text-[9px] bg-card border border-border text-foreground rounded-btn">
                       This Device
                     </Badge>
                   </div>
@@ -349,24 +359,24 @@ export default function SettingsPage() {
               </div>
             </Card>
 
-            {/* Help & Support Desk */}
-            <Card title="" animate={false} className="p-5 space-y-4">
+            {/* 5. Support & FAQ Card */}
+            <Card title="" animate={false} className="p-6 space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                 <HelpCircle className="h-5 w-5 text-primary shrink-0" />
-                <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Help & Support Desk</h4>
+                <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Help &amp; Customer Support</h4>
               </div>
 
               <div className="space-y-3.5 text-xs leading-normal">
                 {/* Helpline button */}
-                <div className="flex justify-between items-center p-3 rounded-btn border border-rose-500/20 bg-rose-500/5">
-                  <div className="space-y-0.5">
+                <div className="flex justify-between items-center p-3.5 rounded-[14px] border border-rose-500/20 bg-rose-500/5">
+                  <div className="space-y-0.5 pr-2">
                     <span className="font-bold block text-[11px] text-foreground">Krishiva Helpline (Toll-Free)</span>
                     <span className="text-[9.5px] text-muted-foreground">Free farming support (24x7)</span>
                   </div>
                   <Button
                     onClick={() => alert("Dialing Krishiva Helpline: 1800-180-1551")}
                     size="sm"
-                    className="h-8 rounded-btn cursor-pointer bg-primary text-white px-3 font-bold"
+                    className="h-8 rounded-btn cursor-pointer bg-rose-500 hover:bg-rose-600 text-white px-3.5 font-bold shadow-sm shrink-0"
                   >
                     <Phone className="mr-1 h-3.5 w-3.5" />
                     Call
@@ -374,39 +384,39 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Support actions list */}
-                <div className="space-y-2 text-[11px] text-muted-foreground pt-1 pl-1">
+                <div className="space-y-2 text-[11px] text-muted-foreground pt-1.5 pl-1">
                   <div 
                     onClick={() => router.push("/help")}
-                    className="flex justify-between items-center py-1.5 border-b border-border/30 cursor-pointer hover:text-primary transition-colors"
+                    className="flex justify-between items-center py-2 border-b border-border/30 cursor-pointer hover:text-primary transition-colors font-semibold"
                   >
                     <span>Read Frequently Asked Questions</span>
-                    <Play className="h-3 w-3 fill-current text-muted-foreground/40 rotate-90" />
+                    <Play className="h-2.5 w-2.5 fill-current text-muted-foreground/45 rotate-90" />
                   </div>
                   <div 
                     onClick={() => router.push("/help")}
-                    className="flex justify-between items-center py-1.5 border-b border-border/30 cursor-pointer hover:text-primary transition-colors"
+                    className="flex justify-between items-center py-2 border-b border-border/30 cursor-pointer hover:text-primary transition-colors font-semibold"
                   >
                     <span>Chat with support officer</span>
-                    <Play className="h-3 w-3 fill-current text-muted-foreground/40 rotate-90" />
+                    <Play className="h-2.5 w-2.5 fill-current text-muted-foreground/45 rotate-90" />
                   </div>
                   <div 
                     onClick={() => router.push("/help")}
-                    className="flex justify-between items-center py-1.5 cursor-pointer hover:text-primary transition-colors"
+                    className="flex justify-between items-center py-2 cursor-pointer hover:text-primary transition-colors font-semibold"
                   >
                     <span>Report a software bug / issue</span>
-                    <Play className="h-3 w-3 fill-current text-muted-foreground/40 rotate-90" />
+                    <Play className="h-2.5 w-2.5 fill-current text-muted-foreground/45 rotate-90" />
                   </div>
                 </div>
 
                 {/* About & Version */}
-                <div className="pt-3 border-t border-border/20 text-center space-y-1">
+                <div className="pt-4 border-t border-border/20 text-center space-y-1.5">
                   <span 
                     onClick={() => router.push("/about")}
-                    className="text-[10px] font-bold text-foreground block cursor-pointer hover:text-primary transition-colors"
+                    className="text-[10px] font-bold text-foreground block cursor-pointer hover:text-primary transition-colors uppercase tracking-wider"
                   >
                     Krishiva AI App
                   </span>
-                  <span className="text-[9.5px] text-muted-foreground block">Version 1.0.4 (Production Build)</span>
+                  <span className="text-[9.5px] text-muted-foreground block font-semibold">Version 1.0.4 (Production Build)</span>
                 </div>
               </div>
             </Card>
@@ -414,6 +424,7 @@ export default function SettingsPage() {
           </div>
 
         </div>
+
 
       </div>
     </MainLayout>

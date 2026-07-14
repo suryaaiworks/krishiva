@@ -407,12 +407,23 @@ export default function MarketIntelligencePage() {
             </div>
 
             {/* AI Summary */}
-            <div className="mt-5 pt-4 border-t border-border/40 flex items-start gap-2.5 text-xs">
-              <Sparkles className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
-              <p className="text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Vira AI Market Summary:</strong> Mandi volumes are robust. Grains and oilseeds trade at above-average rates due to export relaxations. Tomato indices see drop corrections due to harvest flushes in Nashik.
-              </p>
+            <div className="mt-5 pt-4 border-t border-border/40 flex items-start gap-3.5 text-xs bg-emerald-500/[0.03] dark:bg-emerald-500/[0.01] p-4.5 rounded-[12px] border-l-4 border-l-primary">
+              <div className="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 shadow-inner">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div className="space-y-1 text-left flex-1">
+                <div className="flex items-center gap-1.5">
+                  <strong className="text-foreground">Vira AI Market Summary</strong>
+                  <Badge variant="outline" className="text-[8px] font-black border-primary/20 bg-primary/10 text-primary px-1.5 py-0.5 shrink-0 rounded-full select-none">
+                    ✨ VIRA AI
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground leading-relaxed font-semibold">
+                  Mandi volumes are robust. Grains and oilseeds trade at above-average rates due to export relaxations. Tomato indices see drop corrections due to harvest flushes in Nashik.
+                </p>
+              </div>
             </div>
+
           </Card>
 
           {/* Sell Advisory Recommendation Card */}

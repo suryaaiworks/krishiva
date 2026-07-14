@@ -874,10 +874,10 @@ export default function DashboardPage() {
                       <span className="font-bold text-muted-foreground animate-pulse">AI reasoning with Gemini...</span>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                        <span className="font-bold text-primary flex items-center gap-1.5">
-                          <Brain className="h-3.5 w-3.5" />
+                    <div className="space-y-3.5 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.01] p-4.5 rounded-[16px] border-l-4 border-l-primary text-xs leading-normal">
+                      <div className="flex items-center justify-between border-b border-primary/15 pb-2">
+                        <span className="font-bold text-primary flex items-center gap-1.5 text-sm">
+                          <Sparkles className="h-4 w-4 text-primary animate-pulse" />
                           Vira AI Advisory Feedback
                         </span>
                         <Button 
@@ -888,8 +888,9 @@ export default function DashboardPage() {
                           Clear
                         </Button>
                       </div>
-                      <p className="text-foreground leading-normal font-medium text-left">{aiResponse}</p>
+                      <p className="text-foreground leading-normal font-semibold text-left">{aiResponse}</p>
                     </div>
+
                   )}
                 </motion.div>
               )}
@@ -1044,23 +1045,48 @@ export default function DashboardPage() {
               initial={{ scale: 0.8, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 10 }}
-              className="bg-card border border-border rounded-[20px] p-3 shadow-xl max-w-xs text-xs text-foreground relative z-10 flex items-start gap-2 select-text pointer-events-auto"
+              className="bg-card/95 backdrop-blur-md border border-border/80 rounded-[22px] p-5 shadow-2xl max-w-xs text-xs text-foreground relative z-10 flex flex-col gap-2.5 select-text pointer-events-auto w-72"
             >
-              <div className="space-y-1.5 flex-1">
-                <span className="font-bold text-primary block flex items-center gap-1.5">
-                  <Bot className="h-3.5 w-3.5 animate-pulse" />
-                  Vira AI
+              <div className="space-y-2 flex-1 text-left">
+                <span className="font-bold text-primary flex items-center gap-1.5 text-sm">
+                  <Sparkles className="h-4 w-4 text-emerald-500 animate-pulse" />
+                  🌱 Vira AI
                 </span>
-                <p className="leading-relaxed font-medium">
-                  {viraState === "idle" && "Hello Ramesh! Need agricultural tips, weather alerts, or buyer prices? I'm listening."}
-                  {viraState === "thinking" && "Vira AI is formulating advice with Gemini..."}
-                  {viraState === "speaking" && "Sugarcane spot prices look favorable today. You can negotiate direct buyer contracts now."}
-                </p>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-foreground text-sm">Namaste Ramesh!</h4>
+                  <p className="text-[11px] text-muted-foreground font-semibold">
+                    {viraState === "idle" ? "How can I help today?" : viraState === "thinking" ? "Vira AI is formulating advice..." : "Vira is speaking..."}
+                  </p>
+                </div>
+                {viraState === "idle" ? (
+                  <ul className="space-y-1 text-muted-foreground font-semibold pt-1 border-t border-border/40">
+                    <li className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => handlePromptClick("Scan crop leaf")}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Disease Detection
+                    </li>
+                    <li className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => handlePromptClick("Show weather forecast")}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Weather Intelligence
+                    </li>
+                    <li className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => handlePromptClick("Eligible government schemes")}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Government Schemes
+                    </li>
+                    <li className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => handlePromptClick("Market prices near me")}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Market Prices
+                    </li>
+                    <li className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => handlePromptClick("Recommend crops")}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Crop Advisory
+                    </li>
+                  </ul>
+                ) : (
+                  <p className="leading-relaxed font-semibold text-primary pt-1 border-t border-border/40">
+                    {viraState === "thinking" && "Formulating advice with Gemini..."}
+                    {viraState === "speaking" && "Sugarcane spot prices look favorable today. You can negotiate direct buyer contracts now."}
+                  </p>
+                )}
               </div>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-5 w-5 rounded-full hover:bg-muted text-muted-foreground p-0"
+                className="h-5 w-5 rounded-full hover:bg-muted text-muted-foreground p-0 absolute right-3 top-3"
                 onClick={() => setShowViraBubble(false)}
               >
                 <X className="h-3 w-3" />
@@ -1079,34 +1105,28 @@ export default function DashboardPage() {
               ease: "easeInOut"
             }}
             onClick={() => handlePromptClick("Help")}
-            className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-accent text-primary-foreground shadow-2xl hover:shadow-primary/20 hover:scale-105 cursor-pointer pointer-events-auto select-none overflow-hidden"
+            className="relative flex h-16 w-16 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xl hover:shadow-emerald-500/30 hover:scale-[1.06] transition-all duration-300 cursor-pointer pointer-events-auto select-none overflow-visible"
           >
-            {/* Pulsing Concentric rings */}
-            <span className={`absolute -inset-2 rounded-full border-2 border-primary/20 opacity-45 pointer-events-none ${viraState === "thinking" ? "animate-spin" : viraState === "speaking" ? "animate-pulse" : "animate-ping"}`} />
-            
-            {/* Custom Robot face illustration */}
-            <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-white relative z-10">
-              {/* Antenna */}
-              <line x1="22" y1="8" x2="22" y2="4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-              <circle cx="22" cy="3" r="1.5" fill="currentColor" className={viraState === "thinking" ? "animate-ping" : ""} />
-              {/* Robot Head */}
-              <rect x="8" y="10" width="28" height="24" rx="8" fill="currentColor" className="fill-emerald-100 text-primary stroke-current stroke-[2.5]" />
-              {/* Eyes */}
-              <circle cx="16" cy="20" r="2.5" fill="currentColor" className={`text-primary ${viraState === "thinking" ? "animate-pulse" : ""}`} />
-              <circle cx="28" cy="20" r="2.5" fill="currentColor" className={`text-primary ${viraState === "thinking" ? "animate-pulse" : ""}`} />
-              {/* Mouth */}
-              {viraState === "speaking" ? (
-                <path d="M 16,27 Q 22,31 28,27" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="animate-pulse" />
-              ) : (
-                <line x1="17" y1="27" x2="27" y2="27" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              )}
+            {/* Pulsing Concentric rings for AI status/sparkle */}
+            <span className="absolute -inset-1 rounded-full border-2 border-emerald-500/30 opacity-70 pointer-events-none animate-pulse" />
+            <span className="kv-ping-slow absolute -inset-3 rounded-full border border-emerald-500/20 pointer-events-none" />
+
+            {/* Custom agriculture leaf/wheat + sparkle SVG */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 text-white relative z-10">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 21 3c-1.5 4-2 5.5-3.1 11.2A7 7 0 0 1 11 20z" fill="rgba(255,255,255,0.18)" />
+              <path d="M9 22L11 20" />
+              <path d="M11 20c2.5-2.5 5-3.5 7-7" />
             </svg>
-            
+
+            {/* Sparkles element */}
+            <Sparkles className="absolute -top-1 -right-1 h-5.5 w-5.5 text-amber-400 bg-emerald-700 rounded-full p-0.5 border border-emerald-600 shadow-md animate-pulse z-20" />
+
             {/* Glowing backdrop shadow */}
-            <div className="absolute inset-0 bg-primary/25 blur-sm scale-110 pointer-events-none" />
+            <div className="absolute inset-0 bg-emerald-500/30 blur-md rounded-full -z-10" />
           </motion.div>
         </div>
       )}
+
 
     </MainLayout>
   );

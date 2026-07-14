@@ -490,8 +490,9 @@ export default function OfficesPage() {
 
                 {/* Blinking pin for User Location (Pune Farm) */}
                 <div className="absolute top-[90px] left-[45px] flex items-center justify-center">
-                  <span className="absolute h-5 w-5 rounded-full bg-emerald-500/40 animate-ping" />
-                  <div className="relative h-2.5 w-2.5 rounded-full bg-emerald-600 border border-white" />
+                  <span className="absolute h-7 w-7 rounded-full bg-primary/20 border border-primary/30 kv-ping-slow" />
+                  <span className="absolute h-4 w-4 rounded-full bg-primary/30 animate-pulse" />
+                  <div className="relative h-3 w-3 rounded-full bg-primary border-2 border-white shadow-md" />
                 </div>
 
                 {/* Office locations pins */}
@@ -504,15 +505,21 @@ export default function OfficesPage() {
                       style={{ top: office.coords.y - 12, left: office.coords.x - 12 }}
                       onClick={() => handleSelectOffice(office.id)}
                     >
-                      <MapPin className={`h-6 w-6 ${isSelected ? "text-primary fill-primary/10 drop-shadow-md" : "text-muted-foreground/60"}`} />
+                      <div className="relative flex items-center justify-center">
+                        {isSelected && (
+                          <span className="absolute h-9 w-9 rounded-full bg-primary/20 border border-primary/30 animate-ping pointer-events-none" />
+                        )}
+                        <MapPin className={`h-6 w-6 relative z-10 ${isSelected ? "text-primary fill-primary/10 drop-shadow-md" : "text-muted-foreground/60"}`} />
+                      </div>
                       {isSelected && (
-                        <div className="absolute -top-6 bg-card border border-border px-2 py-0.5 rounded-btn shadow-sm text-[8px] font-bold text-foreground whitespace-nowrap">
+                        <div className="absolute -top-6 bg-card border border-border px-2 py-0.5 rounded-btn shadow-sm text-[8px] font-bold text-foreground whitespace-nowrap z-20">
                           {office.distance}
                         </div>
                       )}
                     </div>
                   );
                 })}
+
               </div>
 
               {/* Show selected center's basic info & directions toggle */}

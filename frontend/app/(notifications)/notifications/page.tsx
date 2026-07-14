@@ -210,7 +210,7 @@ export default function NotificationsPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsOffline(prev => !prev)}
-              className={`h-9 rounded-btn text-xs font-bold border-border cursor-pointer ${isOffline ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-card"}`}
+              className={`h-9 rounded-btn text-xs font-bold border-border cursor-pointer transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] hover:shadow-md ${isOffline ? "bg-red-500/10 text-red-500 border-red-500/20 shadow-sm animate-pulse" : "bg-card"}`}
             >
               <WifiOff className="h-3.5 w-3.5 mr-1.5" />
               {isOffline ? "Go Online" : "Simulate Offline"}
@@ -239,10 +239,10 @@ export default function NotificationsPage() {
                 key={type}
                 size="sm"
                 onClick={() => setFilter(type)}
-                className={`h-8 px-3.5 text-[10px] font-bold rounded-btn cursor-pointer transition-all duration-200 ${
+                className={`h-8 px-3.5 text-[10px] font-bold rounded-btn cursor-pointer transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] ${
                   filter === type 
-                    ? "bg-primary text-white shadow-sm" 
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    ? "bg-primary text-white shadow-md" 
+                    : "bg-muted text-muted-foreground hover:bg-muted/85 hover:shadow-sm"
                 }`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -324,7 +324,7 @@ export default function NotificationsPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.2 }}
-                  className={`relative overflow-hidden rounded-card border bg-card p-5 shadow-sm transition-all duration-300 ${!notif.read ? "border-primary/20 bg-emerald-500/5 shadow-md" : "border-border/80 hover:border-primary/10"}`}
+                  className={`relative overflow-hidden rounded-card border bg-card p-5 transition-all duration-300 kv-card-hover ${!notif.read ? "border-primary/20 bg-emerald-500/5 shadow-md" : "border-border/80"}`}
                 >
                   <div className="flex items-start gap-4">
                     {/* Severity Icon Indicator */}

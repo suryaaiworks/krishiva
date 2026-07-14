@@ -246,36 +246,54 @@ export default function HelpPage() {
                 No matching FAQ topics found for your search query.
               </div>
             ) : (
-              filteredFaqs.map((faq, idx) => (
-                <div 
-                  key={idx}
-                  className="rounded-card border border-border/60 bg-card overflow-hidden transition-all duration-200"
-                >
-                  <button
-                    onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
-                    className="w-full p-4 flex justify-between items-center text-xs font-bold text-foreground text-left cursor-pointer hover:bg-muted/20"
+              filteredFaqs.map((faq, idx) => {
+                const isExpanded = expandedIndex === idx;
+                const dotColor = faq.category === "vira" ? "bg-emerald-500" :
+                                 faq.category === "crops" ? "bg-green-500" :
+                                 faq.category === "disease" ? "bg-rose-500" :
+                                 faq.category === "mandi" ? "bg-amber-500" :
+                                 faq.category === "schemes" ? "bg-violet-500" :
+                                 faq.category === "relief" ? "bg-blue-500" : "bg-primary";
+                return (
+                  <motion.div 
+                    layout
+                    key={idx}
+                    className={`rounded-card border transition-all duration-200 overflow-hidden ${
+                      isExpanded 
+                        ? "border-primary bg-primary/[0.02] shadow-sm" 
+                        : "border-border/60 bg-card hover:border-border-hover"
+                    }`}
                   >
-                    <span>{faq.q}</span>
-                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expandedIndex === idx ? "rotate-180" : ""}`} />
-                  </button>
+                    <button
+                      onClick={() => setExpandedIndex(isExpanded ? null : idx)}
+                      className="w-full p-4 flex justify-between items-center text-xs font-bold text-foreground text-left cursor-pointer hover:bg-muted/15 select-none"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
+                        <span>{faq.q}</span>
+                      </div>
+                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${isExpanded ? "rotate-180 text-primary" : ""}`} />
+                    </button>
 
-                  <AnimatePresence initial={false}>
-                    {expandedIndex === idx && (
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: "auto" }}
-                        exit={{ height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-4 pb-4 text-xs text-muted-foreground leading-relaxed border-t border-border/20 pt-3">
-                          {faq.a}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 350, damping: 35 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-5 text-xs text-muted-foreground leading-relaxed border-t border-border/20 pt-3">
+                            {faq.a}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })
+
             )}
           </div>
         </div>

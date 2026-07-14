@@ -105,7 +105,7 @@ export function Sidebar() {
               )}
 
               {/* Icon */}
-              <Icon className={cn("h-5.2 w-5.2 shrink-0 transition-colors", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} strokeWidth={2.2} />
+              <Icon className={cn("h-[22px] w-[22px] shrink-0 transition-all duration-200 group-hover:scale-110", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} strokeWidth={2.1} />
 
               {/* Text label */}
               {!isCollapsed && (

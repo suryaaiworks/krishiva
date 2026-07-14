@@ -202,15 +202,24 @@ export function UploadImageCard({
           )}
         </div>
       ) : (
-        <div className="flex flex-col items-center py-6 text-center space-y-4 w-full">
-          <div className="flex gap-2.5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Camera className="h-6 w-6" />
-            </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Upload className="h-6 w-6" />
-            </div>
+        <div className="flex flex-col items-center py-5 text-center space-y-3.5 w-full">
+          <div className="relative w-full max-w-[200px] h-20 flex items-center justify-center">
+            {/* Ambient pulsing backdrop */}
+            <div className="absolute h-16 w-16 rounded-full bg-primary/5 dark:bg-primary/10 animate-pulse pointer-events-none" />
+            <div className="absolute h-10 w-10 rounded-full bg-primary/10 dark:bg-primary/25 pointer-events-none" />
+            
+            {/* Custom agriculture leaf + camera outline illustration */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 text-primary relative z-10">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" fill="rgba(34,197,94,0.15)" />
+            </svg>
+            
+            {/* Small leaf emblem floating next to camera */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="absolute top-2 right-12 w-4.5 h-4.5 text-amber-500 animate-pulse">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 21 3c-1.5 4-2 5.5-3.1 11.2A7 7 0 0 1 11 20z" />
+            </svg>
           </div>
+
           <div className="space-y-1.5">
             <p className="text-sm font-bold text-foreground">
               Take a photo or upload crop image

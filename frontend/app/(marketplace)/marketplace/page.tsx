@@ -360,11 +360,18 @@ export default function BuyerMarketplacePage() {
         </div>
 
         {/* AI SELLING ADVISORY RECOMMENDATION */}
-        <div className="bg-gradient-to-tr from-primary/10 via-card to-accent/5 p-5 rounded-card border border-primary/20 flex items-start gap-3 text-xs shadow-sm">
-          <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5 animate-pulse" />
-          <div className="space-y-1">
-            <h4 className="font-extrabold text-foreground">Vira AI Selling Advisory</h4>
-            <p className="text-muted-foreground leading-relaxed">
+        <div className="bg-emerald-500/[0.04] dark:bg-emerald-500/[0.02] border-l-4 border-l-primary border-y-0 border-r-0 p-5 rounded-r-card rounded-l-none flex items-start gap-3.5 text-xs shadow-sm">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 shadow-inner">
+            <Sparkles className="h-4.5 w-4.5 animate-pulse" />
+          </div>
+          <div className="space-y-1.5 flex-1 text-left">
+            <div className="flex items-center gap-2">
+              <h4 className="font-extrabold text-foreground text-sm">Vira AI Selling Advisory</h4>
+              <Badge variant="outline" className="text-[9px] font-black border-primary/20 bg-primary/10 text-primary px-2 py-0.5 shrink-0 rounded-full select-none">
+                ✨ VIRA ADVISOR
+              </Badge>
+            </div>
+            <p className="text-muted-foreground leading-relaxed font-semibold">
               We recommend selling your Sugarcane to **Sahyadri Sugar Cooperative**. While Baramati Agro offers a close rate, Sahyadri Sugar is only 3.5 km away and offers direct pickup, which boosts your net earnings by ₹1,400. Furthermore, Sahyadri Sugar has a 98% payment success rate with instant Direct Bank Transfer upon delivery slip generation.
             </p>
           </div>
@@ -510,12 +517,22 @@ export default function BuyerMarketplacePage() {
                           : "border-border bg-card hover:bg-muted/10"
                       }`}
                     >
-                      <div className="space-y-2 text-xs">
-                        <div className="flex justify-between items-start gap-2">
-                          <h4 className="font-extrabold text-sm text-foreground tracking-tight line-clamp-1">{buyer.companyName}</h4>
-                          <Badge className="shrink-0 bg-primary/10 text-primary border-none text-[8px] font-extrabold px-2.5 py-0.5">
-                            Verified
-                          </Badge>
+                      <div className="space-y-3.5 text-xs">
+                        {/* Company Header with Gradient Logo */}
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-emerald-600 to-emerald-500 text-white flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-md">
+                            {buyer.companyName.split(' ').map(w => w[0]).join('').substring(0, 2)}
+                          </div>
+                          <div className="space-y-0.5 flex-1 min-w-0">
+                            <div className="flex items-center gap-1">
+                              <h4 className="font-extrabold text-xs text-foreground tracking-tight truncate">{buyer.companyName}</h4>
+                              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                            </div>
+                            <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1">
+                              <MapPin className="h-3 w-3 text-primary shrink-0" />
+                              {buyer.location || "Pune"}
+                            </span>
+                          </div>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-2 text-[10.5px] text-muted-foreground py-1">
@@ -527,6 +544,7 @@ export default function BuyerMarketplacePage() {
                           Certification: <strong className="text-foreground">{buyer.certification}</strong>
                         </p>
                       </div>
+
 
                       <div className="pt-3.5 border-t border-border/30 flex justify-between items-center text-[10.5px] text-muted-foreground">
                         <div>

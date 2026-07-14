@@ -245,9 +245,14 @@ export default function ProfilePage() {
             {/* Left Avatar & Basic Info */}
             <div className="md:col-span-8 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
               {/* Photo Avatar */}
-              <div className="relative h-20 w-20 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/30 shrink-0">
-                <User className="h-10 w-10 text-primary" />
-                <Badge variant="success" className="absolute -bottom-1 -right-1 font-bold px-2 py-0.5 text-[8.5px] bg-primary text-white border-none">
+              <div className="relative h-22 w-22 rounded-full overflow-hidden border-2 border-primary/40 shrink-0 shadow-lg bg-emerald-50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src="/illustrations/happy_farmer.png" 
+                  alt="Ramesh Patil Profile" 
+                  className="h-full w-full object-cover"
+                />
+                <Badge variant="success" className="absolute bottom-1 right-1 font-bold px-2 py-0.5 text-[8.5px] bg-primary text-white border-none shadow-sm">
                   Active
                 </Badge>
               </div>
@@ -273,18 +278,19 @@ export default function ProfilePage() {
             </div>
 
             {/* Right Profile Completion status */}
-            <div className="md:col-span-4 space-y-3 bg-card p-4 rounded-card border border-border/60 shadow-sm text-xs leading-normal">
-              <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase">
+            <div className="md:col-span-4 space-y-3.5 bg-card/85 p-5 rounded-[18px] border border-border/80 shadow-md text-xs leading-normal hover:shadow-lg transition-all duration-200">
+              <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                 <span>Profile Completion</span>
-                <span className="text-primary">85% Complete</span>
+                <span className="text-primary font-black">85% Complete</span>
               </div>
-              <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full" style={{ width: "85%" }} />
+              <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: "85%" }} />
               </div>
-              <p className="text-[10px] text-muted-foreground/90">
+              <p className="text-[10px] text-muted-foreground/90 leading-relaxed font-medium">
                 Attach soil reports to complete your profile and unlock certified seed subsidies eligibility checks.
               </p>
             </div>
+
 
           </div>
 

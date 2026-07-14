@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
     if (window.__ViraScriptRunning) {
         console.log("[Vira] Script already running. Skipping duplicate init.");
         return;
@@ -99,8 +99,26 @@
     // Launcher button
     const button = document.createElement("button");
     button.className = "vira-btn theme-earth";
-    button.innerHTML = `<img src="/logo.png" alt="Open Vira"/>`;
+    
+    // Custom leaf/wheat SVG + sparkle inline
+    button.innerHTML = `
+      <svg class="vira-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: white;">
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 21 3c-1.5 4-2 5.5-3.1 11.2A7 7 0 0 1 11 20z" fill="rgba(255,255,255,0.18)"></path>
+        <path d="M9 22L11 20"></path>
+        <path d="M11 20c2.5-2.5 5-3.5 7-7"></path>
+      </svg>
+      <span style="position: absolute; top: 4px; right: 4px; display: block; width: 14px; height: 14px; background: #fbbf24; border-radius: 50%; border: 1.5px solid #16a34a; box-shadow: 0 1px 3px rgba(0,0,0,0.15); animation: viraPulse 1.8s infinite ease-in-out;"></span>
+    `;
     document.body.appendChild(button);
+
+    // Periodic ambient pulse class trigger
+    setInterval(() => {
+        button.classList.add("vira-pulse");
+        setTimeout(() => {
+            button.classList.remove("vira-pulse");
+        }, 2200);
+    }, 4500);
+
 
     // DOM refs
     const domTitle  = popup.querySelector(".vira-title");
