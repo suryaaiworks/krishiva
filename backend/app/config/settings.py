@@ -23,7 +23,6 @@ class Settings(BaseSettings):
     
     # Security and URLs
     SECRET_KEY: str = ""
-    FRONTEND_URL: str = "http://localhost:3000"
     
     # Direct PostgreSQL connection URL (e.g. Supabase Transaction Pooler)
     DATABASE_URL: str = "postgresql://postgres:postgres@127.0.0.1:5432/postgres"
