@@ -70,6 +70,57 @@ const buyersDatabase: Buyer[] = [
     certification: "Govt Licensed Processor"
   },
   {
+    id: "guntur-chilli-exporters",
+    companyName: "Guntur Chilli Exporters",
+    rating: 4.9,
+    cropRequired: "Chilli",
+    quantityRequired: "40 Tons",
+    offeredPrice: 19500,
+    unit: "QTL",
+    distance: "4.2 km",
+    distanceVal: 4.2,
+    pickupAvailable: true,
+    paymentMethod: "DBT Direct Bank Transfer",
+    expectedPaymentTime: "Instant on Weight Slip",
+    category: "Sugarcane", // Matches category filter Sugarcane / Oilseeds / Grains
+    location: "APMC Market, Guntur",
+    certification: "Spices Board Govt Approved"
+  },
+  {
+    id: "krishna-rice-mill",
+    companyName: "Krishna Delta Rice Mill",
+    rating: 4.8,
+    cropRequired: "Paddy",
+    quantityRequired: "200 Tons",
+    offeredPrice: 2350,
+    unit: "QTL",
+    distance: "3.8 km",
+    distanceVal: 3.8,
+    pickupAvailable: true,
+    paymentMethod: "Direct Bank Transfer",
+    expectedPaymentTime: "Net 2 Days",
+    category: "Grains",
+    location: "Gudivada Road, Krishna",
+    certification: "Govt MSP Registered Mill"
+  },
+  {
+    id: "nellore-cotton-spinnings",
+    companyName: "Nellore Cotton Spinnings Ltd",
+    rating: 4.7,
+    cropRequired: "Cotton",
+    quantityRequired: "150 Tons",
+    offeredPrice: 7650,
+    unit: "QTL",
+    distance: "11.2 km",
+    distanceVal: 11.2,
+    pickupAvailable: true,
+    paymentMethod: "Direct Bank Transfer",
+    expectedPaymentTime: "Net 5 Days",
+    category: "Oilseeds",
+    location: "Industrial Area, Nellore",
+    certification: "ISO 9001 Certified Supplier"
+  },
+  {
     id: "biofuel-pune",
     companyName: "Pune Bio-Ethanol Ltd",
     rating: 4.5,
@@ -124,11 +175,20 @@ const buyersDatabase: Buyer[] = [
 
 export default function BuyerMarketplacePage() {
   const { t } = useLanguage();
+  const [isPageLoading, setIsPageLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedCrop, setSelectedCrop] = React.useState<string>("Sugarcane");
   const [selectedBuyerId, setSelectedBuyerId] = React.useState<string>("sahyadri-sugar");
   const [distanceFilter, setDistanceFilter] = React.useState<number>(20);
   const [certificationFilter, setCertificationFilter] = React.useState<string>("all");
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
 
   // Negotiation states
   const [negotiationOpen, setNegotiationOpen] = React.useState(false);
@@ -206,6 +266,23 @@ export default function BuyerMarketplacePage() {
       setCounterPrice(selectedBuyer.offeredPrice + 100);
     }
   }, [selectedBuyerId, selectedCrop, selectedBuyer]);
+
+  if (isPageLoading) {
+    return (
+      <MainLayout>
+        <div className="space-y-8 pb-16 text-left animate-fade-in">
+          <SectionHeader 
+            title={t("Buyer Marketplace")} 
+            description={t("Direct corporate buyer integration with instant crop pricing indices.")}
+          />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 h-[450px] rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+            <div className="h-[450px] rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const handleOpenNegotiation = () => {
     setNegotiationOpen(true);
@@ -924,13 +1001,13 @@ export default function BuyerMarketplacePage() {
                     </div>
 
                     {/* Action controls */}
-                    <div className="flex gap-3 pt-3">
+                    <div className="flex gap-3 pt-3 border-t border-border/40 mt-4">
                       <Button 
                         onClick={() => setNegotiationOpen(false)}
                         variant="outline" 
-                        className="flex-1 text-xs font-bold h-10 rounded-btn cursor-pointer bg-card"
+                        className="flex-1 text-xs font-bold h-10 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                       >
-                        Cancel
+                        {t("Cancel")}
                       </Button>
                       <Button 
                         onClick={handleSubmitCounter}

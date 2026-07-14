@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CropCard } from "@/components/crop/CropCard";
+import { useLanguage } from "@/context/LanguageContext";
 
 type StepType = "location" | "details" | "season" | "analysis" | "result";
 
@@ -48,6 +49,7 @@ interface DetailsState {
 }
 
 export default function CropRecommendationPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [currentStep, setCurrentStep] = React.useState<StepType>("location");
   
@@ -165,17 +167,17 @@ export default function CropRecommendationPage() {
         {/* Page Header and Progress indicator */}
         <div className="flex flex-col gap-4">
           <SectionHeader 
-            title="AI Crop Recommendation Advisor" 
+            title={t("Crop Advisor")} 
             description="Our agricultural multi-agent recommendation engine analyzes weather patterns, soil profiles, and local markets."
             className="mb-0"
           />
 
           {currentStep !== "analysis" && currentStep !== "result" && (
-            <div className="space-y-2">
+            <div className="space-y-2 text-left">
               <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 <span>Step {currentStep === "location" ? 1 : currentStep === "details" ? 2 : 3} of 3</span>
                 <span>
-                  {currentStep === "location" ? "Farm Location" : currentStep === "details" ? "Farm Parameters" : "Season Preference"}
+                  {currentStep === "location" ? t("Farm Location") : currentStep === "details" ? t("Farm Parameters") : "Season Preference"}
                 </span>
               </div>
               <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
@@ -203,7 +205,7 @@ export default function CropRecommendationPage() {
               <div className="lg:col-span-3 space-y-6">
                 <Card title="" animate={false} className="p-6 space-y-5">
                   <div className="space-y-1">
-                    <h3 className="text-base font-bold text-foreground">Select Farm Location</h3>
+                    <h3 className="text-base font-bold text-foreground">{t("Farm Location")}</h3>
                     <p className="text-xs text-muted-foreground">Specify the geographical center of your fields for weather and satellite integration.</p>
                   </div>
 
@@ -230,7 +232,7 @@ export default function CropRecommendationPage() {
                       }`}
                     >
                       <MapPin className="h-5 w-5" />
-                      <span className="text-xs font-bold">Manual Selection</span>
+                      <span className="text-xs font-bold">{t("Manual Selection")}</span>
                     </div>
                   </div>
 
@@ -396,7 +398,7 @@ export default function CropRecommendationPage() {
             >
               <Card title="" animate={false} className="p-6 space-y-6">
                 <div className="space-y-1">
-                  <h3 className="text-base font-bold text-foreground">Configure Farm Parameters</h3>
+                  <h3 className="text-base font-bold text-foreground">{t("Farm Parameters")}</h3>
                   <p className="text-xs text-muted-foreground">Select matching descriptors. These parameters dictate mineral balancing, moisture thresholds, and budgets.</p>
                 </div>
 
@@ -405,7 +407,7 @@ export default function CropRecommendationPage() {
                   {/* Slider: Farm Size */}
                   <div className="space-y-3 bg-muted/10 p-4 rounded-btn border border-border/30">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-bold text-foreground">Farm Size (Acres)</span>
+                      <span className="font-bold text-foreground">{t("Farm Size")} (Acres)</span>
                       <Badge variant="outline" className="font-bold text-primary border-primary bg-primary/5 text-xs py-0.5 px-2">
                         {details.farmSize} Acres
                       </Badge>
@@ -490,7 +492,7 @@ export default function CropRecommendationPage() {
 
                   {/* Select: Soil Type */}
                   <div className="space-y-2">
-                    <span className="text-xs font-bold text-foreground block">Soil Texture</span>
+                    <span className="text-xs font-bold text-foreground block">{t("Soil Type")}</span>
                     <div className="grid grid-cols-1 gap-2">
                       {([
                         { id: "clayey", label: "Black Clayey", desc: "Retains water, rich" },
@@ -516,7 +518,7 @@ export default function CropRecommendationPage() {
 
                   {/* Select: Water Source */}
                   <div className="space-y-2">
-                    <span className="text-xs font-bold text-foreground block">Water Availability</span>
+                    <span className="text-xs font-bold text-foreground block">{t("Water Source")}</span>
                     <div className="grid grid-cols-1 gap-2">
                       {([
                         { id: "borewell", label: "Borewell / Tube", desc: "Submersible pump" },
@@ -546,7 +548,7 @@ export default function CropRecommendationPage() {
                   
                   {/* Select: Budget */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-foreground block">Estimated Sowing Budget (per Acre)</label>
+                    <label className="text-xs font-bold text-foreground block">{t("Budget")} (per Acre)</label>
                     <div className="flex flex-wrap gap-2">
                       {[5000, 10000, 15000, 25000].map((val) => (
                         <div
@@ -566,7 +568,7 @@ export default function CropRecommendationPage() {
 
                   {/* Select: Category */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-foreground block">Preferred Crop Target</label>
+                    <label className="text-xs font-bold text-foreground block">{t("Crop Target")}</label>
                     <div className="flex flex-wrap gap-2">
                       {([
                         { id: "cash", label: "Cash Crops" },
@@ -601,7 +603,7 @@ export default function CropRecommendationPage() {
                   className="text-xs font-bold px-5 h-10 rounded-btn cursor-pointer bg-card"
                 >
                   <ChevronLeft className="mr-1.5 h-4 w-4" />
-                  Back
+                  {t("Cancel")}
                 </Button>
                 <Button 
                   onClick={() => setCurrentStep("season")}
@@ -803,7 +805,7 @@ export default function CropRecommendationPage() {
 
                     <div className="space-y-4 relative z-10">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block">Top Suggested Crop</span>
+                        <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block">{t("Recommendations")}</span>
                         <h3 className="text-2xl font-extrabold text-foreground flex items-center gap-1.5">
                           {recommendations[0]?.name || "Groundnut (TAG-24)"}
                         </h3>
@@ -812,7 +814,7 @@ export default function CropRecommendationPage() {
                       {/* Main Yield and Profit Metrics */}
                       <div className="grid grid-cols-2 gap-4 py-4 border-y border-border/50">
                         <div className="space-y-0.5">
-                          <span className="text-[10px] text-muted-foreground block uppercase font-bold">Est. Profit</span>
+                          <span className="text-[10px] text-muted-foreground block uppercase font-bold">{t("Budget")}</span>
                           <span className="text-2xl font-extrabold text-emerald-600">₹52,000<span className="text-xs font-semibold text-muted-foreground">/Ac</span></span>
                         </div>
                         <div className="space-y-0.5">
@@ -822,7 +824,7 @@ export default function CropRecommendationPage() {
                       </div>
 
                       {/* Sowing particulars */}
-                      <div className="space-y-2 text-xs">
+                      <div className="space-y-2 text-xs font-semibold">
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">Best Sowing Period:</span>
                           <span className="font-bold text-foreground">June 28 - July 12</span>
@@ -851,10 +853,10 @@ export default function CropRecommendationPage() {
 
                   {/* AI Explanation Card */}
                   <Card title="" animate={false} className="p-5 border-l-4 border-l-primary bg-card shadow-sm border-t-0 border-r-0 border-b-0">
-                    <div className="space-y-3 text-xs leading-relaxed">
+                    <div className="space-y-3 text-xs leading-relaxed text-left">
                       <span className="font-bold text-foreground flex items-center gap-1.5">
                         <Brain className="h-4.5 w-4.5 text-primary shrink-0" />
-                        AI Advisor Reasoning
+                        {t("AI Reasoning")}
                       </span>
                       <p className="text-muted-foreground">
                         {recommendations[0]?.reasoning || "We recommend Groundnut (TAG-24) because your soil type (Black Clayey) features excellent moisture-holding traits, which will help bypass the dry spell warning starting June 28. Since your previous crop was sugarcane, planting groundnuts will naturally fix nitrogen reserves back into your field."}
@@ -864,13 +866,13 @@ export default function CropRecommendationPage() {
                 </div>
 
                 {/* Column 2: Alternative Options & Smart Insights */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-6 text-left">
                   
                   {/* Smart Insights Grid */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 pb-1">
                       <Activity className="h-5 w-5 text-primary" />
-                      <h3 className="text-base font-bold text-foreground">Smart Insights & Warnings</h3>
+                      <h3 className="text-base font-bold text-foreground">{t("Results")}</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -926,7 +928,7 @@ export default function CropRecommendationPage() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 pb-1">
                       <Sprout className="h-5 w-5 text-primary" />
-                      <h3 className="text-base font-bold text-foreground">Alternative Crop Selections</h3>
+                      <h3 className="text-base font-bold text-foreground">{t("Alternative Crops")}</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

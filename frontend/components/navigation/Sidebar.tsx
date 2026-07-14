@@ -137,12 +137,12 @@ export function Sidebar() {
             href="/profile"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary font-extrabold text-xs cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
           >
-            RP
+            SR
           </Link>
           {/* Farmer Details */}
           {!isCollapsed && (
             <div className="text-left min-w-0 flex-1">
-              <span className="font-bold text-[11px] block text-foreground truncate leading-normal">Ramesh Patil</span>
+              <span className="font-bold text-[11px] block text-foreground truncate leading-normal">K. Srinivasa Rao</span>
               <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[8.5px] font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20 mt-0.5">
                 {t("Premium Farmer")}
               </span>

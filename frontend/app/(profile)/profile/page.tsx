@@ -13,6 +13,7 @@ import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Farm {
   id: string;
@@ -34,79 +35,90 @@ interface CropHistoryItem {
   diseaseReports: string;
 }
 
-const mockFarms: Farm[] = [
-  {
-    id: "farm-1",
-    name: "Pune Main Field",
-    location: "Shirur Taluka, Pune, MH",
-    area: "5.5 Acres",
-    soilType: "Clayey (Black Cotton)",
-    waterSource: "Canal Gravity Gate",
-    currentCrop: "Sugarcane (Co 86032)",
-    healthScore: 92
-  },
-  {
-    id: "farm-2",
-    name: "Guntur Chilli Field",
-    location: "Tenali Taluka, Guntur, AP",
-    area: "4.5 Acres",
-    soilType: "Sandy Loam",
-    waterSource: "Borewell / Sprinkler",
-    currentCrop: "Chilli (Guntur Teja)",
-    healthScore: 94
-  },
-  {
-    id: "farm-3",
-    name: "Krishna Rice Delta",
-    location: "Gudivada Block, Krishna, AP",
-    area: "6.0 Acres",
-    soilType: "Clayey Loam",
-    waterSource: "Canal Irrigation",
-    currentCrop: "Paddy (MTU 7029)",
-    healthScore: 91
-  }
-];
-
-const mockHistory: CropHistoryItem[] = [
-  {
-    season: "Kharif 2025",
-    crop: "Paddy (Basmati)",
-    yieldAmount: "1.8 Tons / Acre",
-    profit: "₹38,000",
-    weatherNotes: "Normal monsoon precipitation. Delayed sowing by 10 days.",
-    diseaseReports: "Minor leaf blast incident. Handled with copper oxychloride spray."
-  },
-  {
-    season: "Rabi 2024-25",
-    crop: "Wheat (HD 2189)",
-    yieldAmount: "2.2 Tons / Acre",
-    profit: "₹45,500",
-    weatherNotes: "Favorable cool weather window. Optimal soil moisture.",
-    diseaseReports: "No significant pest outbreaks or fungal rusts detected."
-  },
-  {
-    season: "Kharif 2024",
-    crop: "Sugarcane",
-    yieldAmount: "35 Tons / Acre",
-    profit: "₹1,25,000",
-    weatherNotes: "Heavy rain alert in mid-August. Drained low fields.",
-    diseaseReports: "Medium sugarcane rust infection. Bio-fungicide sprays applied."
-  }
-];
-
 export default function ProfilePage() {
+  const { t } = useLanguage();
+  const [isPageLoading, setIsPageLoading] = React.useState(true);
   const [farms, setFarms] = React.useState<Farm[]>([]);
   const [profile, setProfile] = React.useState({
-    name: "Ramesh Patil",
+    name: "K. Srinivasa Rao",
     experienceYears: 15,
-    verifiedId: "KA-2026-89104",
+    verifiedId: "AP-2026-89104",
     bankAccount: "",
     bankName: "State Bank of India",
     certificationStatus: "Verified",
-    district: "Pune",
-    block: "Shirur"
+    district: "Guntur",
+    block: "Tenali"
   });
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+
   const [editFarmId, setEditFarmId] = React.useState<string | null>(null);
+
+  const mockFarms: Farm[] = React.useMemo(() => [
+    {
+      id: "farm-1",
+      name: t("Guntur Chilli Field"),
+      location: "Tenali Block, Guntur, AP",
+      area: "5.5 Acres",
+      soilType: "Sandy Loam",
+      waterSource: "Borewell / Sprinkler",
+      currentCrop: "Chilli (Guntur Teja)",
+      healthScore: 94
+    },
+    {
+      id: "farm-2",
+      name: t("Krishna Rice Delta"),
+      location: "Gudivada Block, Krishna, AP",
+      area: "6.0 Acres",
+      soilType: "Clayey Loam",
+      waterSource: "Canal Irrigation",
+      currentCrop: "Paddy (MTU 7029)",
+      healthScore: 91
+    },
+    {
+      id: "farm-3",
+      name: t("NTR Cotton Plot"),
+      location: "Vijayawada Block, NTR, AP",
+      area: "4.0 Acres",
+      soilType: "Black Soil",
+      waterSource: "Rainfed / Sprinkler",
+      currentCrop: "Cotton (Ajit 155)",
+      healthScore: 95
+    }
+  ], [t]);
+
+  const mockHistory: CropHistoryItem[] = React.useMemo(() => [
+    {
+      season: t("Kharif 2025"),
+      crop: "Paddy (MTU 7029)",
+      yieldAmount: "2.1 Tons / Acre",
+      profit: "₹42,000",
+      weatherNotes: t("Normal monsoon precipitation. Delayed sowing by 10 days."),
+      diseaseReports: t("Minor leaf blast incident. Handled with copper oxychloride spray.")
+    },
+    {
+      season: t("Rabi 2024-25"),
+      crop: "Chilli (Guntur Teja)",
+      yieldAmount: "1.5 Tons / Acre",
+      profit: "₹1,85,500",
+      weatherNotes: t("Favorable cool weather window. Optimal soil moisture."),
+      diseaseReports: t("No significant pest outbreaks or fungal rusts detected.")
+    },
+    {
+      season: t("Kharif 2024"),
+      crop: "Cotton (Ajit 155)",
+      yieldAmount: "1.2 Tons / Acre",
+      profit: "₹72,000",
+      weatherNotes: t("Heavy rain alert in mid-August. Drained low fields."),
+      diseaseReports: t("Medium bollworm rust infection. Bio-fungicide sprays applied.")
+    }
+  ], [t]);
 
   // Edit Farm Form state
   const [farmForm, setFarmForm] = React.useState<Omit<Farm, "id">>({
@@ -125,14 +137,14 @@ export default function ProfilePage() {
         const prof = await apiClient.get<any>("/profile");
         if (prof) {
           setProfile({
-            name: prof.name || "Ramesh Patil",
+            name: prof.name || "K. Srinivasa Rao",
             experienceYears: prof.experience_years ?? 15,
-            verifiedId: prof.verified_id || "KA-2026-89104",
+            verifiedId: prof.verified_id || "AP-2026-89104",
             bankAccount: prof.bank_account || "",
             bankName: prof.bank_name || "State Bank of India",
             certificationStatus: prof.certification_status || "Verified",
-            district: "Pune",
-            block: "Shirur"
+            district: "Guntur",
+            block: "Tenali"
           });
         }
         
@@ -141,7 +153,7 @@ export default function ProfilePage() {
           setFarms(farmList.map((f: any) => ({
             id: f.id,
             name: f.name,
-            location: f.location?.location_name || "Shirur, Pune",
+            location: f.location?.location_name || "Tenali, Guntur",
             area: f.area,
             soilType: f.soil_type,
             waterSource: f.water_source,
@@ -157,7 +169,24 @@ export default function ProfilePage() {
       }
     }
     loadProfileAndFarms();
-  }, []);
+  }, [mockFarms]);
+
+  if (isPageLoading) {
+    return (
+      <MainLayout>
+        <div className="space-y-8 pb-16 text-left">
+          <SectionHeader 
+            title={t("Profile")} 
+            description={t("Manage crop locations, farmer certification data and government DBT banking information.")}
+          />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 h-[450px] rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+            <div className="lg:col-span-2 h-[450px] rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const handleEditFarm = (farm: Farm) => {
     setEditFarmId(farm.id);
@@ -176,7 +205,7 @@ export default function ProfilePage() {
     if (!editFarmId) return;
     setFarms(prev => prev.map(f => f.id === editFarmId ? { ...f, ...farmForm } : f));
     setEditFarmId(null);
-    alert("Farm details updated successfully.");
+    alert(t("Farm details updated successfully."));
   };
 
   const handleAddFarm = async () => {
@@ -187,9 +216,9 @@ export default function ProfilePage() {
         soil_type: "Sandy Soil",
         water_source: "Drip Kit Reservoir",
         location: {
-          location_name: "Shirur Village, Pune",
-          latitude: 18.5204,
-          longitude: 73.8567
+          location_name: "Tenali Block, Guntur",
+          latitude: 16.2437,
+          longitude: 80.6453
         }
       };
       const res = await apiClient.post<any>("/profile/farms", payload);
@@ -199,7 +228,7 @@ export default function ProfilePage() {
           setFarms(farmList.map((f: any) => ({
             id: f.id,
             name: f.name,
-            location: f.location?.location_name || "Shirur, Pune",
+            location: f.location?.location_name || "Tenali, Guntur",
             area: f.area,
             soilType: f.soil_type,
             waterSource: f.water_source,
@@ -207,7 +236,7 @@ export default function ProfilePage() {
             healthScore: f.health_score ?? 90
           })));
         }
-        alert("New farm registered in profile database successfully.");
+        alert(t("New farm registered in profile database successfully."));
       }
     } catch (err) {
       console.error(err);
@@ -215,7 +244,7 @@ export default function ProfilePage() {
       const newFarm: Farm = {
         id: newId,
         name: `New Farm Field ${farms.length + 1}`,
-        location: "Pune Block",
+        location: "Guntur Block",
         area: "2.0 Acres",
         soilType: "Sandy Soil",
         waterSource: "Drip Kit Reservoir",
@@ -223,28 +252,28 @@ export default function ProfilePage() {
         healthScore: 90
       };
       setFarms(prev => [...prev, newFarm]);
-      alert("New farm registered in profile database.");
+      alert(t("New farm registered in profile database."));
     }
   };
 
   return (
     <MainLayout>
-      <div className="space-y-8 pb-16 animate-fade-in">
+      <div className="space-y-8 pb-16 animate-fade-in text-left">
         
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <SectionHeader 
-            title="Farmer Account Profile" 
-            description="Manage your regional fields, historical crop registers, achievements, and account settings."
+            title={t("Farmer Account Profile")} 
+            description={t("Manage your regional fields, historical crop registers, achievements, and account settings.")}
             className="mb-0"
           />
           <Button
             onClick={() => window.location.href = "/settings"}
             variant="outline"
-            className="text-xs font-bold px-4 h-10 rounded-btn cursor-pointer bg-card self-start sm:self-auto"
+            className="text-xs font-bold px-4 h-10 rounded-btn cursor-pointer bg-card self-start sm:self-auto border border-border hover:bg-muted"
           >
             <SettingsIcon className="mr-1.5 h-4 w-4 text-primary" />
-            Edit Settings
+            {t("Edit Settings")}
           </Button>
         </div>
 
@@ -259,11 +288,11 @@ export default function ProfilePage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src="/illustrations/happy_farmer.png" 
-                  alt="Ramesh Patil Profile" 
+                  alt="Farmer Profile" 
                   className="h-full w-full object-cover"
                 />
                 <Badge variant="success" className="absolute bottom-1 right-1 font-bold px-2 py-0.5 text-[8.5px] bg-primary text-white border-none shadow-sm">
-                  Active
+                  {t("Active")}
                 </Badge>
               </div>
 
@@ -272,7 +301,7 @@ export default function ProfilePage() {
                   <h3 className="text-xl font-extrabold text-foreground">{profile.name}</h3>
                   <p className="text-primary font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5 justify-center sm:justify-start">
                     <ShieldCheck className="h-4 w-4" />
-                    Verified Farmer ID: {profile.verifiedId}
+                    {t("Verified Farmer ID")}: {profile.verifiedId}
                   </p>
                 </div>
 
@@ -282,7 +311,7 @@ export default function ProfilePage() {
                     {profile.block} Block, {profile.district}
                   </span>
                   <span>•</span>
-                  <span>{profile.experienceYears} Years Experience</span>
+                  <span>{profile.experienceYears} {t("Years Experience")}</span>
                 </div>
               </div>
             </div>
@@ -290,33 +319,32 @@ export default function ProfilePage() {
             {/* Right Profile Completion status */}
             <div className="md:col-span-4 space-y-3.5 bg-card/85 p-5 rounded-[18px] border border-border/80 shadow-md text-xs leading-normal hover:shadow-lg transition-all duration-200">
               <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                <span>Profile Completion</span>
+                <span>{t("Profile")}</span>
                 <span className="text-primary font-black">85% Complete</span>
               </div>
               <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: "85%" }} />
               </div>
               <p className="text-[10px] text-muted-foreground/90 leading-relaxed font-medium">
-                Attach soil reports to complete your profile and unlock certified seed subsidies eligibility checks.
+                {t("Attach soil reports to complete your profile and unlock certified seed subsidies eligibility checks.")}
               </p>
             </div>
-
 
           </div>
 
           {/* Core Profile Stats Row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 mt-6 border-t border-border/40 text-xs text-center">
             <div className="space-y-0.5 border-r border-border/40">
-              <span className="text-muted-foreground block text-[9.5px] font-bold uppercase">Registered Farms</span>
+              <span className="text-muted-foreground block text-[9.5px] font-bold uppercase">{t("Registered Farms")}</span>
               <strong className="text-base font-extrabold text-foreground">{farms.length} Fields</strong>
             </div>
             <div className="space-y-0.5 sm:border-r border-border/40">
               <span className="text-muted-foreground block text-[9.5px] font-bold uppercase">Total Land Holdings</span>
-              <strong className="text-base font-extrabold text-foreground">8.5 Acres</strong>
+              <strong className="text-base font-extrabold text-foreground">15.5 Acres</strong>
             </div>
             <div className="space-y-0.5 border-r border-border/40">
               <span className="text-muted-foreground block text-[9.5px] font-bold uppercase">Primary Crops</span>
-              <strong className="text-base font-extrabold text-foreground">Sugarcane, Groundnut</strong>
+              <strong className="text-base font-extrabold text-foreground">Chilli, Paddy, Cotton</strong>
             </div>
             <div className="space-y-0.5">
               <span className="text-muted-foreground block text-[9.5px] font-bold uppercase">DBT Account Linked</span>
@@ -330,7 +358,7 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between gap-4 pb-1">
             <div className="flex items-center gap-2">
               <Sprout className="h-5 w-5 text-primary" />
-              <h3 className="text-base font-bold text-foreground">Registered Farm Management</h3>
+              <h3 className="text-base font-bold text-foreground">{t("Farm Snapshot")}</h3>
             </div>
             <Button 
               onClick={handleAddFarm}
@@ -338,11 +366,11 @@ export default function ProfilePage() {
               className="text-xs font-bold rounded-btn bg-primary text-white cursor-pointer"
             >
               <Plus className="mr-1 h-3.5 w-3.5 shrink-0" />
-              Add New Farm
+              {t("Add New Farm")}
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {farms.map((farm) => (
               <div 
                 key={farm.id}
@@ -356,15 +384,15 @@ export default function ProfilePage() {
                     </Badge>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[10.5px] text-muted-foreground pt-1.5">
-                    <span>Location: <strong className="text-foreground">{farm.location}</strong></span>
-                    <span>Area: <strong className="text-foreground">{farm.area}</strong></span>
-                    <span>Soil Type: <strong className="text-foreground">{farm.soilType}</strong></span>
-                    <span>Water: <strong className="text-foreground">{farm.waterSource}</strong></span>
+                  <div className="grid grid-cols-1 gap-y-1.5 text-[10.5px] text-muted-foreground pt-1.5 border-t border-border/30">
+                    <span>{t("Farm Location")}: <strong className="text-foreground">{farm.location}</strong></span>
+                    <span>{t("Farm Size")}: <strong className="text-foreground">{farm.area}</strong></span>
+                    <span>{t("Soil Type")}: <strong className="text-foreground">{farm.soilType}</strong></span>
+                    <span>{t("Water Source")}: <strong className="text-foreground">{farm.waterSource}</strong></span>
                   </div>
 
                   <p className="text-muted-foreground text-[10.5px] pt-1">
-                    Current Sowing Crop: <strong className="text-foreground">{farm.currentCrop}</strong>
+                    {t("Current Crop")}: <strong className="text-foreground">{farm.currentCrop}</strong>
                   </p>
                 </div>
 
@@ -377,10 +405,10 @@ export default function ProfilePage() {
                     onClick={() => handleEditFarm(farm)}
                     size="sm" 
                     variant="outline"
-                    className="h-7 px-2.5 rounded-btn cursor-pointer bg-card text-[9.5px] font-bold"
+                    className="h-7 px-2.5 rounded-btn cursor-pointer bg-card text-[9.5px] font-bold border border-border/80 hover:bg-muted"
                   >
                     <Edit2 className="mr-1 h-3 w-3 text-primary" />
-                    Edit Farm
+                    {t("Edit Farm")}
                   </Button>
                 </div>
               </div>
@@ -395,7 +423,7 @@ export default function ProfilePage() {
           <div className="lg:col-span-7 space-y-4">
             <div className="flex items-center gap-2 pb-1">
               <Clock className="h-5 w-5 text-primary" />
-              <h3 className="text-base font-bold text-foreground">Seasonal Crop History Log</h3>
+              <h3 className="text-base font-bold text-foreground">{t("Seasonal Crop History Log")}</h3>
             </div>
 
             <div className="relative pl-6 border-l border-border/80 ml-2.5 space-y-6">
@@ -437,7 +465,7 @@ export default function ProfilePage() {
           <div className="lg:col-span-5 space-y-4">
             <div className="flex items-center gap-2 pb-1">
               <Award className="h-5 w-5 text-primary" />
-              <h3 className="text-base font-bold text-foreground">Farming Milestones & Badges</h3>
+              <h3 className="text-base font-bold text-foreground">{t("Farming Milestones & Badges")}</h3>
             </div>
 
             <div className="bg-card border border-border p-5 rounded-card space-y-4 shadow-sm">
@@ -449,8 +477,8 @@ export default function ProfilePage() {
                     <Sprout className="h-5 w-5" />
                   </div>
                   <div className="space-y-0.5">
-                    <span className="font-bold block text-[11px] text-foreground">Climate Sentinel</span>
-                    <span className="text-[9.5px] text-muted-foreground">Followed 10 successive weather alerts correctly.</span>
+                    <span className="font-bold block text-[11px] text-foreground">{t("Climate Sentinel")}</span>
+                    <span className="text-[9.5px] text-muted-foreground">{t("Followed 10 successive weather alerts correctly.")}</span>
                   </div>
                 </div>
 
@@ -460,8 +488,8 @@ export default function ProfilePage() {
                     <ShieldCheck className="h-5 w-5" />
                   </div>
                   <div className="space-y-0.5">
-                    <span className="font-bold block text-[11px] text-foreground">Pest spotter Champion</span>
-                    <span className="text-[9.5px] text-muted-foreground">Successfully diagnosed 5 crop diseases via AI scans.</span>
+                    <span className="font-bold block text-[11px] text-foreground">{t("Pest spotter Champion")}</span>
+                    <span className="text-[9.5px] text-muted-foreground">{t("Successfully diagnosed 5 crop diseases via AI scans.")}</span>
                   </div>
                 </div>
 
@@ -471,8 +499,8 @@ export default function ProfilePage() {
                     <Award className="h-5 w-5" />
                   </div>
                   <div className="space-y-0.5">
-                    <span className="font-bold block text-[11px] text-foreground">Water Conservator</span>
-                    <span className="text-[9.5px] text-muted-foreground">Adopted sub-surface drip irrigation systems.</span>
+                    <span className="font-bold block text-[11px] text-foreground">{t("Water Conservator")}</span>
+                    <span className="text-[9.5px] text-muted-foreground">{t("Adopted sub-surface drip irrigation systems.")}</span>
                   </div>
                 </div>
 
@@ -485,32 +513,32 @@ export default function ProfilePage() {
 
             {/* Smart Actions Panel */}
             <div className="bg-card border border-border p-5 rounded-card space-y-3.5 shadow-sm text-xs leading-normal">
-              <h4 className="font-bold text-foreground">Export Account Reports</h4>
+              <h4 className="font-bold text-foreground">{t("Export Account Reports")}</h4>
               
               <div className="space-y-2">
                 <Button
                   onClick={() => alert("Preparing download... Crop yields dossier ready as PDF.")}
                   variant="outline"
-                  className="w-full text-xs font-bold h-9 rounded-btn cursor-pointer bg-card justify-start"
+                  className="w-full text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted justify-start"
                 >
                   <Download className="mr-2 h-4 w-4 text-primary shrink-0" />
-                  Download Crop Yields Report
+                  {t("Download Crop Yields Report")}
                 </Button>
                 <Button
                   onClick={() => alert("Account preferences backed up to cloud servers.")}
                   variant="outline"
-                  className="w-full text-xs font-bold h-9 rounded-btn cursor-pointer bg-card justify-start"
+                  className="w-full text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted justify-start"
                 >
                   <Save className="mr-2 h-4 w-4 text-primary shrink-0" />
-                  Backup Profile Dossier
+                  {t("Backup Profile Dossier")}
                 </Button>
                 <Button
                   onClick={() => window.location.href = "/login"}
                   variant="outline"
-                  className="w-full text-xs font-bold h-9 rounded-btn cursor-pointer bg-card justify-start text-red-500 hover:text-red-600"
+                  className="w-full text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted justify-start text-red-500 hover:text-red-600"
                 >
                   <LogOut className="mr-2 h-4 w-4 text-red-500 shrink-0" />
-                  Sign Out Account
+                  {t("Sign Out Account")}
                 </Button>
               </div>
             </div>
@@ -522,7 +550,7 @@ export default function ProfilePage() {
         {/* EDIT FARM DETAIL DIALOG POPUP */}
         <AnimatePresence>
           {editFarmId && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm animate-fade-in">
               <motion.div 
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -531,7 +559,7 @@ export default function ProfilePage() {
               >
                 {/* Header */}
                 <div className="flex justify-between items-start pb-3 border-b border-border/50">
-                  <h3 className="text-base font-extrabold text-foreground">Edit Farm Details</h3>
+                  <h3 className="text-base font-extrabold text-foreground">{t("Edit Farm Details")}</h3>
                   <Button 
                     onClick={() => setEditFarmId(null)}
                     variant="outline" 
@@ -544,7 +572,7 @@ export default function ProfilePage() {
                 <div className="space-y-4 text-xs leading-normal">
                   {/* Farm Name */}
                   <div className="space-y-1.5">
-                    <label className="font-bold text-foreground">Farm Field Name</label>
+                    <label className="font-bold text-foreground">{t("Farm Field Name")}</label>
                     <input 
                       type="text"
                       value={farmForm.name}
@@ -555,7 +583,7 @@ export default function ProfilePage() {
 
                   {/* Area */}
                   <div className="space-y-1.5">
-                    <label className="font-bold text-foreground">Farm Area Size</label>
+                    <label className="font-bold text-foreground">{t("Farm Area Size")}</label>
                     <input 
                       type="text"
                       value={farmForm.area}
@@ -566,7 +594,7 @@ export default function ProfilePage() {
 
                   {/* Soil Type */}
                   <div className="space-y-1.5">
-                    <label className="font-bold text-foreground">Soil Type</label>
+                    <label className="font-bold text-foreground">{t("Soil Type")}</label>
                     <input 
                       type="text"
                       value={farmForm.soilType}
@@ -577,7 +605,7 @@ export default function ProfilePage() {
 
                   {/* Current Crop */}
                   <div className="space-y-1.5">
-                    <label className="font-bold text-foreground">Active Sowing Crop</label>
+                    <label className="font-bold text-foreground">{t("Active Sowing Crop")}</label>
                     <input 
                       type="text"
                       value={farmForm.currentCrop}
@@ -587,19 +615,19 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Action controls */}
-                  <div className="flex gap-3 pt-3">
+                  <div className="flex gap-3 pt-3 border-t border-border/30">
                     <Button 
                       onClick={() => setEditFarmId(null)}
                       variant="outline" 
-                      className="flex-1 text-xs font-bold h-10 rounded-btn cursor-pointer bg-card"
+                      className="flex-1 text-xs font-bold h-10 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                     >
-                      Cancel
+                      {t("Cancel")}
                     </Button>
                     <Button 
                       onClick={handleSaveFarm}
                       className="flex-1 text-xs font-bold h-10 rounded-btn cursor-pointer bg-primary text-white"
                     >
-                      Save Changes
+                      {t("Save Changes")}
                     </Button>
                   </div>
                 </div>

@@ -11,6 +11,7 @@ import { apiClient } from "@/services/apiClient";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Machinery {
   id: string;
@@ -24,13 +25,16 @@ interface Machinery {
 }
 
 const MACHINERY_RENTALS: Machinery[] = [
-  { id: "1", name: "John Deere 5050D Tractor", price: "₹800/hour", dist: "1.2 km away", owner: "Ramesh K.", phone: "+91 98765 43210", status: "available", rating: "4.9" },
-  { id: "2", name: "Pneumatic Seed Drill", price: "₹500/hour", dist: "0.8 km away", owner: "Dattatreya P.", phone: "+91 98223 88440", status: "available", rating: "4.7" },
-  { id: "3", name: "Multicrop Combine Harvester", price: "₹1,500/hour", dist: "2.5 km away", owner: "Sanjay Patil", phone: "+91 90112 55432", status: "rented", rating: "4.8" },
-  { id: "4", name: "Rotavator (Field Leveler)", price: "₹400/hour", dist: "3.1 km away", owner: "Baburao Mane", phone: "+91 94220 11993", status: "available", rating: "4.5" }
+  { id: "1", name: "John Deere 5050D Tractor", price: "₹800/hour", dist: "1.2 km away", owner: "Ramesh K. (Shirur)", phone: "+91 98765 43210", status: "available", rating: "4.9" },
+  { id: "2", name: "Pneumatic Seed Drill", price: "₹500/hour", dist: "0.8 km away", owner: "Dattatreya P. (Pune)", phone: "+91 98223 88440", status: "available", rating: "4.7" },
+  { id: "3", name: "Mahindra Arjun 555 Tractor", price: "₹750/hour", dist: "2.3 km away", owner: "K. Venkateswara Rao (Guntur)", phone: "+91 86323 11445", status: "available", rating: "4.8" },
+  { id: "4", name: "Sugarcane Heavy Harvester", price: "₹1,800/hour", dist: "4.5 km away", owner: "M. Satyanarayana (Nellore)", phone: "+91 86124 55990", status: "available", rating: "4.9" },
+  { id: "5", name: "Multicrop Combine Harvester", price: "₹1,500/hour", dist: "5.1 km away", owner: "Sanjay Patil (Baramati)", phone: "+91 90112 55432", status: "rented", rating: "4.8" },
+  { id: "6", name: "Rotavator (Field Leveler)", price: "₹400/hour", dist: "3.1 km away", owner: "Baburao Mane (Haveli)", phone: "+91 94220 11993", status: "available", rating: "4.5" }
 ];
 
 export default function MachineryRentalPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [rentals, setRentals] = React.useState<Machinery[]>([]);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -253,30 +257,35 @@ export default function MachineryRentalPage() {
 
         {/* Booking Date/Time Modal */}
         {bookingMachinery && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
-            <div className="bg-card w-full max-w-md border border-border rounded-card p-6 shadow-2xl space-y-4 text-left">
-              <div className="flex justify-between items-center pb-2 border-b border-border">
-                <h3 className="font-heading text-base font-bold text-foreground flex items-center gap-2">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-card w-full max-w-md border border-border/80 rounded-card p-6 shadow-2xl space-y-5 text-left animate-in zoom-in-95 duration-200">
+              <div className="flex justify-between items-center pb-3 border-b border-border/40">
+                <h3 className="font-heading text-base font-extrabold text-foreground flex items-center gap-2">
                   <CalendarRange className="h-5 w-5 text-primary" />
-                  Select Booking Schedule
+                  {t("Book Now")}
                 </h3>
                 <button 
                   onClick={() => setBookingMachinery(null)}
-                  className="p-1.5 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                  className="p-1.5 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="text-xs space-y-1">
-                <span className="text-muted-foreground">Machine:</span>
-                <span className="font-bold text-foreground block">{bookingMachinery.name}</span>
-                <span className="text-muted-foreground block mt-1">Rate: <strong className="text-primary">{bookingMachinery.price}</strong></span>
+              <div className="text-xs space-y-1.5 bg-muted/20 p-3 rounded-btn border border-border/40 font-semibold">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Machine:</span>
+                  <span className="font-extrabold text-foreground">{bookingMachinery.name}</span>
+                </div>
+                <div className="flex justify-between border-t border-border/30 pt-1.5 mt-1.5">
+                  <span className="text-muted-foreground">Rate:</span>
+                  <span className="font-extrabold text-primary">{bookingMachinery.price}</span>
+                </div>
               </div>
 
               <form onSubmit={handleConfirmBooking} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide block">
+                  <label className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-wide block">
                     Choose Date <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -285,34 +294,34 @@ export default function MachineryRentalPage() {
                     value={selectedDate}
                     min={todayStr}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full bg-background border border-border rounded-btn px-3.5 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                    className="w-full bg-background border border-border rounded-btn px-3.5 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-semibold"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide block">
+                  <label className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-wide block">
                     Choose Time (Optional)
                   </label>
                   <input
                     type="time"
                     value={selectedTime}
                     onChange={(e) => setSelectedTime(e.target.value)}
-                    className="w-full bg-background border border-border rounded-btn px-3.5 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                    className="w-full bg-background border border-border rounded-btn px-3.5 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-semibold"
                   />
                 </div>
 
-                <div className="flex gap-2.5 pt-2">
+                <div className="flex gap-2.5 pt-3 border-t border-border/40">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setBookingMachinery(null)}
-                    className="flex-1 h-10 text-xs font-semibold rounded-btn"
+                    className="flex-1 h-11 text-xs font-bold rounded-btn border border-border/80 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
                   >
-                    Cancel
+                    {t("Cancel")}
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1 h-10 text-xs font-bold rounded-btn bg-primary text-white"
+                    className="flex-1 h-11 text-xs font-black rounded-btn bg-primary text-white hover:bg-primary/95 shadow-sm cursor-pointer"
                   >
                     Confirm Booking
                   </Button>

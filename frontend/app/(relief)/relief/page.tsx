@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UploadImageCard } from "@/components/disease/UploadImageCard";
+import { useLanguage } from "@/context/LanguageContext";
 
 type PhaseType = "upload" | "scanning" | "result";
 
@@ -39,22 +40,23 @@ function RadarIllustration() {
   );
 }
 
-const scanLogs = [
-  "Locating geotagged plot boundary coordinates...",
-  "Retrieving multispectral synthetic-aperture radar biomass values...",
-  "Correlating regional flood surge levels from June 26...",
-  "Evaluating foliage cell decay and water-logging percentage...",
-  "Cross-referencing soil chemical buffers and root stress indices...",
-  "Sourcing pre-approved state crop disaster compensation parameters...",
-  "Applying PMFBY insurance payout schedules...",
-  "Synthesizing emergency recovery steps and alternative rotators..."
-];
-
 export default function ReliefHubPage() {
+  const { t } = useLanguage();
   const [phase, setPhase] = React.useState<PhaseType>("upload");
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [scanProgress, setScanProgress] = React.useState(0);
   const [activeLogIndex, setActiveLogIndex] = React.useState(0);
+
+  const scanLogs = React.useMemo(() => [
+    t("Locating geotagged plot boundary coordinates..."),
+    t("Retrieving multispectral synthetic-aperture radar biomass values..."),
+    t("Correlating regional flood surge levels from June 26..."),
+    t("Evaluating foliage cell decay and water-logging percentage..."),
+    t("Cross-referencing soil chemical buffers and root stress indices..."),
+    t("Sourcing pre-approved state crop disaster compensation parameters..."),
+    t("Applying PMFBY insurance payout schedules..."),
+    t("Synthesizing emergency recovery steps and alternative rotators...")
+  ], [t]);
 
   const handleImageSelected = (file: File | null) => {
     if (file) {
@@ -95,7 +97,7 @@ export default function ReliefHubPage() {
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [phase]);
+  }, [phase, scanLogs.length]);
 
   const resetReliefScanner = () => {
     setPreviewUrl(null);
@@ -104,18 +106,18 @@ export default function ReliefHubPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-8 pb-16 animate-fade-in">
+      <div className="space-y-8 pb-16 animate-fade-in text-left">
         
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <SectionHeader 
-            title="Farmer Relief & Recovery Hub" 
-            description="AI-powered emergency command center to help farmers evaluate crop damage and accelerate financial recovery."
+            title={t("Relief Hub")} 
+            description={t("AI-powered emergency command center to help farmers evaluate crop damage and accelerate financial recovery.")}
             className="mb-0"
           />
           {phase === "result" && (
-            <Button onClick={resetReliefScanner} variant="outline" className="text-xs font-bold rounded-btn cursor-pointer bg-card">
-              Assess Another Damage
+            <Button onClick={resetReliefScanner} variant="outline" className="text-xs font-bold rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted">
+              {t("Scan Another Crop")}
             </Button>
           )}
         </div>
@@ -129,7 +131,7 @@ export default function ReliefHubPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
+              className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in"
             >
               {/* Left Column: Command Console & Image Upload */}
               <div className="lg:col-span-7 space-y-6 text-left">
@@ -138,30 +140,30 @@ export default function ReliefHubPage() {
                   <RadarIllustration />
                   <div className="space-y-1.5 text-xs leading-relaxed flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-extrabold text-red-500 text-sm">Disaster Advisory: High Monsoon Flooding</span>
+                      <span className="font-extrabold text-red-500 text-sm">{t("Disaster Advisory: High Monsoon Flooding")}</span>
                       <Badge variant="destructive" className="font-bold text-[9px] px-2 bg-red-500 rounded-full">Level 3 Critical</Badge>
                     </div>
                     <p className="text-muted-foreground font-semibold">
-                      Severe monsoon flood levels recorded across Guntur (AP) and Western Maharashtra. Local smallholders in riverbed segments are eligible for state seed grants and PMFBY crop compensation.
+                      {t("Severe monsoon flood levels recorded across Guntur (AP) and Western Maharashtra. Local smallholders in riverbed segments are eligible for state seed grants and PMFBY crop compensation.")}
                     </p>
                     <div className="text-[10.5px] text-foreground font-bold pt-1.5 border-t border-red-500/10">
-                      ⚡ Action Required: Upload field photograph to generate AI Loss Assessment report.
+                      ⚡ {t("Action Required: Upload field photograph to generate AI Loss Assessment report.")}
                     </div>
                   </div>
                 </div>
 
                 {/* Live Disaster Risk Feeds */}
                 <div className="grid grid-cols-2 gap-3.5">
-                  <Card className="p-4 border border-border/80 shadow-inner bg-card flex flex-col justify-between">
+                  <Card title="" animate={false} className="p-4 border border-border/80 shadow-inner bg-card flex flex-col justify-between">
                     <div className="space-y-1">
-                      <span className="text-[9px] font-bold text-red-500 uppercase tracking-wide block">Flood Surge</span>
+                      <span className="text-[9px] font-bold text-red-500 uppercase tracking-wide block">{t("Flood Surge")}</span>
                       <h4 className="text-xs font-extrabold text-foreground">Guntur Delta Zone</h4>
                       <p className="text-[9.5px] text-muted-foreground font-semibold leading-normal mt-1">Water level +1.2m above warning benchmarks. Risk: HIGH.</p>
                     </div>
                   </Card>
-                  <Card className="p-4 border border-border/80 shadow-inner bg-card flex flex-col justify-between">
+                  <Card title="" animate={false} className="p-4 border border-border/80 shadow-inner bg-card flex flex-col justify-between">
                     <div className="space-y-1">
-                      <span className="text-[9px] font-bold text-amber-500 uppercase tracking-wide block">Heat Wave Warning</span>
+                      <span className="text-[9px] font-bold text-amber-500 uppercase tracking-wide block">{t("Heat Wave Warning")}</span>
                       <h4 className="text-xs font-extrabold text-foreground">Anantapur Dryland</h4>
                       <p className="text-[9.5px] text-muted-foreground font-semibold leading-normal mt-1">Daily temperatures crossing 42°C. Ground moisture: CRITICAL.</p>
                     </div>
@@ -170,7 +172,7 @@ export default function ReliefHubPage() {
 
                 {/* Uploader Card component */}
                 <div className="space-y-2">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-1">Upload Damage Scan</span>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-1">{t("Upload crop leaf photo")}</span>
                   <UploadImageCard onImageSelected={handleImageSelected} className="h-72" />
                 </div>
               </div>
@@ -178,10 +180,10 @@ export default function ReliefHubPage() {
               {/* Right Column: Information & Assistance Checklist */}
               <div className="lg:col-span-5 space-y-6 text-left">
                 {/* Emergency hotline numbers */}
-                <Card className="p-5 border border-border shadow-sm space-y-3.5 bg-card/45">
+                <Card title="" animate={false} className="p-5 border border-border shadow-sm space-y-3.5 bg-card/45">
                   <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                     <PhoneCall className="h-4.5 w-4.5 text-primary" />
-                    <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Emergency Hotlines</span>
+                    <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{t("Emergency Hotlines")}</span>
                   </div>
                   <div className="space-y-2 text-xs font-bold">
                     <div className="flex justify-between items-center p-2 rounded-btn bg-red-500/[0.04] border border-red-500/10 text-red-600">
@@ -192,7 +194,7 @@ export default function ReliefHubPage() {
                       <span>Rythu Seva Kendras (RSK):</span>
                       <span className="font-mono text-xs">1800-425-1990</span>
                     </div>
-                    <div className="flex justify-between items-center p-2 rounded-btn bg-slate-100 dark:bg-slate-800/40 text-muted-foreground">
+                    <div className="flex justify-between items-center p-2 rounded-btn bg-slate-100 dark:bg-slate-800/40 text-muted-foreground font-semibold">
                       <span>Krishi Vigyan Kendras (KVK):</span>
                       <span className="font-mono text-xs">1800-180-1551</span>
                     </div>
@@ -200,10 +202,10 @@ export default function ReliefHubPage() {
                 </Card>
 
                 {/* PMFBY & Required Documents Checklist */}
-                <Card className="p-5 border border-border shadow-sm space-y-3.5 bg-card/45">
+                <Card title="" animate={false} className="p-5 border border-border shadow-sm space-y-3.5 bg-card/45">
                   <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                     <FileText className="h-4.5 w-4.5 text-primary" />
-                    <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Required Claim Documents</span>
+                    <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{t("Required Claim Documents")}</span>
                   </div>
                   <ul className="space-y-2 text-xs font-semibold text-muted-foreground">
                     <li className="flex items-center gap-2">
@@ -226,19 +228,19 @@ export default function ReliefHubPage() {
                 </Card>
 
                 {/* Disaster recovery steps timeline */}
-                <Card className="p-5 border border-border shadow-sm space-y-3 bg-card/45">
+                <Card title="" animate={false} className="p-5 border border-border shadow-sm space-y-3 bg-card/45">
                   <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                     <Clock className="h-4.5 w-4.5 text-primary" />
-                    <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Compensation Payout Steps</span>
+                    <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{t("Compensation Payout Steps")}</span>
                   </div>
-                  <div className="space-y-4 text-xs">
+                  <div className="space-y-4 text-xs font-semibold">
                     <div className="flex items-start gap-3">
                       <div className="h-5 w-5 rounded-full bg-primary/15 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">1</div>
                       <p className="text-muted-foreground leading-normal"><strong className="text-foreground">Filing Report:</strong> Generate field loss assessment via AI scanner within 72 hours of hazard impact.</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="h-5 w-5 rounded-full bg-primary/15 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">2</div>
-                      <p className="text-muted-foreground leading-normal"><strong className="text-foreground">Official Audit:</strong> Joint verification by local Rythu Mitra / Grama Sachivalayam agricultural officer.</p>
+                      <p className="text-muted-foreground leading-normal"><strong className="text-foreground">Official Audit:</strong> Joint verification by local Rythu Seva Kendra (RSK) / Grama Sachivalayam agricultural officer.</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="h-5 w-5 rounded-full bg-primary/15 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">3</div>
@@ -290,7 +292,7 @@ export default function ReliefHubPage() {
                     {scanLogs[activeLogIndex]}
                   </p>
                   <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider block">
-                    AI Emergency Damage Analysis... {Math.round(scanProgress)}%
+                    {t("Analyzing Cellular Structure...")} {Math.round(scanProgress)}%
                   </span>
                 </div>
               </div>
@@ -303,7 +305,7 @@ export default function ReliefHubPage() {
               key="relief-result"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-8"
+              className="space-y-8 text-left"
             >
               
               {/* PRIMARY STATS GRID */}
@@ -311,47 +313,47 @@ export default function ReliefHubPage() {
                 
                 {/* Card 1: Damage Score */}
                 <Card title="" animate={false} className="p-5 flex flex-col justify-between border-l-4 border-l-red-500 border-t-0 border-r-0 border-b-0">
-                  <div className="space-y-1">
+                  <div className="space-y-1 font-semibold">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Damage Score</span>
                     <h3 className="text-3xl font-black text-red-500">72% <span className="text-xs font-semibold text-muted-foreground">Loss</span></h3>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-2">Foliage rotting & mud silt deposit checked.</p>
+                  <p className="text-[10px] text-muted-foreground mt-2 font-semibold">Foliage rotting & mud silt deposit checked.</p>
                 </Card>
 
                 {/* Card 2: Affected Area */}
                 <Card title="" animate={false} className="p-5 flex flex-col justify-between">
-                  <div className="space-y-1">
+                  <div className="space-y-1 font-semibold">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Affected Area</span>
                     <h3 className="text-3xl font-black text-foreground">3.8 <span className="text-xs font-semibold text-muted-foreground">Acres</span></h3>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-2">Total farm size registered: 5.5 Acres.</p>
+                  <p className="text-[10px] text-muted-foreground mt-2 font-semibold">Total farm size registered: 5.5 Acres.</p>
                 </Card>
 
                 {/* Card 3: Emergency Level */}
                 <Card title="" animate={false} className="p-5 flex flex-col justify-between">
-                  <div className="space-y-1">
+                  <div className="space-y-1 font-semibold">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Emergency Level</span>
-                    <h3 className="text-3xl font-black text-amber-500">Critical</h3>
+                    <h3 className="text-3xl font-black text-amber-500">{t("Critical")}</h3>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-2">Pre-eligible for state disaster compensation.</p>
+                  <p className="text-[10px] text-muted-foreground mt-2 font-semibold">Pre-eligible for state disaster compensation.</p>
                 </Card>
 
                 {/* Card 4: AI Recovery Score */}
                 <Card title="" animate={false} className="p-5 flex flex-col justify-between">
-                  <div className="space-y-1">
+                  <div className="space-y-1 font-semibold">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">AI Recovery Score</span>
                     <h3 className="text-3xl font-black text-emerald-500">84%</h3>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-2">Replanting success index inside 10 days.</p>
+                  <p className="text-[10px] text-muted-foreground mt-2 font-semibold">Replanting success index inside 10 days.</p>
                 </Card>
 
                 {/* Card 5: Financial Loss */}
                 <Card title="" animate={false} className="p-5 flex flex-col justify-between">
-                  <div className="space-y-1">
+                  <div className="space-y-1 font-semibold">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Financial Loss</span>
                     <h3 className="text-3xl font-black text-foreground">₹1.45L</h3>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-2">Calculated from sugarcane baseline yields.</p>
+                  <p className="text-[10px] text-muted-foreground mt-2 font-semibold">Calculated from sugarcane baseline yields.</p>
                 </Card>
 
               </div>
@@ -367,11 +369,11 @@ export default function ReliefHubPage() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 pb-3 border-b border-border/50">
                         <Brain className="h-5 w-5 text-primary shrink-0" />
-                        <h4 className="font-bold text-sm text-foreground">AI Replanting & Field Recovery Plan</h4>
+                        <h4 className="font-bold text-sm text-foreground">{t("AI Replanting & Field Recovery Plan")}</h4>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed">
-                        <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed font-semibold">
+                        <div className="space-y-3 text-left">
                           <span className="font-bold text-primary block uppercase tracking-wider text-[10px]">
                             1. Immediate Actions
                           </span>
@@ -388,7 +390,7 @@ export default function ReliefHubPage() {
                           </p>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-3 text-left">
                           <span className="font-bold text-primary block uppercase tracking-wider text-[10px]">
                             3. Replanting & Crop Rotation
                           </span>
@@ -415,10 +417,10 @@ export default function ReliefHubPage() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 pb-1">
                       <HelpingHand className="h-5 w-5 text-primary" />
-                      <h3 className="text-base font-bold text-foreground">Verified NGO Support Centers</h3>
+                      <h3 className="text-base font-bold text-foreground">{t("Verified NGO Support Centers")}</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-semibold">
                       {/* NGO 1 */}
                       <div className="p-4 rounded-btn border border-border bg-card flex flex-col justify-between h-44 hover:border-primary/30 transition-all shadow-sm">
                         <div className="space-y-2">
@@ -434,7 +436,7 @@ export default function ReliefHubPage() {
                         <div className="pt-3 border-t border-border/30 flex justify-between items-center">
                           <span className="text-[10px] text-muted-foreground">5.2km away</span>
                           <Button onClick={() => alert("Free Pearl Millet seeds requested from Gyan Foundation.")} size="sm" className="text-[10px] font-bold h-7 rounded-btn cursor-pointer bg-primary text-white px-2.5">
-                            Request
+                            {t("Apply")}
                           </Button>
                         </div>
                       </div>
@@ -454,7 +456,7 @@ export default function ReliefHubPage() {
                         <div className="pt-3 border-t border-border/30 flex justify-between items-center">
                           <span className="text-[10px] text-muted-foreground">8.4km away</span>
                           <Button onClick={() => alert("Diesel pump request submitted to Sewa Agri Hub.")} size="sm" className="text-[10px] font-bold h-7 rounded-btn cursor-pointer bg-primary text-white px-2.5">
-                            Request
+                            {t("Apply")}
                           </Button>
                         </div>
                       </div>
@@ -463,7 +465,7 @@ export default function ReliefHubPage() {
                       <div className="p-4 rounded-btn border border-border bg-card flex flex-col justify-between h-44 hover:border-primary/30 transition-all shadow-sm">
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
-                            <span className="font-bold text-foreground block truncate">Pune Krishi Sangha</span>
+                            <span className="font-bold text-foreground block truncate">Guntur Krishi Sangha</span>
                             <Badge variant="outline" className="text-[8px] font-bold border-primary text-primary bg-primary/5">Active</Badge>
                           </div>
                           <div className="space-y-1 text-muted-foreground text-[11px]">
@@ -473,8 +475,8 @@ export default function ReliefHubPage() {
                         </div>
                         <div className="pt-3 border-t border-border/30 flex justify-between items-center">
                           <span className="text-[10px] text-muted-foreground">12km away</span>
-                          <Button onClick={() => alert("Labor volunteers request submitted to Pune Krishi Sangha.")} size="sm" className="text-[10px] font-bold h-7 rounded-btn cursor-pointer bg-primary text-white px-2.5">
-                            Request
+                          <Button onClick={() => alert("Labor volunteers request submitted to Guntur Krishi Sangha.")} size="sm" className="text-[10px] font-bold h-7 rounded-btn cursor-pointer bg-primary text-white px-2.5">
+                            {t("Apply")}
                           </Button>
                         </div>
                       </div>
@@ -490,10 +492,10 @@ export default function ReliefHubPage() {
                   <Card title="" animate={false} className="p-5 space-y-4">
                     <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                       <Landmark className="h-5 w-5 text-primary shrink-0" />
-                      <h4 className="font-bold text-sm text-foreground">Government Disaster Relief</h4>
+                      <h4 className="font-bold text-sm text-foreground">{t("Government Schemes")}</h4>
                     </div>
 
-                    <div className="space-y-3.5 text-xs">
+                    <div className="space-y-3.5 text-xs font-semibold">
                       <div className="space-y-1">
                         <span className="text-muted-foreground block text-[10px] uppercase font-bold">Eligible Scheme:</span>
                         <strong className="text-foreground text-sm">Rashtriya Krishi Vikas Yojana (RKVY)</strong>
@@ -502,20 +504,20 @@ export default function ReliefHubPage() {
                         <span className="text-muted-foreground block text-[10px] uppercase font-bold">Estimated Compensation:</span>
                         <strong className="text-emerald-500 text-lg">₹24,000</strong>
                       </div>
-                      <div className="space-y-1.5 text-muted-foreground">
+                      <div className="space-y-1.5 text-muted-foreground text-left">
                         <span className="text-foreground font-bold block text-[10px] uppercase">Required Documents:</span>
                         <ul className="list-disc list-inside space-y-0.5 text-[11px]">
-                          <li>Land ownership survey extract (7/12)</li>
+                          <li>Land ownership survey extract (Patta)</li>
                           <li>Scan damage assessment PDF</li>
                           <li>Aadhaar bank link slip</li>
                         </ul>
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-border/30 flex justify-between items-center text-xs">
+                    <div className="pt-3 border-t border-border/30 flex justify-between items-center text-xs font-semibold">
                       <span>Status: <strong className="text-primary font-bold">Pre-Approved</strong></span>
-                      <Button onClick={() => alert("Compensation application submitted directly to Pune collectorate RKVY portal.")} size="sm" className="h-8 rounded-btn cursor-pointer bg-primary text-white font-bold px-3">
-                        Apply Now
+                      <Button onClick={() => alert("Compensation application submitted directly to Guntur collectorate RKVY portal.")} size="sm" className="h-8 rounded-btn cursor-pointer bg-primary text-white font-bold px-3">
+                        {t("Apply")}
                       </Button>
                     </div>
                   </Card>
@@ -527,7 +529,7 @@ export default function ReliefHubPage() {
                       <h4 className="font-bold text-sm text-foreground">Insurance Claim Assistant</h4>
                     </div>
 
-                    <div className="space-y-3.5 text-xs">
+                    <div className="space-y-3.5 text-xs font-semibold">
                       <div className="flex justify-between items-baseline">
                         <span className="text-muted-foreground text-[10px] uppercase font-bold">PMFBY Policy Cover:</span>
                         <strong className="text-foreground">Active</strong>
@@ -553,7 +555,7 @@ export default function ReliefHubPage() {
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-border/30 text-[10px] text-muted-foreground leading-normal">
+                    <div className="pt-2 border-t border-border/30 text-[10px] text-muted-foreground leading-normal font-semibold">
                       * Agronomist inspector visit scheduled for June 29. Keep geotagged photos ready.
                     </div>
                   </Card>
@@ -569,7 +571,7 @@ export default function ReliefHubPage() {
                   <h3 className="text-base font-bold text-foreground">Disaster Recovery Timeline</h3>
                 </div>
 
-                <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 font-semibold">
                   <div className="hidden md:block absolute top-[15px] left-8 right-8 h-0.5 bg-border pointer-events-none z-0" />
                   
                   {/* Timeline step 1 */}
@@ -633,18 +635,18 @@ export default function ReliefHubPage() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 pb-1">
                   <Store className="h-5 w-5 text-primary" />
-                  <h3 className="text-base font-bold text-foreground">Alternative Buyers for Damaged Sugarcane Stalks</h3>
+                  <h3 className="text-base font-bold text-foreground">{t("Alternative Buyers for Damaged Sugarcane Stalks")}</h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
                   {/* Buyer 1 */}
                   <div className="p-4 rounded-btn border border-border bg-card flex justify-between items-center gap-4 hover:border-primary/30 transition-all shadow-sm">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <strong className="text-foreground text-sm">Pune Biofuels Ltd</strong>
+                        <strong className="text-foreground text-sm">Andhra Biofuels Ltd</strong>
                         <Badge variant="outline" className="text-[8px] font-bold border-primary text-primary bg-primary/5">Biofuel Plant</Badge>
                       </div>
-                      <p className="text-muted-foreground text-[10px]">
+                      <p className="text-muted-foreground text-[10px] text-left">
                         Accepts damp/waterlogged sugarcane stalks for biomass conversion.
                       </p>
                       <div className="text-[10px] text-muted-foreground pt-1 flex gap-3">
@@ -658,20 +660,20 @@ export default function ReliefHubPage() {
                         <span className="font-extrabold text-primary text-base block">₹1,100</span>
                         <span className="text-[9px] text-muted-foreground">/ Ton</span>
                       </div>
-                      <Button onClick={() => alert("Arbitrage contract locked for damaged sugarcane stalks shipping with Pune Biofuels Ltd.")} size="sm" className="h-7 rounded-btn cursor-pointer bg-primary text-white font-bold text-[10px] px-3">
-                        Sell Stalks
+                      <Button onClick={() => alert("Arbitrage contract locked for damaged sugarcane stalks shipping with Andhra Biofuels Ltd.")} size="sm" className="h-7 rounded-btn cursor-pointer bg-primary text-white font-bold text-[10px] px-3">
+                        {t("Book Now")}
                       </Button>
                     </div>
                   </div>
 
                   {/* Buyer 2 */}
                   <div className="p-4 rounded-btn border border-border bg-card flex justify-between items-center gap-4 hover:border-primary/30 transition-all shadow-sm">
-                    <div className="space-y-1">
+                    <div className="space-y-1 text-left">
                       <div className="flex items-center gap-2">
-                        <strong className="text-foreground text-sm">Deccan Feed Mills</strong>
+                        <strong className="text-foreground text-sm">Vijayawada Cattle Feed Mills</strong>
                         <Badge variant="outline" className="text-[8px] font-bold border-primary text-primary bg-primary/5">Animal Feed</Badge>
                       </div>
-                      <p className="text-muted-foreground text-[10px]">
+                      <p className="text-muted-foreground text-[10px] text-left">
                         Purchases partially damaged crops for dry poultry and cattle fodder mixtures.
                       </p>
                       <div className="text-[10px] text-muted-foreground pt-1 flex gap-3">
@@ -685,8 +687,8 @@ export default function ReliefHubPage() {
                         <span className="font-extrabold text-primary text-base block">₹1,400</span>
                         <span className="text-[9px] text-muted-foreground">/ Ton</span>
                       </div>
-                      <Button onClick={() => alert("Direct crop shipment contract locked with Deccan Feed Mills.")} size="sm" className="h-7 rounded-btn cursor-pointer bg-primary text-white font-bold text-[10px] px-3">
-                        Sell Crop
+                      <Button onClick={() => alert("Direct crop shipment contract locked with Vijayawada Cattle Feed Mills.")} size="sm" className="h-7 rounded-btn cursor-pointer bg-primary text-white font-bold text-[10px] px-3">
+                        {t("Book Now")}
                       </Button>
                     </div>
                   </div>
@@ -694,22 +696,22 @@ export default function ReliefHubPage() {
               </div>
 
               {/* EMERGENCY ALERTS FEED */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 font-semibold">
                 {/* Active Alerts */}
                 <Card title="" animate={false} className="p-6 space-y-4">
                   <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                     <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
-                    <h4 className="font-bold text-sm text-foreground">Extreme Weather Alerts Feed</h4>
+                    <h4 className="font-bold text-sm text-foreground">{t("Weather")}</h4>
                   </div>
 
-                  <div className="space-y-3.5 text-xs">
+                  <div className="space-y-3.5 text-xs text-left">
                     {/* Alert 1 */}
                     <div className="p-3 rounded-btn border border-red-500/20 bg-red-500/5 flex items-start gap-2.5">
                       <ShieldAlert className="h-4.5 w-4.5 text-red-500 shrink-0 mt-0.5" />
                       <div className="space-y-0.5">
                         <span className="font-bold text-red-500">Flood Surge warning</span>
                         <p className="text-muted-foreground text-[10px] leading-relaxed">
-                          Mutha river discharge flows will increase on June 27. Elevate equipment.
+                          Krishna river canal discharge flows will increase on June 27. Elevate equipment.
                         </p>
                       </div>
                     </div>
@@ -720,7 +722,7 @@ export default function ReliefHubPage() {
                       <div className="space-y-0.5">
                         <span className="font-bold text-warning-foreground">Pest Outbreak Alert</span>
                         <p className="text-muted-foreground text-[10px] leading-relaxed">
-                          Moisture spikes in Shirur region trigger sugarcane stem borer warnings. Spray bio-fungicide.
+                          Moisture spikes in Tenali region trigger sugarcane stem borer warnings. Spray bio-fungicide.
                         </p>
                       </div>
                     </div>
@@ -732,17 +734,17 @@ export default function ReliefHubPage() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                       <HeartHandshake className="h-5 w-5 text-primary shrink-0" />
-                      <h4 className="font-bold text-sm text-foreground">Nearby Relief Hotlines</h4>
+                      <h4 className="font-bold text-sm text-foreground">{t("Help")}</h4>
                     </div>
 
-                    <div className="space-y-3.5 text-xs">
+                    <div className="space-y-3.5 text-xs text-left">
                       {/* Officer 1 */}
                       <div className="flex items-center justify-between gap-4 p-2 rounded-btn bg-muted/40 border border-border/40">
                         <div className="space-y-0.5">
-                          <span className="font-bold text-foreground">Dr. K. Patil</span>
-                          <span className="text-[10px] text-muted-foreground block">District Agriculture Officer (Pune)</span>
+                          <span className="font-bold text-foreground">Dr. Y. S. Rao</span>
+                          <span className="text-[10px] text-muted-foreground block">District Agriculture Officer (Guntur)</span>
                         </div>
-                        <Button onClick={() => alert("Dialing Dr. Patil at +91 98450-XXXXX...")} variant="outline" className="h-8 w-8 p-0 rounded-full cursor-pointer bg-card">
+                        <Button onClick={() => alert("Dialing Dr. Rao at +91 98450-XXXXX...")} variant="outline" className="h-8 w-8 p-0 rounded-full cursor-pointer bg-card border border-border/80 hover:bg-muted">
                           <PhoneCall className="h-3.5 w-3.5 text-primary" />
                         </Button>
                       </div>
@@ -750,10 +752,10 @@ export default function ReliefHubPage() {
                       {/* RSK Center */}
                       <div className="flex items-center justify-between gap-4 p-2 rounded-btn bg-muted/40 border border-border/40">
                         <div className="space-y-0.5">
-                          <span className="font-bold text-foreground">Rythu Seva Kendra (RSK Shirur)</span>
+                          <span className="font-bold text-foreground">Rythu Seva Kendra (RSK Tenali)</span>
                           <span className="text-[10px] text-muted-foreground block">Emergency Seed and Tool Distributor</span>
                         </div>
-                        <Button onClick={() => alert("Dialing RSK Shirur at +91 2138-XXXXX...")} variant="outline" className="h-8 w-8 p-0 rounded-full cursor-pointer bg-card">
+                        <Button onClick={() => alert("Dialing RSK Tenali at +91 2138-XXXXX...")} variant="outline" className="h-8 w-8 p-0 rounded-full cursor-pointer bg-card border border-border/80 hover:bg-muted">
                           <PhoneCall className="h-3.5 w-3.5 text-primary" />
                         </Button>
                       </div>
@@ -776,30 +778,30 @@ export default function ReliefHubPage() {
                   <Button
                     onClick={() => window.location.href = "/assistant"}
                     variant="outline"
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                   >
                     <Sparkles className="mr-1.5 h-4 w-4 text-primary" />
-                    Ask Assistant
+                    {t("Vira AI")}
                   </Button>
                   <Button
                     onClick={() => alert("Compensation application and damage report compiled as PDF.")}
                     variant="outline"
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                   >
                     <Save className="mr-1.5 h-4 w-4 text-primary" />
-                    Save Report
+                    {t("Save")}
                   </Button>
                   <Button
                     onClick={() => alert("Report shared with PMFBY insurance field officer.")}
                     variant="outline"
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                   >
                     <Share2 className="mr-1.5 h-4 w-4 text-primary" />
                     Share Report
                   </Button>
                   <Button
-                    onClick={() => alert("Escalating dossier directly to RSK Shirur portal...")}
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-primary"
+                    onClick={() => alert("Escalating dossier directly to RSK Tenali portal...")}
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-primary text-white"
                   >
                     <PhoneCall className="mr-1.5 h-4 w-4 text-white" />
                     Escalate to RSK

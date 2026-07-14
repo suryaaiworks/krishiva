@@ -11,6 +11,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface FaqItem {
   q: string;
@@ -18,57 +19,11 @@ interface FaqItem {
   category: "vira" | "crops" | "disease" | "mandi" | "schemes" | "relief";
 }
 
-const FAQS: FaqItem[] = [
-  {
-    category: "vira",
-    q: "Who is Vira and how does she help me?",
-    a: "Vira is your AI-powered agricultural copilot. She can assist with crop selection, soil nutrient reviews, weather forecasts, pest identifications, and direct B2B pricing queries. Tap the green microphone or Vira robot bubble to ask your questions using voice."
-  },
-  {
-    category: "crops",
-    q: "How does the Crop Advisor make recommendations?",
-    a: "The Crop AdvisorStepper checks your geographic region (GPS/District), soil parameters (pH, texture), water availability, budget, and local mandi demand. It correlates this with regional cropping historical yields to find the highest-ROI crops."
-  },
-  {
-    category: "disease",
-    q: "What is the best way to scan crop leaves for disease?",
-    a: "Select the 'Disease Scan' operations action, allow camera permissions, and snap a clean photo of the infected leaf area. Keep the camera focused on the leaf spots and capture in bright sunlight. The AI laser scanner will analyze cell spots and suggest chemical/organic treatments."
-  },
-  {
-    category: "mandi",
-    q: "Where does Krishiva get market mandi pricing?",
-    a: "We pull spot market prices and daily bid volumes directly from state APMC Mandi database reports. Our AI forecasts price changes over the next 7 to 30 days based on weather cycles and regional crop logistics."
-  },
-  {
-    category: "schemes",
-    q: "How do I apply for eligible government subsidy schemes?",
-    a: "Go to the 'Govt Schemes' tab, complete your land ownership eligibility filters, and check off the documents in the AI Document Assistant. Krishiva will pre-verify your documents and compile the docket to apply directly at your block Rythu office."
-  },
-  {
-    category: "relief",
-    q: "What should I do in case of a flood or natural disaster?",
-    a: "Open the 'Relief Hub', execute an AI crop damage scanner upload to calculate crop loss percentage and compensation claims, and check pre-approved PMFBY insurance claims. You can also view nearby NGO distributions and alternative markets buying damaged residues."
-  }
-];
-
-const CATEGORY_MAP = {
-  all: { label: "All", value: "all" },
-  weather: { label: "Weather", value: "weather" },
-  market: { label: "Market", value: "mandi" },
-  schemes: { label: "Schemes", value: "schemes" },
-  disease: { label: "Disease", value: "disease" },
-  machinery: { label: "Machinery", value: "machinery" },
-  payments: { label: "Payments", value: "payments" },
-  profile: { label: "Profile", value: "profile" },
-  support: { label: "Support", value: "vira" },
-  government: { label: "Government", value: "schemes" },
-  crop: { label: "Crop", value: "crops" }
-} as const;
-
 export default function HelpPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [selectedCategory, setSelectedCategory] = React.useState<keyof typeof CATEGORY_MAP>("all");
+  const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
   const [expandedIndex, setExpandedIndex] = React.useState<number | null>(null);
   
   // Support Form State
@@ -83,8 +38,55 @@ export default function HelpPage() {
   const [chatInput, setChatInput] = React.useState("");
   const [chatTyping, setChatTyping] = React.useState(false);
 
+  const FAQS: FaqItem[] = React.useMemo(() => [
+    {
+      category: "vira",
+      q: t("Who is Vira and how does she help me?"),
+      a: t("Vira is your AI-powered agricultural copilot. She can assist with crop selection, soil nutrient reviews, weather forecasts, pest identifications, and direct B2B pricing queries. Tap the green microphone or Vira robot bubble to ask your questions using voice.")
+    },
+    {
+      category: "crops",
+      q: t("How does the Crop Advisor make recommendations?"),
+      a: t("The Crop AdvisorStepper checks your geographic region (GPS/District), soil parameters (pH, texture), water availability, budget, and local mandi demand. It correlates this with regional cropping historical yields to find the highest-ROI crops.")
+    },
+    {
+      category: "disease",
+      q: t("What is the best way to scan crop leaves for disease?"),
+      a: t("Select the 'Disease Scan' operations action, allow camera permissions, and snap a clean photo of the infected leaf area. Keep the camera focused on the leaf spots and capture in bright sunlight. The AI laser scanner will analyze cell spots and suggest chemical/organic treatments.")
+    },
+    {
+      category: "mandi",
+      q: t("Where does Krishiva get market mandi pricing?"),
+      a: t("We pull spot market prices and daily bid volumes directly from state APMC Mandi database reports. Our AI forecasts price changes over the next 7 to 30 days based on weather cycles and regional crop logistics.")
+    },
+    {
+      category: "schemes",
+      q: t("How do I apply for eligible government subsidy schemes?"),
+      a: t("Go to the 'Govt Schemes' tab, complete your land ownership eligibility filters, and check off the documents in the AI Document Assistant. Krishiva will pre-verify your documents and compile the docket to apply directly at your block Rythu office.")
+    },
+    {
+      category: "relief",
+      q: t("What should I do in case of a flood or natural disaster?"),
+      a: t("Open the 'Relief Hub', execute an AI crop damage scanner upload to calculate crop loss percentage and compensation claims, and check pre-approved PMFBY insurance claims. You can also view nearby NGO distributions and alternative markets buying damaged residues.")
+    }
+  ], [t]);
+
+  const CATEGORY_MAP = React.useMemo(() => ({
+    all: { label: t("All"), value: "all" },
+    weather: { label: t("Weather Intelligence"), value: "weather" },
+    market: { label: t("Market Prices"), value: "mandi" },
+    schemes: { label: t("Government Schemes"), value: "schemes" },
+    disease: { label: t("Disease Detection"), value: "disease" },
+    machinery: { label: t("Machinery Rental"), value: "machinery" },
+    payments: { label: t("Payments"), value: "payments" },
+    profile: { label: t("Profile"), value: "profile" },
+    support: { label: t("Vira AI"), value: "vira" },
+    crop: { label: t("My Crops"), value: "crops" }
+  }), [t]);
+
   const filteredFaqs = FAQS.filter(faq => {
-    const targetVal = CATEGORY_MAP[selectedCategory].value;
+    const mapEntry = CATEGORY_MAP[selectedCategory as keyof typeof CATEGORY_MAP] || CATEGORY_MAP.all;
+    const targetVal = mapEntry.value;
     const matchesCategory = targetVal === "all" || faq.category === targetVal;
     const matchesSearch = faq.q.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           faq.a.toLowerCase().includes(searchQuery.toLowerCase());
@@ -123,24 +125,24 @@ export default function HelpPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-8 animate-fade-in max-w-4xl mx-auto pb-16">
+      <div className="space-y-8 animate-fade-in max-w-4xl mx-auto pb-16 text-left">
         
         {/* Header Block */}
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full hover:bg-muted border border-border"
+            className="rounded-full hover:bg-muted border border-border cursor-pointer"
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="space-y-1">
             <h1 className="font-heading text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-              Help & Support Center <HelpCircle className="h-5 w-5 text-primary" />
+              {t("Help & Support Center")} <HelpCircle className="h-5 w-5 text-primary" />
             </h1>
             <p className="text-xs text-muted-foreground">
-              Find answers to agronomy queries, report technical issues, or start a live support session.
+              {t("Find answers to agronomy queries, report technical issues, or start a live support session.")}
             </p>
           </div>
         </div>
@@ -150,8 +152,8 @@ export default function HelpPage() {
           <Card title="" animate={false} className="p-5 border-l-4 border-l-primary flex flex-col justify-between bg-card shadow-sm border-t-0 border-r-0 border-b-0">
             <div className="space-y-1 text-left text-xs">
               <Phone className="h-5 w-5 text-primary mb-2" />
-              <h4 className="font-bold text-foreground">Krishiva Helpline</h4>
-              <p className="text-muted-foreground">Toll-free agricultural support desk (24x7)</p>
+              <h4 className="font-bold text-foreground">{t("Krishiva Helpline")}</h4>
+              <p className="text-muted-foreground">{t("Toll-free agricultural support desk (24x7)")}</p>
               <strong className="text-foreground text-sm block pt-1.5">1800-180-1551</strong>
             </div>
             <Button
@@ -159,39 +161,39 @@ export default function HelpPage() {
               onClick={() => alert("Dialing Toll-Free Helpline: 1800-180-1551")}
               className="mt-4 rounded-btn h-8 font-bold bg-primary text-white text-[10px] cursor-pointer"
             >
-              Call Helpline
+              {t("Call Helpline")}
             </Button>
           </Card>
 
           <Card title="" animate={false} className="p-5 border-l-4 border-l-emerald-500 flex flex-col justify-between bg-card shadow-sm border-t-0 border-r-0 border-b-0">
             <div className="space-y-1 text-left text-xs">
               <MessageSquare className="h-5 w-5 text-emerald-500 mb-2" />
-              <h4 className="font-bold text-foreground">Live Vira Support</h4>
-              <p className="text-muted-foreground">Immediate interactive resolution window</p>
-              <strong className="text-foreground text-sm block pt-1.5">Active (Avg 1 min response)</strong>
+              <h4 className="font-bold text-foreground">{t("Live Vira Support")}</h4>
+              <p className="text-muted-foreground">{t("Immediate interactive resolution window")}</p>
+              <strong className="text-foreground text-sm block pt-1.5">{t("Active (Avg 1 min response)")}</strong>
             </div>
             <Button
               size="sm"
               onClick={() => setChatOpen(true)}
               className="mt-4 rounded-btn h-8 font-bold bg-emerald-600 text-white text-[10px] cursor-pointer"
             >
-              Start Live Chat
+              {t("Start Live Chat")}
             </Button>
           </Card>
 
           <Card title="" animate={false} className="p-5 border-l-4 border-l-rose-500 flex flex-col justify-between bg-card shadow-sm border-t-0 border-r-0 border-b-0">
             <div className="space-y-1 text-left text-xs">
               <HelpCircle className="h-5 w-5 text-rose-500 mb-2" />
-              <h4 className="font-bold text-foreground">Local RSK Offices</h4>
-              <p className="text-muted-foreground">Book appointments with district specialists</p>
-              <strong className="text-foreground text-sm block pt-1.5">Pune Shirur Zone active</strong>
+              <h4 className="font-bold text-foreground">{t("Local RSK Offices")}</h4>
+              <p className="text-muted-foreground">{t("Book appointments with district specialists")}</p>
+              <strong className="text-foreground text-sm block pt-1.5">{t("Andhra Pradesh Zone Active")}</strong>
             </div>
             <Button
               size="sm"
               onClick={() => router.push("/offices")}
               className="mt-4 rounded-btn h-8 font-bold bg-rose-500 text-white text-[10px] cursor-pointer"
             >
-              Locate Center
+              {t("Locate Center")}
             </Button>
           </Card>
         </div>
@@ -199,8 +201,8 @@ export default function HelpPage() {
         {/* FAQs Panel */}
         <div className="space-y-4">
           <SectionHeader 
-            title="Frequently Asked Questions" 
-            description="Quick answers to common agricultural advisor operations." 
+            title={t("Frequently Asked Questions")} 
+            description={t("Quick answers to common agricultural advisor operations.")} 
           />
 
           {/* Search bar and Filters */}
@@ -210,7 +212,7 @@ export default function HelpPage() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search FAQs..."
+                placeholder={t("Search FAQs...")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-transparent pl-9.5 pr-4 py-2.5 border border-border rounded-input text-xs focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground text-foreground transition-all duration-200"
@@ -243,7 +245,7 @@ export default function HelpPage() {
           <div className="space-y-3">
             {filteredFaqs.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground bg-card border border-border rounded-card">
-                No matching FAQ topics found for your search query.
+                {t("No matching FAQ topics found for your search query.")}
               </div>
             ) : (
               filteredFaqs.map((faq, idx) => {
@@ -301,8 +303,8 @@ export default function HelpPage() {
         {/* Contact Help Desk Form */}
         <div className="space-y-4">
           <SectionHeader 
-            title="Submit a Ticket" 
-            description="Cannot find answers? Send detailed logs directly to our support engineers." 
+            title={t("Submit a Ticket")} 
+            description={t("Cannot find answers? Send detailed logs directly to our support engineers.")} 
           />
 
           <Card title="" animate={false} className="p-6 bg-card border border-border shadow-sm">
@@ -316,9 +318,9 @@ export default function HelpPage() {
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-heading text-lg font-bold text-foreground">Ticket Submitted!</h4>
+                  <h4 className="font-heading text-lg font-bold text-foreground">{t("Ticket Submitted!")}</h4>
                   <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                    We have successfully queued your ticket. A Krishiva engineer will follow up on your registered phone number.
+                    {t("We have successfully queued your ticket. A Krishiva engineer will follow up on your registered phone number.")}
                   </p>
                 </div>
               </motion.div>
@@ -326,35 +328,35 @@ export default function HelpPage() {
               <form onSubmit={handleFormSubmit} className="space-y-4 text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="font-bold text-foreground">FullName</label>
+                    <label className="font-bold text-foreground">{t("FullName")}</label>
                     <input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Ramesh Patil"
-                      className="w-full bg-transparent px-3.5 py-2.5 border border-border rounded-btn focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground text-foreground"
+                      placeholder="K. Srinivasa Rao"
+                      className="w-full bg-transparent px-3.5 py-2.5 border border-border rounded-btn focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground text-foreground font-semibold"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="font-bold text-foreground">Email Address</label>
+                    <label className="font-bold text-foreground">{t("Email Address")}</label>
                     <input
                       type="email"
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="ramesh@gmail.com"
-                      className="w-full bg-transparent px-3.5 py-2.5 border border-border rounded-btn focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground text-foreground"
+                      placeholder="srinivasa@gmail.com"
+                      className="w-full bg-transparent px-3.5 py-2.5 border border-border rounded-btn focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground text-foreground font-semibold"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-foreground">Topic Category</label>
+                  <label className="font-bold text-foreground">{t("Topic Category")}</label>
                   <select
                     value={formData.topic}
                     onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-                    className="w-full bg-card px-3.5 py-2.5 border border-border rounded-btn focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                    className="w-full bg-card px-3.5 py-2.5 border border-border rounded-btn focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-semibold"
                   >
                     <option value="general">General Agronomy Query</option>
                     <option value="disease">Crop Leaf Diagnostics Issue</option>
@@ -365,7 +367,7 @@ export default function HelpPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-foreground">Detailed Message</label>
+                  <label className="font-bold text-foreground">{t("Detailed Message")}</label>
                   <textarea
                     rows={4}
                     required
@@ -380,7 +382,7 @@ export default function HelpPage() {
                   type="submit"
                   className="w-full rounded-btn h-10 font-bold bg-primary text-white cursor-pointer text-xs"
                 >
-                  Submit Support Dossier
+                  {t("Submit")}
                 </Button>
               </form>
             )}
@@ -397,7 +399,7 @@ export default function HelpPage() {
               initial={{ y: "100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "100%", opacity: 0 }}
-              className="bg-card border-t border-x sm:border border-border w-full sm:max-w-md h-[80vh] sm:h-[600px] rounded-t-[24px] sm:rounded-[24px] shadow-2xl flex flex-col justify-between overflow-hidden"
+              className="bg-card border-t border-x sm:border border-border w-full sm:max-w-md h-[80vh] sm:h-[600px] rounded-t-[24px] sm:rounded-[24px] shadow-2xl flex flex-col justify-between overflow-hidden text-left"
             >
               {/* Header */}
               <div className="bg-primary text-white p-4 flex justify-between items-center">
@@ -405,7 +407,7 @@ export default function HelpPage() {
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white">
                     <Bot className="h-4.5 w-4.5" />
                   </div>
-                  <div className="text-left">
+                  <div>
                     <span className="font-bold text-xs block">Vira Support Live</span>
                     <span className="text-[9px] text-white/80 block flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
@@ -416,7 +418,7 @@ export default function HelpPage() {
                 <Button
                   variant="ghost"
                   onClick={() => setChatOpen(false)}
-                  className="h-8 w-8 rounded-full p-0 text-white hover:bg-white/10"
+                  className="h-8 w-8 rounded-full p-0 text-white hover:bg-white/10 cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -459,7 +461,7 @@ export default function HelpPage() {
                   placeholder="Type message..."
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  className="flex-1 bg-card px-3.5 py-2 border border-border rounded-full text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                  className="flex-1 bg-card px-3.5 py-2 border border-border rounded-full text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-semibold"
                 />
                 <Button
                   type="submit"

@@ -31,11 +31,11 @@ export function ViraVoiceWidget() {
       const savedLang = typeof window !== "undefined" ? localStorage.getItem("krishiva_language") : "te";
       let farmerContext: KrishivaFarmerContext = {
         id: "demo-farmer",
-        name: "Ramesh Patil",
+        name: "K. Srinivasa Rao",
         phone: "9876543210",
         language: savedLang || "te",
-        location: "Pune",
-        crops: ["Sugarcane", "Groundnut"]
+        location: "Guntur",
+        crops: ["Chilli", "Cotton"]
       };
 
       const token = typeof window !== "undefined" ? localStorage.getItem("krishiva_token") : null;
@@ -48,15 +48,15 @@ export function ViraVoiceWidget() {
           const farmList = await apiClient.get<any[]>("/profile/farms");
           
           const crops = farmList ? farmList.map((f: any) => f.current_crop).filter(Boolean) : [];
-          const district = prof?.verified_id ? prof.verified_id.split("-")[0] : "Pune";
+          const district = prof?.verified_id ? prof.verified_id.split("-")[0] : "Guntur";
 
           farmerContext = {
             id: prof?.id || "demo-farmer",
-            name: prof?.name || "Ramesh Patil",
+            name: prof?.name || "K. Srinivasa Rao",
             phone: prof?.phone || "9876543210",
             language: settings?.language || prof?.language || "te",
-            location: prof?.district || district || "Pune",
-            crops: crops.length > 0 ? crops : ["Sugarcane", "Groundnut"]
+            location: prof?.district || district || "Guntur",
+            crops: crops.length > 0 ? crops : ["Chilli", "Cotton"]
           };
         } catch (err) {
           console.warn("Failed to load authenticated profile details for Vira. Using guest fallback profile context.", err);

@@ -1,89 +1,51 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { 
-  Sprout, Phone, Sun, Moon, Globe, 
-  WifiOff, ArrowRight, Loader2, ShieldCheck
+  Sprout, Sun, Moon, Globe, 
+  WifiOff, ArrowRight, Loader2, ShieldCheck,
+  Info, CheckCircle2, ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { apiClient } from "@/services/apiClient";
-import { supabase } from "@/utils/supabaseClient";
 import { useLanguage } from "@/context/LanguageContext";
 
-// Zod validation schema for Indian phone numbers (10 digits starting with 6-9)
-const loginSchema = z.object({
-  phone: z
-    .string()
-    .min(1, "Phone number is required")
-    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit phone number (starts with 6-9)"),
-  rememberMe: z.boolean(),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+type Step = "splash" | "language" | "login" | "profile_setup";
 
 export default function LoginPage() {
   const router = useRouter();
-
-  React.useEffect(() => {
-    router.replace("/dashboard/farmer");
-  }, [router]);
-
   const { theme, setTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
+  
   const [mounted, setMounted] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [step, setStep] = React.useState<Step>("splash");
   const [isOffline, setIsOffline] = React.useState(false);
-  const [selectedRole, setSelectedRoleState] = React.useState<"farmer" | "buyer" | "owner">("farmer");
+  const [isLoading, setIsLoading] = React.useState(false);
+  
+  // Splash loading message states
+  const [loadingTextIdx, setLoadingTextIdx] = React.useState(0);
+  const SPLASH_TEXTS = React.useMemo(() => [
+    "Initializing AI Services...",
+    "Connecting Farm Intelligence...",
+    "Preparing Smart Agriculture..."
+  ], []);
 
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedRole = localStorage.getItem("krishiva_role");
-      if (savedRole && ["farmer", "buyer", "owner"].includes(savedRole.toLowerCase())) {
-        setSelectedRoleState(savedRole.toLowerCase() as any);
-      }
-    }
-  }, []);
+  // Google Login configuration error
+  const [googleError, setGoogleError] = React.useState<string | null>(null);
 
-  const setSelectedRole = (role: "farmer" | "buyer" | "owner") => {
-    setSelectedRoleState(role);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("krishiva_role", role);
-    }
-  };
-
-  // Form setup
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      phone: "",
-      rememberMe: false,
-    },
+  // First-time Profile Setup Form State
+  const [profileForm, setProfileForm] = React.useState({
+    name: "",
+    state: "Andhra Pradesh",
+    district: "Guntur",
+    village: "",
+    primaryCrop: "Chilli",
+    preferredLanguage: "en"
   });
 
-  const [otpSent, setOtpSent] = React.useState(false);
-  const [otpCode, setOtpCode] = React.useState("");
-  const [phoneVal, setPhoneVal] = React.useState("");
-
-  // Track mount & connection status
+  // Load mount states
   React.useEffect(() => {
     setMounted(true);
     setIsOffline(!navigator.onLine);
@@ -100,165 +62,117 @@ export default function LoginPage() {
     };
   }, []);
 
-  const handleDemoContinue = () => {
-    setIsLoading(true);
-    try {
-      const role = selectedRole || "farmer";
-      const token = `mock_token_${role}`;
-      const user_id = role === "farmer" ? "11111111-1111-1111-1111-111111111111" :
-                      (role === "buyer" ? "22222222-2222-2222-2222-222222222222" : "33333333-3333-3333-3333-333333333333");
-      
-      localStorage.setItem("krishiva_token", token);
-      localStorage.setItem("krishiva_role", role);
-      localStorage.setItem("krishiva_user_id", user_id);
-      
-      const targetDashboard = role === "farmer" ? "/dashboard/farmer" :
-                              (role === "buyer" ? "/dashboard/buyer" : "/dashboard/owner");
-      
-      router.push(targetDashboard);
-    } catch (err: any) {
-      alert("Failed to initialize demo session.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Splash timeout and session check
+  React.useEffect(() => {
+    if (step !== "splash") return;
 
-  const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
-    setPhoneVal(data.phone);
-    try {
-      // 1. Try Supabase OTP sign in
-      const formattedPhone = `+91${data.phone}`;
-      let useFallback = true;
-      if (supabase && supabase.auth) {
-        try {
-          const { error } = await supabase.auth.signInWithOtp({
-            phone: formattedPhone,
-          });
-          if (!error) {
-            useFallback = false;
-          }
-        } catch (e) {
-          console.warn("Supabase OTP sign-in failed, using API fallback:", e);
+    // Cycle text indexes
+    const textTimer = setInterval(() => {
+      setLoadingTextIdx((prev) => (prev + 1) % SPLASH_TEXTS.length);
+    }, 450);
+
+    const checkTimer = setTimeout(() => {
+      clearInterval(textTimer);
+      const token = localStorage.getItem("krishiva_token");
+      if (token) {
+        // Returning user - bypass onboarding directly to Dashboard
+        router.push("/dashboard");
+      } else {
+        // First launch - check if language is already set
+        const savedLang = localStorage.getItem("krishiva_language");
+        if (savedLang && ["en", "te", "hi"].includes(savedLang)) {
+          setStep("login");
+        } else {
+          setStep("language");
         }
       }
-      
-      if (useFallback) {
-        // Fallback to backend API
-        await apiClient.post("/auth/otp/send", { phone: data.phone });
-      }
-      setOtpSent(true);
-    } catch (err: any) {
-      alert(err.message || "Failed to dispatch verification OTP.");
-    } finally {
-      setIsLoading(false);
-    }
+    }, 1200);
+
+    return () => {
+      clearInterval(textTimer);
+      clearTimeout(checkTimer);
+    };
+  }, [step, router, SPLASH_TEXTS]);
+
+  // Sync default profile language when language updates
+  React.useEffect(() => {
+    setProfileForm(prev => ({ ...prev, preferredLanguage: language }));
+  }, [language]);
+
+  const handleLanguageSelect = (lang: "en" | "te" | "hi") => {
+    setLanguage(lang);
+    setStep("login");
   };
 
-  const handleVerifyOtpSubmit = async (e: React.FormEvent) => {
+  const handleGoogleLogin = () => {
+    setGoogleError(null);
+    setIsLoading(true);
+
+    // Check if Firebase client is fully configured
+    const isFirebaseConfigured = process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? true : false;
+    
+    setTimeout(() => {
+      setIsLoading(false);
+      if (!isFirebaseConfigured) {
+        setGoogleError(t("Google Sign-In is unavailable in this environment."));
+      } else {
+        // Simulating Firebase auth configuration if it was defined
+        localStorage.setItem("krishiva_token", "google_mock_prod_token");
+        localStorage.setItem("krishiva_role", "farmer");
+        localStorage.setItem("krishiva_user_id", "google-user-1234");
+        
+        // Direct to profile setup or dashboard depending on database entry
+        setStep("profile_setup");
+      }
+    }, 800);
+  };
+
+  const handleGuestLogin = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      try {
+        localStorage.setItem("krishiva_token", "guest_token");
+        localStorage.setItem("krishiva_role", "guest");
+        localStorage.setItem("krishiva_user_id", "guest_user");
+        
+        // Preset mock guest farmer values
+        localStorage.setItem("krishiva_farmer_name", "K. Srinivasa Rao");
+        localStorage.setItem("krishiva_farmer_district", "Guntur");
+        localStorage.setItem("krishiva_farmer_crop", "Chilli");
+        
+        router.push("/dashboard");
+      } catch (e) {
+        alert("Failed to initialize guest session.");
+      } finally {
+        setIsLoading(false);
+      }
+    }, 600);
+  };
+
+  const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (otpCode.length !== 6) {
-      alert("Please enter a valid 6-digit verification code.");
+    if (!profileForm.name.trim() || !profileForm.village.trim()) {
+      alert("Please fill in all profile fields.");
       return;
     }
+    
     setIsLoading(true);
-    try {
-      const formattedPhone = `+91${phoneVal}`;
-      const roleMapped = selectedRole === "farmer" ? "Farmer" : 
-                         (selectedRole === "buyer" ? "Buyer" : 
-                          (selectedRole === "owner" ? "Owner" : "Guest"));
+    setTimeout(() => {
+      // Save profile inputs in localStorage
+      localStorage.setItem("krishiva_token", "google_mock_prod_token");
+      localStorage.setItem("krishiva_role", "farmer");
+      localStorage.setItem("krishiva_user_id", "google-user-1234");
+      localStorage.setItem("krishiva_farmer_name", profileForm.name);
+      localStorage.setItem("krishiva_farmer_district", profileForm.district);
+      localStorage.setItem("krishiva_farmer_crop", profileForm.primaryCrop);
+      localStorage.setItem("krishiva_language", profileForm.preferredLanguage);
       
-      // 1. Try Supabase verification
-      if (otpCode !== "123456" && supabase && supabase.auth) {
-        try {
-          const { data, error } = await supabase.auth.verifyOtp({
-            phone: formattedPhone,
-            token: otpCode,
-            type: "sms"
-          });
-          if (!error && data.session) {
-            localStorage.setItem("krishiva_token", data.session.access_token);
-            localStorage.setItem("krishiva_role", selectedRole);
-            localStorage.setItem("krishiva_user_id", data.session.user?.id || "");
-            
-            const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
-                                    (selectedRole === "buyer" ? "/dashboard/buyer" :
-                                     (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
-            router.push(targetDashboard);
-            return;
-          }
-        } catch (e) {
-          console.warn("Supabase OTP verification failed, using API fallback:", e);
-        }
-      }
-
-      // 2. Sandbox bypass or fallback to backend API verification
-      const res: any = await apiClient.post("/auth/otp/verify", {
-        phone: phoneVal,
-        otp: otpCode,
-        role: roleMapped
-      });
-      localStorage.setItem("krishiva_token", res.access_token);
-      localStorage.setItem("krishiva_role", selectedRole);
-      localStorage.setItem("krishiva_user_id", res.user_id);
-      
-      const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
-                              (selectedRole === "buyer" ? "/dashboard/buyer" :
-                               (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
-      router.push(targetDashboard);
-    } catch (err: any) {
-      alert(err.message || "OTP verification failed.");
-    } finally {
-      setIsLoading(false);
-    }
+      router.push("/dashboard");
+    }, 800);
   };
-
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    try {
-      const roleMapped = selectedRole === "farmer" ? "Farmer" : 
-                         (selectedRole === "buyer" ? "Buyer" : 
-                          (selectedRole === "owner" ? "Owner" : "Guest"));
-                          
-      const targetDashboard = selectedRole === "farmer" ? "/dashboard/farmer" :
-                              (selectedRole === "buyer" ? "/dashboard/buyer" :
-                               (selectedRole === "owner" ? "/dashboard/owner" : "/dashboard/guest"));
-
-      if (!supabase || !supabase.auth) {
-        alert("Google Login is currently unavailable (Supabase configuration is missing). Please check your environment variables.");
-        setIsLoading(false);
-        return;
-      }
-
-      // Try Supabase Google OAuth provider redirection
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: typeof window !== "undefined" ? window.location.origin + targetDashboard : undefined
-        }
-      });
-      if (error) {
-        // Fallback to backend API mock Google token exchange
-        const res: any = await apiClient.post("/auth/google", {
-          id_token: "google_login_sample_token_2026",
-          role: roleMapped
-        });
-        localStorage.setItem("krishiva_token", res.access_token);
-        localStorage.setItem("krishiva_role", selectedRole);
-        localStorage.setItem("krishiva_user_id", res.user_id);
-        router.push(targetDashboard);
-      }
-    } catch (err: any) {
-      alert(err.message || "Google Authentication failed.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col lg:grid lg:grid-cols-2 bg-background overflow-x-hidden font-sans">
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 overflow-x-hidden font-sans">
       
       {/* Offline Status Alert Banner */}
       {isOffline && (
@@ -266,209 +180,325 @@ export default function LoginPage() {
           className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-full shadow-lg text-xs font-bold"
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
-          <WifiOff className="h-4 w-4" />
-          <span>You are currently offline. Local session only.</span>
+          <WifiOff className="h-4 w-4 animate-bounce" />
+          <span>You are currently offline. Running local guest parameters.</span>
         </motion.div>
       )}
 
-      {/* Decorative breathing background orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute -top-[10%] -left-[10%] h-[350px] w-[350px] rounded-full bg-primary/10 blur-[100px]"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-[5%] right-[-5%] h-[400px] w-[400px] rounded-full bg-accent/5 blur-[120px]"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.4, 0.6, 0.4],
-          }}
-          transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-        />
+      {/* Decorative background orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+        <div className="absolute -top-[10%] -left-[10%] h-[380px] w-[380px] rounded-full bg-emerald-500/10 blur-[100px]" />
+        <div className="absolute bottom-[5%] right-[-5%] h-[400px] w-[400px] rounded-full bg-amber-500/5 blur-[120px]" />
       </div>
 
-      {/* LEFT COLUMN: BRAND DISPLAY & ILLUSTRATION */}
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-slate-950 text-white relative">
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-accent/5 pointer-events-none" />
+      <AnimatePresence mode="wait">
         
-        {/* Brand header */}
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="flex h-10 w-10 items-center justify-center rounded-btn bg-primary text-primary-foreground shadow-md">
-            <Sprout className="h-6 w-6" />
-          </div>
-          <span className="font-heading text-lg font-bold tracking-tight">
-            Krishiva <span className="text-primary">AI</span>
-          </span>
-        </div>
-
-        {/* Brand visual centerpiece */}
-        <div className="flex flex-col items-center justify-center space-y-8 max-w-md mx-auto relative z-10">
-          <div className="w-[300px] aspect-square bg-white rounded-card shadow-lg p-6 flex items-center justify-center overflow-hidden">
-            <Image
-              src="/illustrations/login_bg.png"
-              alt="Platform Login illustration"
-              width={260}
-              height={260}
-              className="object-contain"
-              priority
-            />
-          </div>
-
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl font-extrabold tracking-tight text-white leading-tight">
-              Empowering Farms Through Intelligence
-            </h2>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Detect plant diseases, access market pricing indexes, and receive warnings regarding dry spells with smart AI reasoning.
-            </p>
-          </div>
-        </div>
-
-        {/* Copyright info */}
-        <p className="text-xs text-slate-500 relative z-10">
-          © 2026 Krishiva. Powered by Google Gemini & Cloud Run.
-        </p>
-      </div>
-
-      {/* RIGHT COLUMN: LOGIN WIDGET CARD */}
-      <div className="flex-1 flex flex-col justify-between p-6 lg:p-12 relative z-10">
-        {/* Top Header Actions (Language, Theme) */}
-        <div className="flex items-center justify-between w-full lg:justify-end gap-3">
-          {/* Brand header for mobile */}
-          <div className="flex lg:hidden items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-btn bg-primary text-primary-foreground">
-              <Sprout className="h-4.5 w-4.5" />
-            </div>
-            <span className="font-heading text-sm font-bold text-foreground">
-              Krishiva <span className="text-primary">AI</span>
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Custom Language Selector using shadcn select */}
-            <div className="flex items-center gap-1">
-              <Globe className="h-4 w-4 text-muted-foreground hidden sm:block" />
-              <Select value={language} onValueChange={(val) => { if (val) setLanguage(val as any); }}>
-                <SelectTrigger className="w-[110px] h-9 text-xs font-semibold rounded-btn border border-border">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="en">{t("English")}</SelectItem>
-                  <SelectItem value="hi">{t("Hindi")}</SelectItem>
-                  <SelectItem value="te">{t("Telugu")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Dark Mode Toggle */}
-            {mounted && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="h-9 w-9 rounded-btn border border-border"
-                aria-label="Toggle Theme"
-              >
-                {theme === "dark" ? (
-                  <Sun className="h-4.5 w-4.5" />
-                ) : (
-                  <Moon className="h-4.5 w-4.5" />
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Centerpiece Form Card */}
-        <div className="flex-1 flex items-center justify-center py-8">
+        {/* STEP 1: SPLASH SCREEN */}
+        {step === "splash" && (
           <motion.div
-            className="w-full max-w-md border border-border bg-card/60 backdrop-blur-md rounded-card p-6 md:p-8 shadow-sm flex flex-col gap-6"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 150, damping: 20 }}
+            key="splash"
+            className="flex flex-col items-center text-center justify-center space-y-6 max-w-sm px-6"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.35 }}
           >
-            {/* Header info */}
-            <div className="space-y-1">
-              <h3 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-                {t("Get Started")}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                {t("Register or log in using your phone or social credentials.")}
+            <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary text-primary-foreground shadow-lg animate-pulse">
+              <Sprout className="h-10 w-10 text-white" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="font-heading text-3xl font-black tracking-tight text-foreground">
+                🌱 Krishiva
+              </h1>
+              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                Empowering Farmers with AI
               </p>
             </div>
 
-            {/* Role Selection */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-                {t("Select Your Role")}
-              </span>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: "farmer", label: t("Farmer"), desc: t("Grow & Trade") },
-                  { id: "buyer", label: t("Buyer"), desc: t("Procure Crops") },
-                  { id: "owner", label: t("Owner"), desc: t("Rent Machines") }
-                ].map((role) => {
-                  const isSelected = selectedRole === role.id;
-                  return (
-                    <button
-                      key={role.id}
-                      type="button"
-                      onClick={() => setSelectedRole(role.id as "farmer" | "buyer" | "owner")}
-                      className={`p-2 rounded-btn border text-left transition-all ${
-                        isSelected 
-                          ? "border-primary bg-primary/5 ring-1 ring-primary" 
-                          : "border-border bg-card/40 hover:bg-muted/10"
-                      }`}
-                    >
-                      <span className="font-extrabold text-[10px] text-foreground block">{role.label}</span>
-                      <span className="text-[8px] text-muted-foreground block mt-0.5">{role.desc}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Demo mode continue button */}
-            <div className="space-y-3 pt-2">
-              <Button
-                onClick={handleDemoContinue}
-                disabled={isLoading}
-                className="w-full h-12 justify-center rounded-btn font-bold cursor-pointer transition-transform duration-200 active:scale-[0.98] bg-primary text-white hover:bg-primary/95 text-sm flex items-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    {t("Loading Demo Session...")}
-                  </>
-                ) : (
-                  <>
-                    {t("Continue to Krishiva")}
-                    <ArrowRight className="ml-1.5 h-4.5 w-4.5" />
-                  </>
-                )}
-              </Button>
+            <div className="flex flex-col items-center gap-3 pt-6">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <p className="text-xs text-muted-foreground font-semibold h-4 animate-pulse">
+                {SPLASH_TEXTS[loadingTextIdx]}
+              </p>
             </div>
           </motion.div>
-        </div>
+        )}
 
-        {/* Footer Links (Terms & Privacy) */}
-        <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-3 pt-4 border-t border-border/50 text-xs text-muted-foreground">
-          <p className="text-center sm:text-left">
-            By signing in, you agree to our terms.
-          </p>
-          <div className="flex items-center gap-3">
-            <a href="#terms" className="hover:underline hover:text-foreground">Terms of Service</a>
-            <span className="text-border">•</span>
-            <a href="#privacy" className="hover:underline hover:text-foreground">Privacy Policy</a>
-          </div>
-        </div>
-      </div>
+        {/* STEP 2: LANGUAGE SELECTION */}
+        {step === "language" && (
+          <motion.div
+            key="language"
+            className="w-full max-w-md border border-border bg-card/65 backdrop-blur-md rounded-[28px] p-6 md:p-8 shadow-sm flex flex-col gap-6"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ type: "spring", stiffness: 150, damping: 20 }}
+          >
+            <div className="space-y-1.5 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-primary/10 text-primary mx-auto">
+                <Globe className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-heading text-xl font-bold tracking-tight text-foreground">
+                Select Your Language
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                మీకు నచ్చిన భాషను ఎంచుకోండి • अपनी पसंदीदा भाषा चुनें
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 py-2">
+              {[
+                { code: "en", name: "English", native: "🇬🇧 English (India)" },
+                { code: "te", name: "తెలుగు", native: "🇮🇳 తెలుగు (Telugu)" },
+                { code: "hi", name: "हिन्दी", native: "🇮🇳 हिन्दी (Hindi)" }
+              ].map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => handleLanguageSelect(lang.code as any)}
+                  className="flex items-center justify-between px-5 py-4 rounded-[20px] border border-border hover:border-primary/40 bg-card hover:bg-primary/5 transition-all text-left font-bold text-sm cursor-pointer group"
+                >
+                  <div className="space-y-0.5">
+                    <span className="text-foreground block">{lang.native}</span>
+                    <span className="text-[10px] text-muted-foreground font-semibold block">{lang.name}</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-x-1" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 3: LOGIN SCREEN */}
+        {step === "login" && (
+          <motion.div
+            key="login"
+            className="w-full max-w-md border border-border bg-card/65 backdrop-blur-md rounded-[28px] p-6 md:p-8 shadow-sm flex flex-col gap-6 text-left"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ type: "spring", stiffness: 150, damping: 20 }}
+          >
+            {/* Header branding */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-[14px] bg-primary text-primary-foreground shadow-sm">
+                  <Sprout className="h-5 w-5" />
+                </div>
+                <span className="font-heading text-base font-bold tracking-tight text-foreground">
+                  Krishiva <span className="text-primary">AI</span>
+                </span>
+              </div>
+
+              {/* Theme Toggle */}
+              {mounted && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="h-8 w-8 rounded-full border border-border"
+                >
+                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </Button>
+              )}
+            </div>
+
+            <div className="space-y-1 pt-2">
+              <h3 className="font-heading text-2xl font-black tracking-tight text-foreground">
+                {t("Get Started")}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {t("Empowering Farmers with AI")}
+              </p>
+            </div>
+
+            {/* Google Authentication */}
+            <div className="space-y-3 pt-2">
+              <Button
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+                className="w-full h-12 justify-center rounded-[20px] font-bold cursor-pointer border border-border bg-card hover:bg-muted text-foreground text-xs flex items-center gap-2.5 transition-all shadow-sm"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                ) : (
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                  </svg>
+                )}
+                <span>{t("Continue with Google")}</span>
+              </Button>
+
+              {/* Google Sign-in Error Banner */}
+              {googleError && (
+                <motion.div 
+                  className="flex items-start gap-2 p-3.5 rounded-[16px] bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold leading-relaxed"
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Info className="h-4.5 w-4.5 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold">{googleError}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{t("Please use Guest Mode to explore the platform.")}</p>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Divider line */}
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-border/60"></div>
+              <span className="flex-shrink mx-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t("Or")}</span>
+              <div className="flex-grow border-t border-border/60"></div>
+            </div>
+
+            {/* Guest Mode Section */}
+            <div className="space-y-2.5">
+              <div className="text-left space-y-1">
+                <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block">
+                  {t("Explore as Guest")}
+                </span>
+                <p className="text-[11px] text-muted-foreground leading-normal font-semibold">
+                  {t("Explore Krishiva instantly using demo farm data. No account required.")}
+                </p>
+              </div>
+
+              <Button
+                onClick={handleGuestLogin}
+                disabled={isLoading}
+                className="w-full h-11 justify-center rounded-[20px] font-bold cursor-pointer bg-primary text-white hover:bg-primary/95 text-xs"
+              >
+                <span>{t("Enter Guest Platform")}</span>
+                <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Google Trust Section */}
+            <div className="pt-2 border-t border-border/50 space-y-2.5">
+              <div className="grid grid-cols-3 gap-2 text-[9px] text-muted-foreground/80 font-bold">
+                <div className="flex items-center gap-1.5 justify-center py-1 rounded-full bg-muted/40">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                  <span>AI Powered</span>
+                </div>
+                <div className="flex items-center gap-1.5 justify-center py-1 rounded-full bg-muted/40">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                  <span>Secure Auth</span>
+                </div>
+                <div className="flex items-center gap-1.5 justify-center py-1 rounded-full bg-muted/40">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                  <span>Google Cloud</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 4: FIRST-TIME PROFILE SETUP */}
+        {step === "profile_setup" && (
+          <motion.div
+            key="profile_setup"
+            className="w-full max-w-md border border-border bg-card/65 backdrop-blur-md rounded-[28px] p-6 md:p-8 shadow-sm flex flex-col gap-5 text-left"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ type: "spring", stiffness: 150, damping: 20 }}
+          >
+            <div className="space-y-1">
+              <h3 className="font-heading text-xl font-bold tracking-tight text-foreground">
+                Farmer Profile Setup
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Set up your agriculture details for smart telemetry suggestions.
+              </p>
+            </div>
+
+            <form onSubmit={handleProfileSubmit} className="space-y-4 text-xs font-bold leading-normal">
+              {/* Full Name */}
+              <div className="space-y-1.5">
+                <label className="text-foreground">Farmer Name</label>
+                <input
+                  type="text"
+                  required
+                  value={profileForm.name}
+                  onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                  placeholder="e.g. Srinivasa Rao"
+                  className="w-full bg-transparent px-3.5 py-2.5 border border-border rounded-[18px] focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-semibold"
+                />
+              </div>
+
+              {/* State & District grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-foreground">State</label>
+                  <select
+                    value={profileForm.state}
+                    onChange={(e) => setProfileForm({ ...profileForm, state: e.target.value })}
+                    className="w-full bg-card px-3.5 py-2.5 border border-border rounded-[18px] focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-semibold"
+                  >
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Karnataka">Karnataka</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-foreground">District</label>
+                  <input
+                    type="text"
+                    required
+                    value={profileForm.district}
+                    onChange={(e) => setProfileForm({ ...profileForm, district: e.target.value })}
+                    placeholder="e.g. Guntur"
+                    className="w-full bg-transparent px-3.5 py-2.5 border border-border rounded-[18px] focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-semibold"
+                  />
+                </div>
+              </div>
+
+              {/* Village */}
+              <div className="space-y-1.5">
+                <label className="text-foreground">Village</label>
+                <input
+                  type="text"
+                  required
+                  value={profileForm.village}
+                  onChange={(e) => setProfileForm({ ...profileForm, village: e.target.value })}
+                  placeholder="e.g. Tenali"
+                  className="w-full bg-transparent px-3.5 py-2.5 border border-border rounded-[18px] focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-semibold"
+                />
+              </div>
+
+              {/* Primary Crop */}
+              <div className="space-y-1.5">
+                <label className="text-foreground">Primary Crop</label>
+                <select
+                  value={profileForm.primaryCrop}
+                  onChange={(e) => setProfileForm({ ...profileForm, primaryCrop: e.target.value })}
+                  className="w-full bg-card px-3.5 py-2.5 border border-border rounded-[18px] focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-semibold"
+                >
+                  <option value="Chilli">Chilli</option>
+                  <option value="Paddy">Paddy</option>
+                  <option value="Cotton">Cotton</option>
+                  <option value="Sugarcane">Sugarcane</option>
+                </select>
+              </div>
+
+              {/* Submit */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-11 justify-center rounded-[20px] font-bold cursor-pointer bg-primary text-white hover:bg-primary/95 text-xs mt-2"
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Profile & Continue"}
+              </Button>
+            </form>
+          </motion.div>
+        )}
+
+      </AnimatePresence>
     </div>
   );
 }

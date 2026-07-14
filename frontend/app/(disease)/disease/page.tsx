@@ -12,13 +12,24 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiClient } from "@/services/apiClient";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function DiseaseDetectionPage() {
+  const { t } = useLanguage();
+  const [isPageLoading, setIsPageLoading] = React.useState(true);
   const [phase, setPhase] = React.useState<"upload" | "scanning" | "result">("upload");
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [scanProgress, setScanProgress] = React.useState(0);
   const [scanStatus, setScanStatus] = React.useState("Initializing camera lens...");
   const [scanResult, setScanResult] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
 
   const handleImageSelected = async (file: File | null) => {
     if (file) {
@@ -59,11 +70,11 @@ export default function DiseaseDetectionPage() {
 
         // Dynamic status updates based on progress
         if (next < 30) {
-          setScanStatus("Analyzing foliage cell geometry...");
+          setScanStatus(t("Analyzing foliage cell geometry..."));
         } else if (next < 70) {
-          setScanStatus("Correlating spot patterns with Puccinia rust database...");
+          setScanStatus(t("Correlating spot patterns with Puccinia rust database..."));
         } else {
-          setScanStatus("Gemini advisor mapping treatment schedules...");
+          setScanStatus(t("Gemini advisor mapping treatment schedules..."));
         }
 
         return next;
@@ -71,7 +82,24 @@ export default function DiseaseDetectionPage() {
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [phase]);
+  }, [phase, t]);
+
+  if (isPageLoading) {
+    return (
+      <MainLayout>
+        <div className="space-y-8 pb-16 text-left animate-fade-in">
+          <SectionHeader 
+            title={t("Disease Scan")} 
+            description={t("Camera-based AI leaf diagnosis and agricultural treatment protocols.")}
+          />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 h-[450px] rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+            <div className="h-[450px] rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const resetScanner = () => {
     setPreviewUrl(null);
@@ -80,17 +108,17 @@ export default function DiseaseDetectionPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-8 animate-fade-in pb-12">
+      <div className="space-y-8 animate-fade-in pb-12 text-left">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <SectionHeader 
-            title="AI Crop Disease Detection" 
-            description="Upload crop leaf images for rapid disease identification and treatment options."
+            title={t("Disease Detection")} 
+            description={t("Upload crop leaf images for rapid disease identification and treatment options.")}
             className="mb-0"
           />
           {phase === "result" && (
-            <Button onClick={resetScanner} variant="outline" className="text-xs font-bold rounded-btn cursor-pointer">
-              Scan Another Crop
+            <Button onClick={resetScanner} variant="outline" className="text-xs font-bold rounded-btn cursor-pointer border border-border hover:bg-muted">
+              {t("Scan Another Crop")}
             </Button>
           )}
         </div>
@@ -109,8 +137,8 @@ export default function DiseaseDetectionPage() {
               <div className="rounded-card border border-primary/20 bg-primary/5 p-5 flex items-start gap-3.5">
                 <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 <div className="space-y-1 text-xs leading-relaxed text-muted-foreground">
-                  <span className="font-bold text-foreground block">How it works:</span>
-                  Take a clear photo of the infected crop leaf from above. Avoid glares, hands, or shadows. Our Gemini-powered agricultural scanner will analyze lesions and recommend organic/chemical recovery schedules.
+                  <span className="font-bold text-foreground block">{t("How it works")}:</span>
+                  {t("Take a clear photo of the infected crop leaf from above. Avoid glares, hands, or shadows. Our Gemini-powered agricultural scanner will analyze lesions and recommend organic/chemical recovery schedules.")}
                 </div>
               </div>
 
@@ -166,7 +194,7 @@ export default function DiseaseDetectionPage() {
                     {scanStatus}
                   </p>
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    Analyzing Cellular Structure... {Math.round(scanProgress)}%
+                    {t("Analyzing Cellular Structure...")} {Math.round(scanProgress)}%
                   </span>
                 </div>
               </div>
@@ -199,7 +227,7 @@ export default function DiseaseDetectionPage() {
                       )}
                     </div>
                     <div className="mt-3 flex justify-between items-center text-xs">
-                      <span className="text-muted-foreground">Scan Source: File Upload</span>
+                      <span className="text-muted-foreground font-semibold">{t("Scan Source: File Upload")}</span>
                       <Badge variant="outline" className="text-[10px] font-bold border-primary text-primary bg-primary/5">
                         ID: #SCAN-8092
                       </Badge>
@@ -212,22 +240,22 @@ export default function DiseaseDetectionPage() {
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
                           <span className="text-[10px] font-bold text-warning uppercase tracking-wider block">
-                            Scan Diagnosis
+                            {t("Scan Diagnosis")}
                           </span>
-                          <h3 className="text-lg font-bold text-foreground">{scanResult?.disease_name || "Sugarcane Rust"}</h3>
+                          <h3 className="text-lg font-bold text-foreground">{scanResult?.disease_name || t("Sugarcane Rust")}</h3>
                         </div>
                         <Badge variant="warning" className="font-bold px-2 py-0.5 text-xs">
                           {scanResult?.confidence ? Math.round(scanResult.confidence) : 94}% Match
                         </Badge>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 py-3 border-y border-border/50 text-xs">
+                      <div className="grid grid-cols-2 gap-3 py-3 border-y border-border/50 text-xs font-semibold">
                         <div>
                           <span className="text-muted-foreground block">Crop:</span>
                           <span className="font-bold text-foreground">{scanResult?.crop_name || "Sugarcane (Co 86032)"}</span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground block">Severity:</span>
+                          <span className="text-muted-foreground block">{t("Status")}:</span>
                           <span className="font-bold text-warning">{scanResult?.severity || "Medium"}</span>
                         </div>
                       </div>
@@ -235,10 +263,10 @@ export default function DiseaseDetectionPage() {
                       <div className="space-y-1.5 text-xs">
                         <span className="font-bold text-foreground flex items-center gap-1.5">
                           <Brain className="h-4 w-4 text-primary shrink-0" />
-                          AI Explanation
+                          {t("AI Reasoning")}
                         </span>
                         <p className="text-muted-foreground leading-relaxed">
-                          {scanResult?.description || "Orange-brown lesions and pustules detected on lower sugarcane leaves. Warm temperature combined with micro-hydration layers on leaf surfaces caused fungal germination."}
+                          {scanResult?.description || t("Orange-brown lesions and pustules detected on lower sugarcane leaves. Warm temperature combined with micro-hydration layers on leaf surfaces caused fungal germination.")}
                         </p>
                       </div>
                     </div>
@@ -253,10 +281,10 @@ export default function DiseaseDetectionPage() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 pb-3 border-b border-border/50">
                         <Activity className="h-5 w-5 text-primary" />
-                        <h3 className="text-base font-bold text-foreground">AI-Recommended Treatment Plan</h3>
+                        <h3 className="text-base font-bold text-foreground">{t("AI-Recommended Treatment Plan")}</h3>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed text-left">
                         <div className="space-y-3">
                           <span className="font-bold text-foreground block uppercase tracking-wider text-[10px] text-primary">
                             1. Recommended Fungicide Chemical Spray
@@ -279,7 +307,7 @@ export default function DiseaseDetectionPage() {
                           {scanResult?.preventive_measures ? (
                             <p className="text-muted-foreground">{scanResult.preventive_measures}</p>
                           ) : (
-                            <ul className="list-disc list-inside space-y-1.5 text-muted-foreground">
+                            <ul className="list-disc list-inside space-y-1.5 text-muted-foreground font-semibold">
                               <li>Avoid excess nitrogen fertilizers (causes lush, disease-susceptible foliage).</li>
                               <li>Switch overhead sprinklers to drip irrigation to keep leaf surfaces dry.</li>
                               <li>Adopt crop rotation with legume crops in the next rotation cycle.</li>
@@ -304,7 +332,7 @@ export default function DiseaseDetectionPage() {
                           If treatment is applied within 48 hours. Sugarcane exhibits high structural immunity to rust once fungicide terminates spores.
                         </p>
                       </div>
-                      <div className="mt-4 pt-3 border-t border-border/50 flex justify-between items-center text-xs">
+                      <div className="mt-4 pt-3 border-t border-border/50 flex justify-between items-center text-xs font-semibold">
                         <span className="text-muted-foreground">Recovery Window:</span>
                         <span className="font-bold text-foreground">14 - 21 Days</span>
                       </div>
@@ -322,7 +350,7 @@ export default function DiseaseDetectionPage() {
                           Covers standard Mancozeb packages and sprayer labor costs. This is 80% lower than potential crop yield losses if untreated.
                         </p>
                       </div>
-                      <div className="mt-4 pt-3 border-t border-border/50 flex justify-between items-center text-xs">
+                      <div className="mt-4 pt-3 border-t border-border/50 flex justify-between items-center text-xs font-semibold">
                         <span className="text-muted-foreground">Next Inspection:</span>
                         <span className="font-bold text-foreground">July 4 (in 7 Days)</span>
                       </div>
@@ -339,7 +367,7 @@ export default function DiseaseDetectionPage() {
                   <h3 className="text-base font-bold text-foreground">Crop Recovery Timeline</h3>
                 </div>
 
-                <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mt-4">
+                <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mt-4 font-semibold">
                   {/* Progress Line for desktop */}
                   <div className="hidden md:block absolute top-[15px] left-8 right-8 h-1 bg-muted pointer-events-none z-0 rounded-full overflow-hidden">
                     <motion.div 
@@ -427,30 +455,30 @@ export default function DiseaseDetectionPage() {
                   <Button
                     onClick={() => window.location.href = "/assistant"}
                     variant="outline"
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                   >
                     <Sparkles className="mr-1.5 h-4 w-4 text-primary" />
-                    Ask Advisor
+                    {t("Vira AI")}
                   </Button>
                   <Button
                     onClick={() => alert("Report saved locally.")}
                     variant="outline"
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                   >
                     <Save className="mr-1.5 h-4 w-4 text-primary" />
-                    Save PDF
+                    {t("Save")}
                   </Button>
                   <Button
                     onClick={() => alert("Details shared with agronomist.")}
                     variant="outline"
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                   >
                     <Share2 className="mr-1.5 h-4 w-4 text-primary" />
                     Share Report
                   </Button>
                   <Button
-                    onClick={() => alert("Escalated to RSK Pune agricultural officer.")}
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-primary"
+                    onClick={() => alert("Escalated to RSK Guntur agricultural officer.")}
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-primary text-white"
                   >
                     <PhoneCall className="mr-1.5 h-4 w-4 text-white" />
                     Escalate to RSK

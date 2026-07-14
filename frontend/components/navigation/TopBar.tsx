@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { Moon, Sun, Bell, Languages, Sprout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -21,7 +22,7 @@ export function TopBar() {
     <header className="sticky top-0 z-30 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="flex h-16 items-center justify-between px-4 md:px-8">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-btn bg-primary text-primary-foreground">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-btn bg-primary text-primary-foreground shadow-sm">
             <Sprout className="h-5 w-5" />
           </div>
           <span className="font-heading text-lg font-bold tracking-tight text-foreground">
@@ -31,17 +32,18 @@ export function TopBar() {
 
         <div className="flex items-center gap-1.5">
           {/* Custom Language Selector Dropdown */}
-          <div className="relative flex items-center border border-border rounded-btn px-2 py-1 bg-card hover:bg-muted text-xs font-bold gap-1 text-foreground transition-colors cursor-pointer select-none">
-            <Languages className="h-3.5 w-3.5 text-muted-foreground" />
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as any)}
-              className="bg-transparent font-sans text-xs outline-none cursor-pointer text-foreground font-bold border-none py-0.5"
-            >
-              <option value="en" className="bg-popover text-foreground">{t("English")}</option>
-              <option value="te" className="bg-popover text-foreground">{t("Telugu")}</option>
-              <option value="hi" className="bg-popover text-foreground">{t("Hindi")}</option>
-            </select>
+          <div className="relative z-40 select-none">
+            <Select value={language} onValueChange={(val) => { if (val) setLanguage(val as any); }}>
+              <SelectTrigger className="h-8 text-[11px] font-bold rounded-btn border border-border bg-card px-2.5 flex items-center gap-1.5 cursor-pointer">
+                <Languages className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border border-border">
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="te">తెలుగు</SelectItem>
+                <SelectItem value="hi">हिन्दी</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <Link href="/notifications">

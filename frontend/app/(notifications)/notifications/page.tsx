@@ -11,6 +11,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiClient } from "@/services/apiClient";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Notification {
   id: string;
@@ -24,71 +25,81 @@ interface Notification {
   actionHref?: string;
 }
 
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    type: "critical",
-    title: "Dry Spell Warning - Action Needed",
-    message: "Zero precipitation is forecasted for the next 5 consecutive days starting tomorrow. Drip irrigate Sugarcane Zone B today to prevent moisture stress.",
-    date: "Just now",
-    read: false,
-    category: "weather",
-    actionLabel: "Irrigation Guide",
-    actionHref: "/weather"
-  },
-  {
-    id: "2",
-    type: "warning",
-    title: "Sugarcane Stem Borer Alert",
-    message: "Local humidity and temperature profiles indicate high risk of stem borer propagation. Inspect lower stalks for entry tunnels.",
-    date: "3 hours ago",
-    read: false,
-    category: "pest",
-    actionLabel: "Foliage Scan",
-    actionHref: "/disease"
-  },
-  {
-    id: "3",
-    type: "info",
-    title: "PM-Kisan Subsidy Verification Needed",
-    message: "Your application for the PM-Kisan micro-irrigation subsidy matches 98% eligibility. Upload your land ownership certificate to complete approval.",
-    date: "1 day ago",
-    read: true,
-    category: "scheme",
-    actionLabel: "Verify Subsidies",
-    actionHref: "/schemes"
-  },
-  {
-    id: "4",
-    type: "info",
-    title: "Sugarcane Price Increase (+3.6%)",
-    message: "Sugarcane Grade A wholesale bids surged by ₹120/Quintal at Pune APMC Mandi. Buyers are actively quoting higher rates.",
-    date: "2 days ago",
-    read: true,
-    category: "market",
-    actionLabel: "Market Center",
-    actionHref: "/market"
-  },
-  {
-    id: "5",
-    type: "critical",
-    title: "Disaster Relief Allocation Approved",
-    message: "Emergency crop compensation of ₹24,000 has been pre-approved for your registered flood plot. Select alternative buyers to sell residue.",
-    date: "3 days ago",
-    read: true,
-    category: "relief",
-    actionLabel: "Relief Hub",
-    actionHref: "/relief"
-  }
-];
-
 export default function NotificationsPage() {
   const router = useRouter();
+  const { t } = useLanguage();
+  const [isPageLoading, setIsPageLoading] = React.useState(true);
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [filter, setFilter] = React.useState<"all" | "critical" | "warning" | "info">("all");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isOffline, setIsOffline] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+
+  const INITIAL_NOTIFICATIONS: Notification[] = React.useMemo(() => [
+    {
+      id: "1",
+      type: "critical",
+      title: t("Dry Spell Warning - Action Needed"),
+      message: t("Zero precipitation is forecasted for the next 5 consecutive days starting tomorrow. Drip irrigate Sugarcane Zone B today to prevent moisture stress."),
+      date: t("Just now"),
+      read: false,
+      category: "weather",
+      actionLabel: t("Irrigation Guide"),
+      actionHref: "/weather"
+    },
+    {
+      id: "2",
+      type: "warning",
+      title: t("Sugarcane Stem Borer Alert"),
+      message: t("Local humidity and temperature profiles indicate high risk of stem borer propagation. Inspect lower stalks for entry tunnels."),
+      date: t("3 hours ago"),
+      read: false,
+      category: "pest",
+      actionLabel: t("Foliage Scan"),
+      actionHref: "/disease"
+    },
+    {
+      id: "3",
+      type: "info",
+      title: t("PM-Kisan Subsidy Verification Needed"),
+      message: t("Your application for the PM-Kisan micro-irrigation subsidy matches 98% eligibility. Upload your land ownership certificate to complete approval."),
+      date: t("1 day ago"),
+      read: true,
+      category: "scheme",
+      actionLabel: t("Verify Subsidies"),
+      actionHref: "/schemes"
+    },
+    {
+      id: "4",
+      type: "info",
+      title: t("Sugarcane Price Increase (+3.6%)"),
+      message: t("Sugarcane Grade A wholesale bids surged by ₹120/Quintal at Pune APMC Mandi. Buyers are actively quoting higher rates."),
+      date: t("2 days ago"),
+      read: true,
+      category: "market",
+      actionLabel: t("Market Center"),
+      actionHref: "/market"
+    },
+    {
+      id: "5",
+      type: "critical",
+      title: t("Disaster Relief Allocation Approved"),
+      message: t("Emergency crop compensation of ₹24,000 has been pre-approved for your registered flood plot. Select alternative buyers to sell residue."),
+      date: t("3 days ago"),
+      read: true,
+      category: "relief",
+      actionLabel: t("Relief Hub"),
+      actionHref: "/relief"
+    }
+  ], [t]);
 
   const loadNotifications = async () => {
     setIsLoading(true);
@@ -98,19 +109,19 @@ export default function NotificationsPage() {
         setNotifications(list.map((n: any) => ({
           id: n.id,
           type: n.type,
-          title: n.title,
-          message: n.message,
-          date: n.date,
-          read: n.is_read,
+          title: t(n.title),
+          message: t(n.message),
+          date: t(n.date),
+          read: n.read,
           category: n.category,
-          actionLabel: n.action_label,
-          actionHref: n.action_href
+          actionLabel: n.actionLabel ? t(n.actionLabel) : undefined,
+          actionHref: n.actionHref
         })));
       } else {
         setNotifications(INITIAL_NOTIFICATIONS);
       }
     } catch (err) {
-      console.error("Failed to load notifications", err);
+      console.warn("Failed to load backend notifications, using fallback list.", err);
       setNotifications(INITIAL_NOTIFICATIONS);
     } finally {
       setIsLoading(false);
@@ -119,57 +130,73 @@ export default function NotificationsPage() {
 
   React.useEffect(() => {
     loadNotifications();
-  }, []);
+  }, [INITIAL_NOTIFICATIONS]);
+
+  if (isPageLoading) {
+    return (
+      <MainLayout>
+        <div className="space-y-8 pb-16 text-left animate-fade-in">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-1/4 bg-muted/40 animate-pulse rounded" />
+          </div>
+          <div className="space-y-4">
+            <div className="h-10 w-full bg-muted/40 animate-pulse rounded-[12px] border border-border" />
+            <div className="h-28 w-full bg-muted/40 animate-pulse rounded-[24px] border border-border" />
+            <div className="h-28 w-full bg-muted/40 animate-pulse rounded-[24px] border border-border" />
+            <div className="h-28 w-full bg-muted/40 animate-pulse rounded-[24px] border border-border" />
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const toggleRead = async (id: string) => {
+    const updated = notifications.map(n => n.id === id ? { ...n, read: !n.read } : n);
+    setNotifications(updated);
+    try {
+      await apiClient.patch(`/notifications/${id}`, { read: !notifications.find(n => n.id === id)?.read });
+    } catch (err) {
+      console.warn("Failed to update notification read state on server.", err);
+    }
+  };
 
   const handleMarkAllRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     try {
       await apiClient.post("/notifications/read-all", {});
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     } catch (err) {
-      console.error(err);
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      console.warn("Failed to mark all notifications read on server.", err);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    try {
+      await apiClient.delete(`/notifications/${id}`);
+    } catch (err) {
+      console.warn("Failed to delete notification on server.", err);
     }
   };
 
   const handleClearAll = async () => {
+    setNotifications([]);
     try {
-      await apiClient.delete("/notifications");
-      setNotifications([]);
+      await apiClient.delete("/notifications/clear-all");
     } catch (err) {
-      console.error(err);
-      setNotifications([]);
+      console.warn("Failed to clear notifications on server.", err);
     }
   };
 
-  const toggleRead = async (id: string) => {
-    try {
-      await apiClient.post(`/notifications/${id}/toggle`, {});
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
-    } catch (err) {
-      console.error(err);
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
-    }
-  };
-
-  const handleDelete = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
-
-  const handleRefresh = () => {
-    loadNotifications();
-  };
-
-  // Filter and Search logic
-  const filteredNotifications = notifications.filter(n => {
-    const matchesFilter = filter === "all" || n.type === filter;
-    const matchesSearch = n.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          n.message.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredNotifications = notifications.filter(notif => {
+    const matchesFilter = filter === "all" || notif.type === filter;
+    const matchesSearch = notif.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          notif.message.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   return (
     <MainLayout>
-      <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+      <div className="space-y-8 animate-fade-in max-w-4xl mx-auto pb-16 text-left">
         
         {/* Header Block */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -177,26 +204,27 @@ export default function NotificationsPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full hover:bg-muted border border-border"
+              className="rounded-full hover:bg-muted border border-border cursor-pointer"
               onClick={() => router.back()}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="space-y-1">
               <h1 className="font-heading text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-                Notifications Timeline <Bell className="h-5 w-5 text-primary" />
+                {t("Notifications")} <Bell className="h-5 w-5 text-primary" />
               </h1>
               <p className="text-xs text-muted-foreground">
-                Stay updated with weather warnings, mandi prices, and government subsidy clearances.
+                {t("Stay updated with emergency weather anomalies, crop pest propagation alerts, and B2B pricing bids.")}
               </p>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-2 sm:self-end">
             <Button
               variant="outline"
               size="sm"
-              onClick={handleRefresh}
+              onClick={loadNotifications}
+              disabled={isLoading}
               className="h-9 rounded-btn text-xs font-bold bg-card border-border cursor-pointer"
             >
               {isLoading ? (
@@ -204,7 +232,7 @@ export default function NotificationsPage() {
               ) : (
                 <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
               )}
-              Sync
+              {t("Sync")}
             </Button>
             <Button
               variant="outline"
@@ -213,7 +241,7 @@ export default function NotificationsPage() {
               className={`h-9 rounded-btn text-xs font-bold border-border cursor-pointer transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] hover:shadow-md ${isOffline ? "bg-red-500/10 text-red-500 border-red-500/20 shadow-sm animate-pulse" : "bg-card"}`}
             >
               <WifiOff className="h-3.5 w-3.5 mr-1.5" />
-              {isOffline ? "Go Online" : "Simulate Offline"}
+              {isOffline ? t("Go Online") : t("Simulate Offline")}
             </Button>
           </div>
         </div>
@@ -225,7 +253,7 @@ export default function NotificationsPage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <input
               type="text"
-              placeholder="Search notifications..."
+              placeholder={t("Search notifications...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-transparent pl-9.5 pr-4 py-2.5 border border-border rounded-input text-xs focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground text-foreground transition-all duration-200"
@@ -245,7 +273,7 @@ export default function NotificationsPage() {
                     : "bg-muted text-muted-foreground hover:bg-muted/85 hover:shadow-sm"
                 }`}
               >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
+                {t(type.charAt(0).toUpperCase() + type.slice(1))}
               </Button>
             ))}
           </div>
@@ -255,14 +283,14 @@ export default function NotificationsPage() {
         {notifications.length > 0 && (
           <div className="flex justify-between items-center text-xs">
             <span className="text-muted-foreground font-medium">
-              {notifications.filter(n => !n.read).length} unread updates
+              {notifications.filter(n => !n.read).length} {t("unread updates")}
             </span>
             <div className="flex gap-4">
               <button onClick={handleMarkAllRead} className="text-primary font-bold hover:underline cursor-pointer">
-                Mark all as read
+                {t("Mark all as read")}
               </button>
               <button onClick={handleClearAll} className="text-rose-500 font-bold hover:underline cursor-pointer flex items-center gap-1">
-                <Trash2 className="h-3.5 w-3.5" /> Clear All
+                <Trash2 className="h-3.5 w-3.5" /> {t("Clear All")}
               </button>
             </div>
           </div>
@@ -283,13 +311,13 @@ export default function NotificationsPage() {
                     <WifiOff className="h-6 w-6" />
                   </div>
                   <div className="space-y-1.5">
-                    <h3 className="font-heading text-lg font-bold text-foreground">You are Offline</h3>
+                    <h3 className="font-heading text-lg font-bold text-foreground">{t("You are Offline")}</h3>
                     <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                      Could not fetch fresh alert updates. Caching previously stored alerts offline.
+                      {t("Could not fetch fresh alert updates. Caching previously stored alerts offline.")}
                     </p>
                   </div>
                   <Button size="sm" onClick={() => setIsOffline(false)} className="rounded-btn bg-primary text-white text-xs font-bold cursor-pointer">
-                    Reconnect Now
+                    {t("Reconnect Now")}
                   </Button>
                 </div>
               </motion.div>
@@ -309,9 +337,9 @@ export default function NotificationsPage() {
                   <Bell className="h-6 w-6" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="font-heading text-lg font-bold text-foreground">No Notifications</h3>
+                  <h3 className="font-heading text-lg font-bold text-foreground">{t("No Notifications")}</h3>
                   <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                    {searchQuery ? "No matching alerts found for your search criteria." : "All clear! You are fully caught up with your farm alerts."}
+                    {searchQuery ? t("No matching alerts found for your search criteria.") : t("All clear! You are fully caught up with your farm alerts.")}
                   </p>
                 </div>
               </motion.div>
@@ -351,7 +379,7 @@ export default function NotificationsPage() {
                           </span>
                           {!notif.read && (
                             <Badge className="bg-primary text-white text-[8px] font-bold uppercase tracking-wider py-0.5 px-1.5 border-none">
-                              New
+                              {t("New")}
                             </Badge>
                           )}
                         </div>
@@ -379,7 +407,7 @@ export default function NotificationsPage() {
                             className="h-8 rounded-btn text-[10px] font-bold hover:bg-muted text-muted-foreground"
                           >
                             <Check className="h-3.5 w-3.5 mr-1" />
-                            {notif.read ? "Mark Unread" : "Mark Read"}
+                            {notif.read ? t("Mark Unread") : t("Mark Read")}
                           </Button>
                         </div>
                         

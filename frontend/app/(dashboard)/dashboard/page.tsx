@@ -31,37 +31,14 @@ const QUICK_ACTIONS = [
   { label: "Buyer Market", desc: "Sell crop directly", icon: ShoppingBag, color: "text-purple-600 bg-purple-50 dark:bg-purple-950/20", href: "/marketplace" },
 ];
 
-// Today's Farming Tips Ticker data
-const FARMING_TIPS = [
-  "Tip of the Day: Schedule fertilization and micro-irrigation after 6:00 PM to avoid evaporation losses under high day temperatures.",
-  "AI Suggestion: Foliage moisture indices show moderate sugarcane rust risks. Apply neem spray or biological control to Zone B.",
-  "Market Alert: Cotton demand indexes indicate a 4% spot price rise at Pune APMC Mandi. Ideal window to lock in buyer quotes.",
-  "Weather Warning: An upcoming dry spell starts tomorrow for 5 days. Increase soil mulching to conserve moisture in root zones."
-];
-
-// Nearby Machinery Rental data
-const MACHINERY_LIST = [
-  { name: "John Deere 5050D Tractor", price: "₹800/hr", dist: "1.2 km", owner: "Ramesh K.", status: "Available Now", icon: Tractor },
-  { name: "Pneumatic Seed Drill", price: "₹500/hr", dist: "0.8 km", owner: "Dattatreya P.", status: "Available Now", icon: Sprout },
-  { name: "Multicrop Combine Harvester", price: "₹1,500/hr", dist: "2.5 km", owner: "Sanjay Patil", status: "In Use (From 4 PM)", icon: Tractor }
-];
-
-// Crop Buyer Match data
-const BUYERS_LIST = [
-  { company: "Pune Sugar Refineries Ltd", crop: "Sugarcane (Grade A)", qty: "12 Tons", price: "₹3,500/Ton", dist: "4.2 km", match: "96%", rating: "4.8" },
-  { company: "Deccan Biofuels Hub", crop: "Sugarcane Stalks", qty: "5 Tons", price: "₹1,200/Ton", dist: "8.5 km", match: "88%", rating: "4.4" }
-];
-
-// Eligible Subsidy Schemes data
-const SCHEMES_LIST = [
-  { name: "PM-Kisan Samman Nidhi", payout: "₹6,000/Year", eligibility: "98% Match", deadline: "July 15, 2026", docsMissing: 1 },
-  { name: "PM-Kusum Solar Pump Subsidy", payout: "60% Pump Cost", eligibility: "92% Match", deadline: "July 20, 2026", docsMissing: 2 }
-];
-
 export default function DashboardPage() {
   const router = useRouter();
   const { isDemoDrawerOpen } = useThemeContext();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  
+  const [isPageLoading, setIsPageLoading] = React.useState(true);
+  const [showWelcomeCard, setShowWelcomeCard] = React.useState(false);
+
   const [isVoiceActive, setIsVoiceActive] = React.useState(false);
   const [typedPrompt, setTypedPrompt] = React.useState("");
   const [aiResponse, setAiResponse] = React.useState<string | null>(null);
@@ -80,6 +57,107 @@ export default function DashboardPage() {
   // Vira Floating Assistant State
   const [viraState, setViraState] = React.useState<"idle" | "speaking" | "thinking">("idle");
   const [showViraBubble, setShowViraBubble] = React.useState(true);
+
+  // Today's Farming Tips Ticker data
+  const FARMING_TIPS = React.useMemo(() => [
+    t("Tip of the Day: Schedule fertilization and micro-irrigation after 6:00 PM to avoid evaporation losses under high day temperatures."),
+    t("AI Suggestion: Foliage moisture indices show moderate crop leaf rust risks. Apply biological controls to Zone B."),
+    t("Market Alert: Chilli demand indexes indicate a 4% spot price rise at Guntur APMC Mandi. Ideal window to lock in buyer quotes."),
+    t("Weather Warning: An upcoming dry spell starts tomorrow for 5 days. Increase soil mulching to conserve moisture in root zones.")
+  ], [t]);
+
+  // Nearby Machinery Rental data
+  const MACHINERY_LIST = React.useMemo(() => [
+    { name: t("John Deere 5050D Tractor"), price: "₹800/hr", dist: "1.2 km", owner: "Srinivasa K.", status: t("Available Now"), icon: Tractor },
+    { name: t("Pneumatic Seed Drill"), price: "₹500/hr", dist: "0.8 km", owner: "Ramanayya P.", status: t("Available Now"), icon: Sprout },
+    { name: t("Multicrop Combine Harvester"), price: "₹1,500/hr", dist: "2.5 km", owner: "Prasad Rao", status: t("In Use"), icon: Tractor }
+  ], [t]);
+
+  // Crop Buyer Match data
+  const BUYERS_LIST = React.useMemo(() => [
+    { company: t("Vijayawada Sugar Refineries Ltd"), crop: t("Chilli (Guntur Teja)"), qty: "12 Tons", price: "₹18,500/Ton", dist: "4.2 km", match: "96%", rating: "4.8" },
+    { company: t("Andhra Biofuels Hub"), crop: t("Chilli Stalks"), qty: "5 Tons", price: "₹1,400/Ton", dist: "8.5 km", match: "88%", rating: "4.4" }
+  ], [t]);
+
+  // Eligible Subsidy Schemes data
+  const SCHEMES_LIST = React.useMemo(() => [
+    { name: t("PM-Kisan Samman Nidhi"), payout: "₹6,000/Year", eligibility: "98% Match", deadline: t("July 15, 2026"), docsMissing: 1 },
+    { name: t("PM-Kusum Solar Pump Subsidy"), payout: t("60% Pump Cost"), eligibility: "92% Match", deadline: t("July 20, 2026"), docsMissing: 2 }
+  ], [t]);
+
+  const [farmerName, setFarmerName] = React.useState("Srinivasa");
+
+  // Page Load Timer
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedName = localStorage.getItem("krishiva_farmer_name");
+      if (savedName) setFarmerName(savedName);
+    }
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 700);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Vira Welcome Experience Trigger
+  React.useEffect(() => {
+    if (isPageLoading) return;
+
+    const hasGreeted = sessionStorage.getItem("krishiva_greeted_session") === "true";
+    if (hasGreeted) return;
+
+    const welcomeTimer = setTimeout(() => {
+      // Animate floating assistant button
+      const viraBtn = document.querySelector(".vira-btn");
+      if (viraBtn) {
+        viraBtn.classList.add("animate-bounce");
+        setTimeout(() => {
+          viraBtn.classList.remove("animate-bounce");
+        }, 3000);
+      }
+
+      // Show welcome card
+      setShowWelcomeCard(true);
+      sessionStorage.setItem("krishiva_greeted_session", "true");
+
+      // Voice greeting
+      let greetingText = "";
+      let locale = "en-IN";
+      if (language === "te") {
+        greetingText = "నమస్కారం! క్రిషివాకు స్వాగతం. నేను వీరా. ఈ రోజు మీకు ఎలా సహాయం చేయగలను?";
+        locale = "te-IN";
+      } else if (language === "hi") {
+        greetingText = "नमस्ते! कृषिवा में आपका स्वागत है। मैं वीरा हूँ। आज मैं आपकी कैसे मदद कर सकती हूँ?";
+        locale = "hi-IN";
+      } else {
+        greetingText = "Welcome to Krishiva. I'm Vira. How can I help you today?";
+        locale = "en-IN";
+      }
+
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        try {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(greetingText);
+          utter.lang = locale;
+          utter.rate = 0.95;
+          utter.pitch = 1.0;
+          
+          const voices = window.speechSynthesis.getVoices();
+          const voice = voices.find(v => v.lang.toLowerCase() === locale.toLowerCase()) ||
+                        voices.find(v => v.lang.toLowerCase().startsWith(locale.substring(0, 2))) ||
+                        voices[0];
+          if (voice) {
+            utter.voice = voice;
+          }
+          window.speechSynthesis.speak(utter);
+        } catch (err) {
+          console.warn("speechSynthesis error:", err);
+        }
+      }
+    }, 1000);
+
+    return () => clearTimeout(welcomeTimer);
+  }, [isPageLoading, language]);
 
   // Rotate tips automatically
   React.useEffect(() => {
@@ -105,10 +183,10 @@ export default function DashboardPage() {
       } catch (e) {
         console.warn("Failed to load tasks, using defaults", e);
         setTasks([
-          { id: 1, text: "Apply nitrogen fertilizer mix to Sugarcane Zone B", done: false },
-          { id: 2, text: "Inspect sugarcane foliage root zones for borer tunnels", done: true },
-          { id: 3, text: "Schedule tractor rental booking for tomorrow's weeding", done: false },
-          { id: 4, text: "Submit micro-irrigation documents on PM-Kisan portal", done: false }
+          { id: 1, text: t("Apply nitrogen fertilizer mix to Chilli Zone B"), done: false },
+          { id: 2, text: t("Inspect Chilli foliage root zones for borer tunnels"), done: true },
+          { id: 3, text: t("Schedule tractor rental booking for tomorrow's weeding"), done: false },
+          { id: 4, text: t("Submit micro-irrigation documents on PM-Kisan portal"), done: false }
         ]);
       }
 
@@ -173,15 +251,15 @@ export default function DashboardPage() {
       setViraState("speaking");
       const q = query.toLowerCase();
       if (q.includes("crop")) {
-        setAiResponse("Based on your soil test (Clayey, pH 6.8) and low rainfall forecasts, I recommend sowing Sugarcane or Pearl Millet. These crops match your nitrogen-phosphorus profile perfectly.");
+        setAiResponse(t("Based on your soil test (Sandy Loam, pH 6.5) and low rainfall forecasts, I recommend sowing Chilli or Groundnut. These crops match your nitrogen-phosphorus profile perfectly."));
       } else if (q.includes("diagnose") || q.includes("disease")) {
-        setAiResponse("For diagnosis, please tap the Camera Button below to snap a picture. Common risks right now in Pune include sugarcane stem borers due to high moisture levels.");
+        setAiResponse(t("For diagnosis, please tap the Camera Button below to snap a picture. Common risks right now in Guntur include Chilli leaf curl virus vectors."));
       } else if (q.includes("rain") || q.includes("weather")) {
-        setAiResponse("Weather analysis shows 62% humidity with light shower probability (10%) later this evening. A dry spell warning is active for June 28 - July 2. Secure soil moisture.");
+        setAiResponse(t("Weather analysis shows 62% humidity with light shower probability (10%) later this evening. A dry spell warning is active for June 28 - July 2. Secure soil moisture."));
       } else if (q.includes("price") || q.includes("market")) {
-        setAiResponse("Sugarcane is trading at ₹3,400/Quintal (+3.6%) in Pune Mandi. Cotton is trading at ₹7,200/Quintal (-2.0%) in Nagpur Mandi. Nagpur Cotton price shows downward trends.");
+        setAiResponse(t("Chilli (Teja Grade) is trading at ₹18,500/Quintal (+2.5%) in Guntur Mandi. Cotton is trading at ₹7,200/Quintal (-2.0%) in Adoni Mandi."));
       } else {
-        setAiResponse(`Sure, I can help you with "${query}". For best results, configure your farm size (currently set at 8.5 Acres) in your profile page.`);
+        setAiResponse(t("Sure, I can help you with your query. For best results, configure your farm size (currently set at 15.5 Acres) in your profile page."));
       }
     }, 1800);
   };
@@ -227,37 +305,104 @@ export default function DashboardPage() {
     docsMissing: s.required_documents.length
   })) : SCHEMES_LIST;
 
+  if (isPageLoading) {
+    return (
+      <MainLayout>
+        <div className="space-y-8 pb-16">
+          {/* Skeleton Hero Banner */}
+          <div className="h-48 rounded-[24px] bg-muted/40 animate-pulse border border-border p-6 flex flex-col justify-end space-y-3">
+            <div className="h-4 w-1/4 bg-muted-foreground/15 rounded animate-pulse" />
+            <div className="h-6 w-1/2 bg-muted-foreground/25 rounded animate-pulse" />
+            <div className="h-4 w-2/3 bg-muted-foreground/15 rounded animate-pulse" />
+          </div>
+          
+          {/* Skeleton Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="h-40 rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+            <div className="h-40 rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+          </div>
+
+          {/* Skeleton Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="h-32 rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+              <div className="h-64 rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+            </div>
+            <div className="h-[400px] rounded-[24px] bg-muted/40 border border-border animate-pulse" />
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="space-y-8 animate-fade-in pb-16">
         
+        {/* VIRA WELCOME EXPERIENCING CARD */}
+        <AnimatePresence>
+          {showWelcomeCard && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -20 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -20 }}
+              className="relative overflow-hidden rounded-[24px] border border-primary/25 bg-primary/5 p-5 md:p-6 shadow-sm flex flex-col md:flex-row gap-5 items-start md:items-center justify-between"
+            >
+              <div className="flex items-start gap-4">
+                <div className="relative shrink-0 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20">
+                  <span className="absolute inset-0 rounded-full border border-primary animate-ping opacity-25" />
+                  <Bot className="h-6 w-6 text-primary animate-pulse" />
+                </div>
+                <div className="space-y-2 text-left">
+                  <h3 className="font-heading text-base font-bold text-foreground flex items-center gap-2">
+                    {t("Hello! I'm Vira")}
+                    <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  </h3>
+                  <p className="text-xs md:text-sm font-semibold text-muted-foreground leading-relaxed max-w-2xl">
+                    {language === "te" 
+                      ? "నమస్కారం! క్రిషివాకు స్వాగతం. నేను వీరా. ఈ రోజు మీకు ఎలా సహాయం చేయగలను?"
+                      : language === "hi"
+                        ? "नमस्ते! कृषिवा में आपका स्वागत है। मैं वीरा हूँ। आज मैं आपकी कैसे मदद कर सकती हूँ?"
+                        : "Welcome to Krishiva. I'm Vira. How can I help you today?"}
+                  </p>
+                  
+                  {/* Quick Suggestion Chips */}
+                  <div className="flex flex-wrap gap-2 pt-1 select-none">
+                    {[
+                      { label: t("Diagnose Crop"), emoji: "🌾", href: "/disease" },
+                      { label: t("Weather Intelligence"), emoji: "🌦️", href: "/weather" },
+                      { label: t("Market Prices"), emoji: "📈", href: "/market" },
+                      { label: t("Government Schemes"), emoji: "🏛️", href: "/schemes" },
+                      { label: t("Machinery Rental"), emoji: "🚜", href: "/machinery" },
+                      { label: t("Buyer Marketplace"), emoji: "🤝", href: "/marketplace" }
+                    ].map((chip) => (
+                      <button
+                        key={chip.href}
+                        onClick={() => router.push(chip.href)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card hover:bg-primary/5 hover:border-primary/30 transition-all text-[11px] font-bold text-foreground cursor-pointer shadow-sm"
+                      >
+                        <span>{chip.emoji}</span>
+                        <span>{chip.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full border border-border/60 hover:bg-muted shrink-0"
+                onClick={() => setShowWelcomeCard(false)}
+              >
+                <X className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* SECTION 1: HERO DYNAMIC BANNER */}
         <div className="relative overflow-hidden rounded-[24px] border border-emerald-500/10 bg-gradient-to-r from-amber-500/5 via-emerald-600/5 to-transparent p-6 md:p-8 shadow-sm">
-          {/* Animated Drifting Drone */}
-          <div className="absolute right-10 top-6 hidden md:block">
-            <motion.div
-              animate={{ 
-                y: [0, -10, 0],
-                rotate: [0, 2, -2, 0]
-              }}
-              transition={{ 
-                duration: 5, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-              className="relative h-20 w-28 text-primary"
-            >
-              <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full stroke-current stroke-2">
-                {/* Propellers */}
-                <circle cx="20" cy="15" r="8" className="stroke-dashed animate-spin" style={{ animationDuration: '2s' }} />
-                <circle cx="80" cy="15" r="8" className="stroke-dashed animate-spin" style={{ animationDuration: '2s' }} />
-                {/* Body */}
-                <path d="M 30,30 L 70,30 M 50,30 L 50,45 M 40,45 L 60,45" strokeLinecap="round" />
-                <rect x="42" y="25" width="16" height="12" rx="4" fill="currentColor" className="fill-emerald-100 dark:fill-emerald-950/20" />
-                <circle cx="50" cy="48" r="3" fill="currentColor" className="animate-ping text-emerald-500" />
-              </svg>
-            </motion.div>
-          </div>
 
           <div className="max-w-3xl space-y-4">
             <div className="flex items-center gap-2">
@@ -266,19 +411,19 @@ export default function DashboardPage() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
               <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                Live Telemetry Connected • Pune Farm Zone A
+                {t("Live Telemetry Connected")} • Guntur Chilli Plot
               </span>
             </div>
 
             <div className="space-y-2">
               <h1 className="font-heading text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-                {t("Good Morning")} Ramesh.
+                {t("Good Morning")} {farmerName}.
               </h1>
               {/* Daily Farm Brief */}
               <div className="text-sm md:text-base text-muted-foreground font-medium space-y-1.5 leading-relaxed">
-                <p>🟢 {t("Your sugarcane crops are")} <span className="font-bold text-foreground">{t("healthy")}</span>.</p>
+                <p>🟢 {t("Your chilli crops are")} <span className="font-bold text-foreground">{t("healthy")}</span>.</p>
                 <p>🌧️ {t("Light rain forecast is expected")} <span className="font-bold text-foreground">{t("after 5:00 PM today")}</span>.</p>
-                <p>📈 {t("Sugarcane prices")} <span className="font-bold text-foreground">{t("increased by 3.6%")}</span> {t("at Pune Mandi")}.</p>
+                <p>📈 {t("Chilli prices")} <span className="font-bold text-foreground">{t("increased by 2.5%")}</span> {t("at Guntur Mandi")}.</p>
                 <p>🏛️ {t("You qualify for")} <span className="font-bold text-primary underline cursor-pointer" onClick={() => router.push("/schemes")}>{t("2 eligible government schemes")}</span>.</p>
                 <p>🤖 {t("Vira has")} <span className="font-bold text-primary underline cursor-pointer" onClick={() => handlePromptClick("Recommend crops")}>{t("3 pending recommendations")}</span> {t("waiting for you")}.</p>
               </div>
@@ -325,7 +470,7 @@ export default function DashboardPage() {
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                   Live Weather Forecast
                 </span>
-                <h3 className="text-xl font-bold text-foreground">Pune Farm, MH</h3>
+                <h3 className="text-xl font-bold text-foreground">Guntur Farm, AP</h3>
                 <p className="text-xs text-muted-foreground">Updated 10 mins ago</p>
               </div>
               <div className="flex items-center gap-2">
@@ -386,7 +531,7 @@ export default function DashboardPage() {
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                   Farming Status Summary
                 </span>
-                <h3 className="text-xl font-bold text-foreground">Sugarcane Zone A</h3>
+                <h3 className="text-xl font-bold text-foreground">Chilli Zone A</h3>
               </div>
               <Badge variant="success" className="font-bold px-2.5 py-0.5 text-xs bg-emerald-500/10 text-emerald-600 border-none">
                 Optimal
@@ -505,14 +650,14 @@ export default function DashboardPage() {
               <div className="space-y-4.5 text-xs pt-2">
                 {/* Item 1 */}
                 <div className="flex items-center justify-between py-1 border-b border-border/30">
-                  <div className="w-1/4">
-                    <span className="font-bold text-foreground block">Sugarcane (Grade A)</span>
-                    <span className="text-[9px] text-muted-foreground">Pune Mandi</span>
+                  <div className="w-1/4 text-left">
+                    <span className="font-bold text-foreground block">{t("Chilli (Teja)")}</span>
+                    <span className="text-[9px] text-muted-foreground">{t("Guntur Mandi")}</span>
                   </div>
                   <div className="w-1/4 text-center">
-                    <span className="font-bold text-foreground">₹3,400/Qtl</span>
+                    <span className="font-bold text-foreground">₹18,500/Qtl</span>
                     <span className="text-[9px] text-emerald-600 block flex items-center justify-center gap-0.5">
-                      <ArrowUpRight className="h-3 w-3" /> +3.6%
+                      <ArrowUpRight className="h-3 w-3" /> +2.5%
                     </span>
                   </div>
                   {/* Sparkline mini chart */}
@@ -527,16 +672,16 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                   <div className="w-1/4 text-right">
-                    <span className="font-bold text-foreground block">Demand: High</span>
-                    <span className="text-[9px] text-muted-foreground">AI Suggests: Hold</span>
+                    <span className="font-bold text-foreground block">{t("Demand: High")}</span>
+                    <span className="text-[9px] text-muted-foreground">{t("AI Suggests: Hold")}</span>
                   </div>
                 </div>
 
                 {/* Item 2 */}
                 <div className="flex items-center justify-between py-1 border-b border-border/30">
-                  <div className="w-1/4">
-                    <span className="font-bold text-foreground block">Long Cotton</span>
-                    <span className="text-[9px] text-muted-foreground">Nagpur Mandi</span>
+                  <div className="w-1/4 text-left">
+                    <span className="font-bold text-foreground block">{t("Long Cotton")}</span>
+                    <span className="text-[9px] text-muted-foreground">{t("Adoni Mandi")}</span>
                   </div>
                   <div className="w-1/4 text-center">
                     <span className="font-bold text-foreground">₹7,200/Qtl</span>
@@ -564,7 +709,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="pt-4 border-t border-border/40 text-xs flex justify-between items-center text-muted-foreground">
-              <span>MSP Base: ₹3,150/Qtl</span>
+              <span>MSP Base: ₹7,000/Qtl</span>
               <span className="font-bold text-foreground">Arbitrage Potential: Yes</span>
             </div>
           </div>
@@ -742,9 +887,9 @@ export default function DashboardPage() {
                   <h3 className="text-lg font-bold text-foreground">Buyer Marketplace</h3>
                 </div>
                 <Button 
+                  onClick={() => router.push("/marketplace")}
                   variant="outline" 
                   size="sm" 
-                  onClick={() => router.push("/marketplace")}
                   className="text-[10px] font-bold h-7 rounded-btn cursor-pointer bg-card px-2.5"
                 >
                   Direct Hub
@@ -757,7 +902,7 @@ export default function DashboardPage() {
                   <div key={idx} className="p-3 rounded-[16px] border border-border/30 bg-card space-y-2">
                     <div className="flex justify-between items-start">
                       <div className="space-y-0.5">
-                        <span className="font-bold text-xs text-foreground block flex items-center gap-1.5">
+                        <span className="font-bold text-xs text-foreground block flex items-center gap-1.5 font-semibold">
                           {buyer.company}
                           <ShieldCheck className="h-3.5 w-3.5 text-primary" />
                         </span>
@@ -768,8 +913,8 @@ export default function DashboardPage() {
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center text-[10px]">
-                      <span className="font-medium text-muted-foreground">Required: <strong className="text-foreground">{buyer.qty}</strong></span>
-                      <span className="font-medium text-muted-foreground">Offered: <strong className="text-foreground">{buyer.price}</strong></span>
+                      <span className="font-medium text-muted-foreground font-semibold">Required: <strong className="text-foreground">{buyer.qty}</strong></span>
+                      <span className="font-medium text-muted-foreground font-semibold">Offered: <strong className="text-foreground">{buyer.price}</strong></span>
                     </div>
                   </div>
                 ))}
@@ -795,9 +940,9 @@ export default function DashboardPage() {
                   <h3 className="text-lg font-bold text-foreground">Eligible Schemes</h3>
                 </div>
                 <Button 
+                  onClick={() => router.push("/schemes")}
                   variant="outline" 
                   size="sm" 
-                  onClick={() => router.push("/schemes")}
                   className="text-[10px] font-bold h-7 rounded-btn cursor-pointer bg-card px-2.5"
                 >
                   All Schemes
@@ -808,7 +953,7 @@ export default function DashboardPage() {
               <div className="space-y-3.5 pt-1">
                 {displayedSchemes.map((sch, idx) => (
                   <div key={idx} className="p-3 rounded-[16px] border border-border/30 bg-card space-y-2">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start font-semibold">
                       <div className="space-y-0.5">
                         <span className="font-bold text-xs text-foreground block">{sch.name}</span>
                         <span className="text-[10px] text-muted-foreground">Payout: {sch.payout} • Deadline: {sch.deadline}</span>
@@ -817,7 +962,7 @@ export default function DashboardPage() {
                         {sch.eligibility}
                       </Badge>
                     </div>
-                    <div className="flex justify-between items-center text-[10px] text-muted-foreground">
+                    <div className="flex justify-between items-center text-[10px] text-muted-foreground font-semibold">
                       <span>Documents: {sch.docsMissing === 0 ? "Complete" : `${sch.docsMissing} Missing`}</span>
                       <span className="text-primary font-bold cursor-pointer hover:underline" onClick={() => router.push("/schemes")}>Verify Docs</span>
                     </div>
@@ -843,7 +988,7 @@ export default function DashboardPage() {
 
           <div className="flex flex-col items-center max-w-2xl mx-auto space-y-6 relative z-10">
             <div className="flex flex-col items-center text-center space-y-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md border border-primary/10">
                 <Sparkles className="h-6 w-6" />
               </div>
               <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">
@@ -864,17 +1009,17 @@ export default function DashboardPage() {
                   className="w-full rounded-[20px] border border-primary/20 bg-card p-5 shadow-sm text-xs leading-relaxed"
                 >
                   {isVoiceActive ? (
-                    <div className="flex flex-col items-center gap-3 py-2 text-center text-primary">
+                    <div className="flex flex-col items-center gap-3 py-2 text-center text-primary font-semibold">
                       <span className="font-bold animate-pulse">Listening to voice query...</span>
-                      <p className="text-[10px] text-muted-foreground">Say &quot;Diagnose sugarcane disease&quot; or &quot;Show Pune mandi price&quot;</p>
+                      <p className="text-[10px] text-muted-foreground">Say &quot;Diagnose chilli disease&quot; or &quot;Show Guntur mandi price&quot;</p>
                     </div>
                   ) : isAiLoading ? (
-                    <div className="flex items-center justify-center gap-2.5 py-4">
+                    <div className="flex items-center justify-center gap-2.5 py-4 font-semibold">
                       <Loader2 className="h-5 w-5 text-primary animate-spin" />
-                      <span className="font-bold text-muted-foreground animate-pulse">AI reasoning with Gemini...</span>
+                      <span className="font-bold text-muted-foreground animate-pulse font-semibold">AI reasoning with Gemini...</span>
                     </div>
                   ) : (
-                    <div className="space-y-3.5 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.01] p-4.5 rounded-[16px] border-l-4 border-l-primary text-xs leading-normal">
+                    <div className="space-y-3.5 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.01] p-4.5 rounded-[16px] border-l-4 border-l-primary text-xs leading-normal font-semibold">
                       <div className="flex items-center justify-between border-b border-primary/15 pb-2">
                         <span className="font-bold text-primary flex items-center gap-1.5 text-sm">
                           <Sparkles className="h-4 w-4 text-primary animate-pulse" />
@@ -900,7 +1045,7 @@ export default function DashboardPage() {
             <form onSubmit={handleSendPrompt} className="w-full flex items-center gap-3 bg-card border border-border p-2.5 rounded-full shadow-sm max-w-lg">
               <input
                 type="text"
-                placeholder="Ask about sugarcane, soil, weather..."
+                placeholder="Ask about chilli, soil, weather..."
                 value={typedPrompt}
                 onChange={(e) => setTypedPrompt(e.target.value)}
                 className="flex-1 bg-transparent px-4 text-sm focus:outline-none placeholder:text-muted-foreground text-foreground"
@@ -1053,33 +1198,33 @@ export default function DashboardPage() {
                   🌱 Vira AI
                 </span>
                 <div className="space-y-1">
-                  <h4 className="font-bold text-foreground text-sm">Namaste Ramesh!</h4>
+                  <h4 className="font-bold text-foreground text-sm">{t("Namaste Srinivasa!")}</h4>
                   <p className="text-[11px] text-muted-foreground font-semibold">
-                    {viraState === "idle" ? "How can I help today?" : viraState === "thinking" ? "Vira AI is formulating advice..." : "Vira is speaking..."}
+                    {viraState === "idle" ? t("How can I help today?") : viraState === "thinking" ? t("Vira AI is formulating advice...") : t("Vira is speaking...")}
                   </p>
                 </div>
                 {viraState === "idle" ? (
                   <ul className="space-y-1 text-muted-foreground font-semibold pt-1 border-t border-border/40">
                     <li className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => handlePromptClick("Scan crop leaf")}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Disease Detection
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {t("Disease Detection")}
                     </li>
                     <li className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => handlePromptClick("Show weather forecast")}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Weather Intelligence
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {t("Weather Intelligence")}
                     </li>
                     <li className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => handlePromptClick("Eligible government schemes")}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Government Schemes
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {t("Government Schemes")}
                     </li>
                     <li className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => handlePromptClick("Market prices near me")}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Market Prices
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {t("Market Prices")}
                     </li>
                     <li className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => handlePromptClick("Recommend crops")}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Crop Advisory
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {t("Crop Recommendation")}
                     </li>
                   </ul>
                 ) : (
                   <p className="leading-relaxed font-semibold text-primary pt-1 border-t border-border/40">
-                    {viraState === "thinking" && "Formulating advice with Gemini..."}
-                    {viraState === "speaking" && "Sugarcane spot prices look favorable today. You can negotiate direct buyer contracts now."}
+                    {viraState === "thinking" && t("Formulating advice with Gemini...")}
+                    {viraState === "speaking" && t("Chilli spot prices look favorable today. You can negotiate direct buyer contracts now.")}
                   </p>
                 )}
               </div>

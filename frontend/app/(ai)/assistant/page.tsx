@@ -30,15 +30,6 @@ interface Message {
   cardType?: "weather" | "crop" | "market" | "disease" | "scheme" | "relief";
 }
 
-const INITIAL_MESSAGES: Message[] = [
-  {
-    id: "1",
-    sender: "ai",
-    text: "Hello Ramesh! I am your Vira AI Advisor. How can I help your farm today? You can ask me for crop suggestions, weather forecasts, market prices, or upload crop leaf photos to diagnose diseases.",
-    timestamp: "10:15 AM",
-  },
-];
-
 export default function AssistantPage() {
   const router = useRouter();
   const { language, setLanguage, t } = useLanguage();
@@ -47,8 +38,16 @@ export default function AssistantPage() {
   const [isTyping, setIsTyping] = React.useState(false);
   const [isVoiceActive, setIsVoiceActive] = React.useState(false);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
-
   const isFirstMount = React.useRef(true);
+
+  const INITIAL_MESSAGES: Message[] = React.useMemo(() => [
+    {
+      id: "1",
+      sender: "ai",
+      text: t("Hello Srinivasa! I am your Vira AI Advisor. How can I help your farm today? You can ask me for crop suggestions, weather forecasts, market prices, or upload crop leaf photos to diagnose diseases."),
+      timestamp: "10:15 AM",
+    }
+  ], [t]);
 
   // Load chat history from backend on mount
   React.useEffect(() => {
@@ -77,7 +76,7 @@ export default function AssistantPage() {
       }
     }
     loadChatHistory();
-  }, []);
+  }, [INITIAL_MESSAGES]);
 
   // Listen for Vira Voice events
   React.useEffect(() => {
@@ -185,24 +184,24 @@ export default function AssistantPage() {
 
       if (query.includes("weather") || query.includes("rain")) {
         aiMsg.cardType = "weather";
-        aiMsg.text = "I checked today's meteorological updates. A dry spell warning is active for Pune. Here are the climate metrics:";
+        aiMsg.text = t("I checked today's meteorological updates. Here are the climate metrics for Guntur:");
       } else if (query.includes("crop") || query.includes("recommend")) {
         aiMsg.cardType = "crop";
-        aiMsg.text = "Based on your clayey soil test and low watering conditions, Sugarcane is your highest matching crop. Here are the crop attributes:";
+        aiMsg.text = t("Based on your sandy loam soil test and current weather conditions, Chilli is your highest matching crop. Here are the crop attributes:");
       } else if (query.includes("market") || query.includes("price") || query.includes("mandi")) {
         aiMsg.cardType = "market";
-        aiMsg.text = "Here are today's verified market highlights from the Pune APMC Mandi index:";
+        aiMsg.text = t("Here are today's verified market highlights from the Guntur APMC Mandi index:");
       } else if (query.includes("disease") || query.includes("diagnose") || query.includes("leaf")) {
         aiMsg.cardType = "disease";
-        aiMsg.text = "Analysis complete! I found signs of leaf rust infection. Here is the diagnosis summary and chemical treatment plan:";
+        aiMsg.text = t("Analysis complete! I found signs of leaf rust infection. Here is the diagnosis summary and chemical treatment plan:");
       } else if (query.includes("scheme") || query.includes("government") || query.includes("subsidy")) {
         aiMsg.cardType = "scheme";
-        aiMsg.text = "I searched the government scheme portal. Based on your 8.5-acre sugarcane farm, you qualify for disaster seed compensations:";
+        aiMsg.text = t("I searched the government scheme portal. Based on your 15.5-acre Guntur farm, you qualify for micro irrigation and solar subsidies:");
       } else if (query.includes("relief") || query.includes("disaster") || query.includes("damage")) {
         aiMsg.cardType = "relief";
-        aiMsg.text = "Here is your personalized recovery plan to manage crop damage, connect with buyers, and obtain seed support:";
+        aiMsg.text = t("Here is your personalized recovery plan to manage crop damage, connect with buyers, and obtain seed support:");
       } else {
-        aiMsg.text = `Thank you for asking about "${userQuery}". At this moment, my primary support modules focus on crop selection, disease scans, APMC mandi pricing, and disaster relief schemes. Please ask a related query.`;
+        aiMsg.text = t("Thank you for asking about crop recommendations, disease scans, APMC mandi pricing, or disaster relief schemes. Please ask a related query.");
       }
 
       setMessages((prev) => [...prev, aiMsg]);
@@ -227,12 +226,12 @@ export default function AssistantPage() {
 
   return (
     <MainLayout>
-      <div className="relative h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] flex flex-col justify-between overflow-hidden bg-background">
+      <div className="relative h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] flex flex-col justify-between overflow-hidden bg-background text-left">
         
         {/* HEADER BAR (AVATAR & LANGUAGE SELECT) */}
         <div className="flex items-center justify-between py-3 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary shadow-sm border border-primary/10">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
@@ -247,7 +246,7 @@ export default function AssistantPage() {
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-muted-foreground hidden sm:block" />
             <Select value={language} onValueChange={(val) => { if (val) setLanguage(val as "en" | "te" | "hi"); }}>
-              <SelectTrigger className="w-[100px] h-8 text-[11px] font-bold rounded-btn border border-border">
+              <SelectTrigger className="w-[110px] h-8 text-[11px] font-bold rounded-btn border border-border">
                 <SelectValue placeholder="Language" />
               </SelectTrigger>
               <SelectContent className="bg-card">
@@ -264,24 +263,24 @@ export default function AssistantPage() {
           {messages.length <= 1 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               {/* Farm Health Snapshot Card */}
-              <Card className="p-4 bg-emerald-500/[0.03] dark:bg-emerald-500/[0.01] border border-emerald-500/10 flex flex-col justify-between text-left">
+              <Card title="" animate={false} className="p-4 bg-emerald-500/[0.03] dark:bg-emerald-500/[0.01] border border-emerald-500/10 flex flex-col justify-between text-left">
                 <div>
                   <div className="flex items-center gap-2 mb-2 text-xs font-bold text-primary uppercase">
                     <Sprout className="h-4 w-4" />
                     {t("Farm Snapshot")}
                   </div>
-                  <h3 className="text-sm font-extrabold text-foreground mb-1">Pune Farm Plot A (MH)</h3>
+                  <h3 className="text-sm font-extrabold text-foreground mb-1">Guntur Chilli Plot (AP)</h3>
                   <div className="grid grid-cols-2 gap-2 text-[10.5px] font-semibold text-muted-foreground pt-1.5 border-t border-border/40">
-                    <div>{t("Current Crop")}: <span className="text-foreground font-bold">Sugarcane</span></div>
-                    <div>{t("Soil Type")}: <span className="text-foreground font-bold">Clayey</span></div>
-                    <div>{t("Crop Health")}: <span className="text-emerald-600 dark:text-emerald-400 font-bold">92%</span></div>
+                    <div>{t("Current Crop")}: <span className="text-foreground font-bold">Chilli</span></div>
+                    <div>{t("Soil Type")}: <span className="text-foreground font-bold">Sandy Loam</span></div>
+                    <div>{t("Crop Health")}: <span className="text-emerald-600 dark:text-emerald-400 font-bold">94%</span></div>
                     <div>{t("Status")}: <span className="text-foreground font-bold">{t("AI Active")}</span></div>
                   </div>
                 </div>
               </Card>
 
               {/* Weather Summary Card */}
-              <Card className="p-4 bg-blue-500/[0.03] dark:bg-blue-500/[0.01] border border-blue-500/10 flex flex-col justify-between text-left">
+              <Card title="" animate={false} className="p-4 bg-blue-500/[0.03] dark:bg-blue-500/[0.01] border border-blue-500/10 flex flex-col justify-between text-left">
                 <div>
                   <div className="flex items-center gap-2 mb-2 text-xs font-bold text-sky-600 dark:text-sky-400 uppercase">
                     <Cloud className="h-4 w-4" />
@@ -291,8 +290,8 @@ export default function AssistantPage() {
                   <div className="grid grid-cols-2 gap-2 text-[10.5px] font-semibold text-muted-foreground pt-1.5 border-t border-border/40">
                     <div>{t("Humidity")}: <span className="text-foreground font-bold">62%</span></div>
                     <div>{t("Rain Probability")}: <span className="text-foreground font-bold">10%</span></div>
-                    <div>{t("Wind Speed")}: <span className="text-foreground font-bold">12 km/h</span></div>
-                    <div>{t("UV Index")}: <span className="text-foreground font-bold">5 (Moderate)</span></div>
+                    <div>{t("Wind Speed")}: <span className="text-foreground font-bold">14 km/h</span></div>
+                    <div>{t("UV Index")}: <span className="text-foreground font-bold">6 (High)</span></div>
                   </div>
                 </div>
               </Card>
@@ -307,7 +306,7 @@ export default function AssistantPage() {
                     onClick={() => handleSendText("Diagnose my crop disease.")}
                     className="p-3.5 rounded-[16px] bg-card border border-border hover:border-primary/40 cursor-pointer shadow-sm hover:shadow transition-all duration-300 flex items-start gap-3"
                   >
-                    <div className="p-2 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">
+                    <div className="p-2 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0 animate-pulse">
                       <Camera className="h-4 w-4" />
                     </div>
                     <div className="space-y-0.5">
@@ -356,7 +355,7 @@ export default function AssistantPage() {
                 {/* Avatars */}
                 <Avatar className="h-8 w-8 border border-border/50 shrink-0 shadow-sm">
                   <AvatarFallback className={isUser ? "bg-primary text-primary-foreground text-xs font-bold" : "bg-muted text-muted-foreground text-xs font-bold"}>
-                    {isUser ? "R" : "AI"}
+                    {isUser ? "U" : "AI"}
                   </AvatarFallback>
                 </Avatar>
 
@@ -381,9 +380,9 @@ export default function AssistantPage() {
                     >
                       {msg.cardType === "weather" && (
                         <WeatherCard
-                          location="Pune Farm, Maharashtra"
+                          location="Guntur Plot, Andhra Pradesh"
                           temperature="28°C"
-                          condition="Cloudy Sky"
+                          condition="Sunny"
                           humidity="62%"
                           windSpeed="14 km/h"
                           rainProbability="10%"
@@ -394,29 +393,29 @@ export default function AssistantPage() {
 
                       {msg.cardType === "crop" && (
                         <CropCard
-                          cropName="Sugarcane (Co 86032)"
+                          cropName="Chilli (Guntur Teja)"
                           category="Cash Crop"
-                          matchPercentage={92}
-                          soilType="Clayey Loam"
-                          waterRequirement="High Irrigation"
-                          season="Kharif/Annual"
-                          onSelect={() => handleSendText("Show growth steps for Sugarcane.")}
+                          matchPercentage={94}
+                          soilType="Sandy Loam"
+                          waterRequirement="Borewell/Sprinkler"
+                          season="Kharif/Rabi"
+                          onSelect={() => handleSendText("Show growth steps for Chilli.")}
                         />
                       )}
 
                       {msg.cardType === "market" && (
                         <MarketCard
-                          cropName="Sugarcane (Grade A)"
-                          marketName="Pune APMC Mandi"
-                          price="₹3,400"
-                          priceChange="+₹120 (+3.6%)"
+                          cropName="Chilli (Teja)"
+                          marketName="Guntur APMC Mandi"
+                          price="₹18,500"
+                          priceChange="+₹450 (+2.5%)"
                           trend="up"
                           onDetailsClick={() => handleSendText("Show price trend graphs.")}
                         />
                       )}
 
                       {msg.cardType === "disease" && (
-                        <Card title="" animate={false} className="p-5 border-l-4 border-l-destructive bg-card shadow-sm">
+                        <Card title="" animate={false} className="p-5 border-l-4 border-l-destructive bg-card shadow-sm text-left">
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">
@@ -426,19 +425,19 @@ export default function AssistantPage() {
                                 94% Confidence
                               </Badge>
                             </div>
-                            <h3 className="text-base font-bold text-foreground">Sugarcane Rust</h3>
+                            <h3 className="text-base font-bold text-foreground">Chilli Leaf Curl</h3>
                             <p className="text-xs text-muted-foreground leading-relaxed">
-                              Symptom: Orange-brown pustules on leaves, causing premature leaf drying and reduction in cane weight.
+                              Symptom: Upward curling and puckering of leaves, stunted plant growth caused by whiteflies transmission.
                             </p>
                             <div className="rounded-btn bg-muted/50 p-3 border border-border/50 text-xs space-y-1.5">
                               <span className="font-bold text-foreground block">Treatment plan:</span>
-                              <div>1. Spray Mancozeb (0.2%) or Propiconazole (0.1%) at 15-day intervals.</div>
-                              <div>2. Uproot and burn heavily infected leaves.</div>
+                              <div>1. Spray Imidacloprid (0.3ml/L) or Neem Oil (1.5%) to control insect vectors.</div>
+                              <div>2. Deploy yellow sticky traps around the chilli field borders.</div>
                             </div>
                             <div className="flex items-center gap-2 pt-1.5">
                               <Button
-                                onClick={() => alert("Escalated to RSK Pune Center. Officer will verify.")}
-                                className="flex-1 text-[10px] font-bold h-8 rounded-btn cursor-pointer bg-primary"
+                                onClick={() => alert("Escalated to RSK Guntur Center. Officer will verify.")}
+                                className="flex-1 text-[10px] font-bold h-8 rounded-btn cursor-pointer bg-primary text-white"
                               >
                                 <PhoneCall className="mr-1 h-3.5 w-3.5" />
                                 Escalate to RSK
@@ -449,7 +448,7 @@ export default function AssistantPage() {
                       )}
 
                       {msg.cardType === "scheme" && (
-                        <Card title="" animate={false} className="p-5 border-l-4 border-l-primary bg-card shadow-sm">
+                        <Card title="" animate={false} className="p-5 border-l-4 border-l-primary bg-card shadow-sm text-left">
                           <div className="space-y-3">
                             <div className="flex justify-between items-start">
                               <div className="space-y-0.5">
@@ -480,7 +479,7 @@ export default function AssistantPage() {
                       )}
 
                       {msg.cardType === "relief" && (
-                        <Card title="" animate={false} className="p-5 border-l-4 border-l-emerald-600 bg-card shadow-sm">
+                        <Card title="" animate={false} className="p-5 border-l-4 border-l-emerald-600 bg-card shadow-sm text-left">
                           <div className="space-y-3">
                             <div className="flex justify-between items-start">
                               <div className="space-y-0.5">
@@ -502,13 +501,13 @@ export default function AssistantPage() {
                             <div className="space-y-1.5 text-xs text-muted-foreground pt-1.5 border-t border-border/50">
                               <span className="font-bold text-foreground block">Alternative Residue Buyer:</span>
                               <div className="flex justify-between items-center gap-2">
-                                <span>Pune Animal Feed Co.</span>
+                                <span>Vijayawada Cattle Feed Co.</span>
                                 <Badge className="text-[9px] font-bold px-1.5 py-0 bg-emerald-500">₹1,400 / Qtl</Badge>
                               </div>
                             </div>
                             <div className="flex gap-2 pt-1">
-                              <Button onClick={() => alert("Seed request registered.")} className="flex-1 text-[10px] font-bold h-8 rounded-btn cursor-pointer bg-primary">Claim Seed Kit</Button>
-                              <Button onClick={() => alert("Contacted buyer.")} variant="outline" className="flex-1 text-[10px] font-bold h-8 rounded-btn cursor-pointer">Contact Buyer</Button>
+                              <Button onClick={() => alert("Seed request registered.")} className="flex-1 text-[10px] font-bold h-8 rounded-btn cursor-pointer bg-primary text-white">Claim Seed Kit</Button>
+                              <Button onClick={() => alert("Contacted buyer.")} variant="outline" className="flex-1 text-[10px] font-bold h-8 rounded-btn cursor-pointer border border-border hover:bg-muted">Contact Buyer</Button>
                             </div>
                           </div>
                         </Card>
@@ -551,7 +550,7 @@ export default function AssistantPage() {
             <Chip onClick={() => handleSendText("Diagnose my crop disease.")} className="shrink-0 cursor-pointer">
               🔬 Diagnose disease
             </Chip>
-            <Chip onClick={() => handleSendText("Recommend crops for clayey loam soil.")} className="shrink-0 cursor-pointer">
+            <Chip onClick={() => handleSendText("Recommend crops for sandy loam soil.")} className="shrink-0 cursor-pointer">
               🌾 Recommend crops
             </Chip>
             <Chip onClick={() => handleSendText("Show today's market prices.")} className="shrink-0 cursor-pointer">
@@ -613,7 +612,7 @@ export default function AssistantPage() {
             >
               <input
                 type="text"
-                placeholder="Ask Vira..."
+                placeholder={t("Ask Vira...")}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 className="flex-1 bg-transparent px-3 text-xs focus:outline-none placeholder:text-muted-foreground text-foreground"
@@ -713,7 +712,7 @@ export default function AssistantPage() {
 
               {/* Helper query suggestions */}
               <p className="text-[10px] text-slate-500 font-semibold text-center italic">
-                Suggestion: &quot;Will it rain in Pune tomorrow?&quot;
+                Suggestion: &quot;Will it rain in Guntur tomorrow?&quot;
               </p>
             </motion.div>
           )}

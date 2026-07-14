@@ -29,24 +29,24 @@ export default function FertilizerAdvisorPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-8 animate-fade-in max-w-4xl mx-auto pb-16">
+      <div className="space-y-8 animate-fade-in max-w-4xl mx-auto pb-16 text-left">
         
         {/* Header Block */}
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full hover:bg-muted border border-border"
+            className="rounded-full hover:bg-muted border border-border cursor-pointer"
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="space-y-1">
             <h1 className="font-heading text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-              Fertilizer Advisor <Sprout className="h-5 w-5 text-primary" />
+              {t("Fertilizer Advisor")} <Sprout className="h-5 w-5 text-primary" />
             </h1>
             <p className="text-xs text-muted-foreground">
-              Calculate optimal chemical and organic N-P-K ratios based on soil health parameters.
+              {t("Calculate optimal chemical and organic N-P-K ratios based on soil health parameters.")}
             </p>
           </div>
         </div>
@@ -56,17 +56,17 @@ export default function FertilizerAdvisorPage() {
           <Card title="" animate={false} className="p-5 bg-card border border-border/80 shadow-sm text-left">
             <span className="text-[10px] font-bold text-muted-foreground block uppercase">Nitrogen (N)</span>
             <h3 className="text-2xl font-black text-foreground pt-1">4.2 <span className="text-xs font-semibold text-muted-foreground">mg/kg</span></h3>
-            <Badge variant="outline" className="mt-2 text-primary border-primary/20 bg-primary/5 font-bold text-[9px]">Optimal</Badge>
+            <Badge variant="outline" className="mt-2 text-primary border-primary/20 bg-primary/5 font-bold text-[9px]">{t("Optimal")}</Badge>
           </Card>
           <Card title="" animate={false} className="p-5 bg-card border border-border/80 shadow-sm text-left">
             <span className="text-[10px] font-bold text-muted-foreground block uppercase">Phosphorus (P)</span>
             <h3 className="text-2xl font-black text-foreground pt-1">1.8 <span className="text-xs font-semibold text-muted-foreground">mg/kg</span></h3>
-            <Badge variant="outline" className="mt-2 text-amber-600 border-amber-500/20 bg-amber-500/5 font-bold text-[9px]">Slightly Low</Badge>
+            <Badge variant="outline" className="mt-2 text-amber-600 border-amber-500/20 bg-amber-500/5 font-bold text-[9px]">{t("Slightly Low")}</Badge>
           </Card>
           <Card title="" animate={false} className="p-5 bg-card border border-border/80 shadow-sm text-left">
             <span className="text-[10px] font-bold text-muted-foreground block uppercase">Potassium (K)</span>
             <h3 className="text-2xl font-black text-foreground pt-1">5.4 <span className="text-xs font-semibold text-muted-foreground">mg/kg</span></h3>
-            <Badge variant="outline" className="mt-2 text-primary border-primary/20 bg-primary/5 font-bold text-[9px]">Optimal</Badge>
+            <Badge variant="outline" className="mt-2 text-primary border-primary/20 bg-primary/5 font-bold text-[9px]">{t("Optimal")}</Badge>
           </Card>
         </div>
 
@@ -79,12 +79,12 @@ export default function FertilizerAdvisorPage() {
             <div className="space-y-3 flex-1">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-extrabold text-foreground text-sm">Vira AI Fertilizer Recommendation</h4>
+                  <h4 className="font-extrabold text-foreground text-sm">{t("Vira AI Fertilizer Recommendation")}</h4>
                   <Badge variant="outline" className="text-[9px] font-black border-primary/20 bg-primary/10 text-primary px-2 py-0.5 shrink-0 rounded-full select-none">
                     ✨ VIRA ADVISOR
                   </Badge>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 font-bold">
                   <Badge className="text-[9px] font-bold bg-emerald-500 text-white border-none shadow-sm rounded-full">
                     94% Confidence
                   </Badge>
@@ -94,36 +94,35 @@ export default function FertilizerAdvisorPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1 text-[11.5px] font-semibold text-muted-foreground">
                 <div className="space-y-1">
-                  <p><strong className="text-foreground">{t("Reasoning")}:</strong> Soil test analysis indicates severe phosphorus deficiency in Zone A.</p>
-                  <p><strong className="text-foreground">{t("Recommended Action")}:</strong> Apply 12 kg of Diammonium Phosphate (DAP) or 25 kg of Single Superphosphate (SSP) per acre.</p>
+                  <p><strong className="text-foreground">{t("Reasoning")}:</strong> {t("Soil test analysis indicates severe phosphorus deficiency in Zone A.")}</p>
+                  <p><strong className="text-foreground">{t("Recommended Action")}:</strong> {t("Apply 12 kg of Diammonium Phosphate (DAP) or 25 kg of Single Superphosphate (SSP) per acre.")}</p>
                 </div>
                 <div className="space-y-1">
-                  <p><strong className="text-foreground">{t("Expected Impact")}:</strong> Rebalances NPK ratio by 15%, enhancing nitrogen retention before sowing next week.</p>
-                  <p><strong className="text-foreground">{t("Data Source")}:</strong> Soil Lab Report &amp; Gemini 2.5</p>
+                  <p><strong className="text-foreground">{t("Expected Impact")}:</strong> {t("Rebalances NPK ratio by 15%, enhancing nitrogen retention before sowing next week.")}</p>
+                  <p><strong className="text-foreground">{t("Data Source")}:</strong> {t("Soil Lab Report & Gemini 2.5")}</p>
                 </div>
               </div>
 
               <div className="pt-2 border-t border-border/30 flex justify-between items-center text-[10px] text-muted-foreground font-semibold">
                 <span>Last Updated: June 12, 2026</span>
-                <span className="text-primary font-bold cursor-pointer hover:underline" onClick={() => router.push("/profile")}>View Soil Report</span>
+                <span className="text-primary font-bold cursor-pointer hover:underline" onClick={() => router.push("/profile")}>{t("View Soil Report")}</span>
               </div>
             </div>
           </div>
         </Card>
-
 
         {/* Dynamic Calculator Widget */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card title="" animate={false} className="p-6 bg-card border border-border shadow-sm text-left space-y-4">
             <div className="flex items-center gap-2 border-b border-border/50 pb-2">
               <Compass className="h-4.5 w-4.5 text-primary" />
-              <h4 className="font-bold text-sm text-foreground">Fertilizer Calculator</h4>
+              <h4 className="font-bold text-sm text-foreground">{t("Fertilizer Calculator")}</h4>
             </div>
 
-            <div className="space-y-4 text-xs">
+            <div className="space-y-4 text-xs font-semibold">
               <div className="space-y-1">
                 <label className="font-bold text-foreground">Target Crop Type</label>
-                <select className="w-full bg-card px-3 py-2 border border-border rounded-btn focus:outline-none focus:ring-1 focus:ring-primary text-foreground">
+                <select className="w-full bg-card px-3 py-2 border border-border rounded-btn focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-bold">
                   <option value="sugarcane">Sugarcane (Grade A)</option>
                   <option value="cotton">Long Staple Cotton</option>
                   <option value="groundnut">Groundnut (TAG-24)</option>
@@ -135,7 +134,7 @@ export default function FertilizerAdvisorPage() {
                 <input 
                   type="number" 
                   defaultValue={5.5} 
-                  className="w-full bg-transparent px-3 py-2 border border-border rounded-btn focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                  className="w-full bg-transparent px-3 py-2 border border-border rounded-btn focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-bold"
                 />
               </div>
 
@@ -144,7 +143,7 @@ export default function FertilizerAdvisorPage() {
                 className="w-full rounded-btn h-10 font-bold bg-primary text-white cursor-pointer"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : null}
-                Calculate Ratios
+                {t("Submit")}
               </Button>
             </div>
           </Card>
@@ -154,10 +153,10 @@ export default function FertilizerAdvisorPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-2 border-b border-border/50 pb-2">
                 <ShieldCheck className="h-4.5 w-4.5 text-emerald-500" />
-                <h4 className="font-bold text-sm text-foreground">Output Ratios</h4>
+                <h4 className="font-bold text-sm text-foreground">{t("Output Ratios")}</h4>
               </div>
 
-              <div className="space-y-3.5 text-xs text-muted-foreground leading-normal">
+              <div className="space-y-3.5 text-xs text-muted-foreground leading-normal font-semibold">
                 {result ? (
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -188,9 +187,9 @@ export default function FertilizerAdvisorPage() {
                       <path d="M9 22L11 20" />
                       <path d="M11 20c2.5-2.5 5-3.5 7-7" />
                     </svg>
-                    <h5 className="font-extrabold text-foreground text-xs">Calculator Idle</h5>
+                    <h5 className="font-extrabold text-foreground text-xs">{t("Calculator Idle")}</h5>
                     <p className="text-[10.5px] text-muted-foreground max-w-[200px] mt-1 leading-normal">
-                      Run the calculator to generate crop-specific recommendations.
+                      {t("Run the calculator to generate crop-specific recommendations.")}
                     </p>
                   </div>
                 )}
@@ -201,10 +200,10 @@ export default function FertilizerAdvisorPage() {
             {result && (
               <Button
                 variant="outline"
-                className="w-full rounded-btn h-9 font-bold bg-card border-border text-foreground hover:bg-muted"
+                className="w-full rounded-btn h-9 font-bold bg-card border border-border text-foreground hover:bg-muted cursor-pointer"
                 onClick={() => alert("Printing report...")}
               >
-                Download Ratios Report
+                {t("Download")}
               </Button>
             )}
           </Card>

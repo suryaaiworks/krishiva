@@ -130,6 +130,102 @@ const officesDatabase: Office[] = [
       "Drive for 2.2 km past the state transport stand.",
       "Turn left into the Tehsil Office compound; office is on the ground floor."
     ]
+  },
+  {
+    id: "rsk-tenali",
+    name: "Rythu Seva Kendra (RSK Tenali)",
+    type: "seva-kendra",
+    district: "Guntur",
+    block: "Tenali",
+    address: "Opposite Market Yard, Tenali, Guntur, Andhra Pradesh - 522201",
+    distance: "1.8 km",
+    duration: "6 mins",
+    rating: 4.7,
+    status: "Open Now",
+    hours: "9:00 AM - 5:00 PM",
+    officer: "Mr. K. Srinivasa Rao",
+    designation: "Block Agriculture Officer",
+    phone: "+91 86442 34567",
+    email: "tenali.rsk@ap.gov.in",
+    coords: { x: 180, y: 160 },
+    directions: [
+      "Head west on Main Bazaar Road toward Gandhi Chowk.",
+      "Turn right after 300m onto Station Road.",
+      "Continue straight past the government hospital for 1 km.",
+      "RSK Tenali is located right opposite the B2B Market Yard."
+    ]
+  },
+  {
+    id: "kvk-lam",
+    name: "Krishi Vigyan Kendra (KVK Lam)",
+    type: "kvk",
+    district: "Guntur",
+    block: "Lam",
+    address: "ANGRAU Research Campus, Lam, Guntur, Andhra Pradesh - 522034",
+    distance: "11.5 km",
+    duration: "20 mins",
+    rating: 4.9,
+    status: "Open Now",
+    hours: "9:30 AM - 5:30 PM",
+    officer: "Dr. P. Venkateswarlu",
+    designation: "Senior Scientist & Program Coordinator",
+    phone: "+91 86323 50678",
+    email: "kvklam@angrau.ac.in",
+    coords: { x: 280, y: 240 },
+    directions: [
+      "Take Guntur-Amaravati Road heading North toward Lam.",
+      "Drive straight for 9 km past the inner ring road junction.",
+      "Turn left at the ANGRAU main gate signpost.",
+      "Follow the campus road to the KVK admin building."
+    ]
+  },
+  {
+    id: "rsk-gudivada",
+    name: "Rythu Seva Kendra (RSK Gudivada)",
+    type: "seva-kendra",
+    district: "Krishna",
+    block: "Gudivada",
+    address: "Nehru Chowk, Gudivada, Krishna, Andhra Pradesh - 521301",
+    distance: "2.1 km",
+    duration: "7 mins",
+    rating: 4.6,
+    status: "Open Now",
+    hours: "9:00 AM - 5:00 PM",
+    officer: "Mrs. T. Lakshmi Prasad",
+    designation: "Agricultural Extension Officer",
+    phone: "+91 86742 22345",
+    email: "gudivada.rsk@ap.gov.in",
+    coords: { x: 140, y: 130 },
+    directions: [
+      "Head South on Gudivada-Pamarru Road.",
+      "At Nehru Chowk roundabout, take the second exit.",
+      "Drive for 1.2 km past the sub-registrar office.",
+      "RSK Gudivada is on the left next to State Bank of India."
+    ]
+  },
+  {
+    id: "soil-lab-vijayawada",
+    name: "Regional Soil Testing Laboratory",
+    type: "soil-lab",
+    district: "Krishna",
+    block: "Vijayawada",
+    address: "PWD Grounds Campus, Vijayawada, Krishna, Andhra Pradesh - 520002",
+    distance: "7.4 km",
+    duration: "15 mins",
+    rating: 4.8,
+    status: "Open Now",
+    hours: "10:00 AM - 4:30 PM",
+    officer: "Mr. B. N. R. K. Prasad",
+    designation: "Assistant Director of Agriculture (Soil)",
+    phone: "+91 86624 76543",
+    email: "soillab.vja@ap.gov.in",
+    coords: { x: 230, y: 110 },
+    directions: [
+      "Drive toward PWD Grounds on MG Road, Vijayawada.",
+      "Pass the Swaraj Maidan gate on your left.",
+      "Turn left into the Joint Director of Agriculture compound.",
+      "The Soil Testing Lab is located in the East Wing building."
+    ]
   }
 ];
 
@@ -285,6 +381,9 @@ export default function OfficesPage() {
               className="w-full bg-muted/30 border border-border rounded-input px-3.5 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none cursor-pointer transition-all duration-200"
             >
               <option value="Pune">Pune District</option>
+              <option value="Guntur">Guntur District (AP)</option>
+              <option value="Krishna">Krishna District (AP)</option>
+              <option value="Nellore">Nellore District (AP)</option>
               <option value="Nagpur">Nagpur District</option>
               <option value="Jalgaon">Jalgaon District</option>
             </select>
@@ -297,9 +396,11 @@ export default function OfficesPage() {
               onChange={(e) => setSelectedBlock(e.target.value)}
               className="w-full bg-muted/30 border border-border rounded-input px-3.5 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none cursor-pointer transition-all duration-200"
             >
-              <option value="Shirur">Shirur Block (Taluka)</option>
-              <option value="Baramati">Baramati Block (Taluka)</option>
-              <option value="Haveli">Haveli Block (Taluka)</option>
+              <option value="Shirur">Shirur Block (Pune)</option>
+              <option value="Tenali">Tenali Block (Guntur)</option>
+              <option value="Gudivada">Gudivada Block (Krishna)</option>
+              <option value="Baramati">Baramati Block (Pune)</option>
+              <option value="Haveli">Haveli Block (Pune)</option>
             </select>
           </div>
         </div>

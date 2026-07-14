@@ -13,6 +13,7 @@ import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/context/LanguageContext";
 
 type PhaseType = "wizard" | "loading" | "result";
 
@@ -27,60 +28,8 @@ interface WizardState {
   insuranceStatus: "insured" | "uninsured";
 }
 
-const matchLogs = [
-  "Matching land ownership details with Pradhan Mantri Kisan Samman Nidhi database...",
-  "Applying dryland category algorithms for PM-KUSUM Solar pump grants...",
-  "Matching Drip irrigation parameters with Per Drop More Crop (PDMC) subsidies...",
-  "Cross-referencing crop insurance policy databases for PMFBY premium covers...",
-  "Calculating state agricultural solar power connection discount criteria...",
-  "Validating organic soil certification bonuses...",
-  "Synthesizing personalized government aid compensation dossiers..."
-];
-
-const schemesDatabase = [
-  {
-    name: "PM-KISAN (Income Support Scheme)",
-    benefit: "₹6,000 / Year",
-    score: "100%",
-    deadline: "July 31, 2026",
-    approval: "14 Days",
-    priority: "High",
-    desc: "Direct benefit transfer of ₹6,000 per year in three equal installments to bank accounts of land-holding farmer families.",
-    documents: "Aadhaar, Land Records (7/12), Bank Passbook"
-  },
-  {
-    name: "PM-KUSUM (Solar Pump Subsidy)",
-    benefit: "60% Subsidy (₹24,500 value)",
-    score: "95%",
-    deadline: "June 30, 2026",
-    approval: "25 Days",
-    priority: "High",
-    desc: "Financial assistance to install solar water pumps, cutting farm electricity costs by 90% and securing irrigation feeds.",
-    documents: "Land records, Aadhaar, Farmer ID certificate"
-  },
-  {
-    name: "Per Drop More Crop (Micro Irrigation)",
-    benefit: "50% Drip Kit Subsidy",
-    score: "90%",
-    deadline: "August 15, 2026",
-    approval: "30 Days",
-    priority: "Medium",
-    desc: "Subsidies for drip and sprinkler irrigation installations. Restores water usage efficiencies in rain-deficit zones.",
-    documents: "Irrigation details, Land survey map, Aadhaar"
-  },
-  {
-    name: "PM Fasal Bima Yojana (Crop Insurance)",
-    benefit: "Premium subsidy, ₹45k cover",
-    score: "88%",
-    deadline: "July 15, 2026",
-    approval: "10 Days",
-    priority: "Medium",
-    desc: "Yield insurance coverage against weather risks, floods, dry spells, and pest outbreaks with subsidized premium rates.",
-    documents: "Crop Sowing certificate, Aadhaar, Bank details"
-  }
-];
-
 export default function SchemesPage() {
+  const { t } = useLanguage();
   const [phase, setPhase] = React.useState<PhaseType>("wizard");
   const [wizardStep, setWizardStep] = React.useState(1);
   const [loadingProgress, setLoadingProgress] = React.useState(0);
@@ -89,15 +38,68 @@ export default function SchemesPage() {
 
   // Wizard form state
   const [form, setForm] = React.useState<WizardState>({
-    state: "Maharashtra",
-    district: "Pune",
+    state: "Andhra Pradesh",
+    district: "Guntur",
     farmSize: "small",
     landOwnership: "owner",
-    cropType: "Sugarcane",
+    cropType: "Chilli",
     irrigationType: "drip",
     incomeRange: "mid-low",
     insuranceStatus: "insured"
   });
+
+  const matchLogs = React.useMemo(() => [
+    t("Matching land ownership details with Pradhan Mantri Kisan Samman Nidhi database..."),
+    t("Applying dryland category algorithms for PM-KUSUM Solar pump grants..."),
+    t("Matching Drip irrigation parameters with Per Drop More Crop (PDMC) subsidies..."),
+    t("Cross-referencing crop insurance policy databases for PMFBY premium covers..."),
+    t("Calculating state agricultural solar power connection discount criteria..."),
+    t("Validating organic soil certification bonuses..."),
+    t("Synthesizing personalized government aid compensation dossiers...")
+  ], [t]);
+
+  const schemesDatabase = React.useMemo(() => [
+    {
+      name: t("PM-KISAN (Income Support Scheme)"),
+      benefit: "₹6,000 / Year",
+      score: "100%",
+      deadline: t("July 31, 2026"),
+      approval: t("14 Days"),
+      priority: t("High"),
+      desc: t("Direct benefit transfer of ₹6,000 per year in three equal installments to bank accounts of land-holding farmer families."),
+      documents: t("Aadhaar, Land Records, Bank Passbook")
+    },
+    {
+      name: t("PM-KUSUM (Solar Pump Subsidy)"),
+      benefit: t("60% Subsidy (₹24,500 value)"),
+      score: "95%",
+      deadline: t("June 30, 2026"),
+      approval: t("25 Days"),
+      priority: t("High"),
+      desc: t("Financial assistance to install solar water pumps, cutting farm electricity costs by 90% and securing irrigation feeds."),
+      documents: t("Land records, Aadhaar, Farmer ID certificate")
+    },
+    {
+      name: t("Per Drop More Crop (Micro Irrigation)"),
+      benefit: t("50% Drip Kit Subsidy"),
+      score: "90%",
+      deadline: t("August 15, 2026"),
+      approval: t("30 Days"),
+      priority: t("Medium"),
+      desc: t("Subsidies for drip and sprinkler irrigation installations. Restores water usage efficiencies in rain-deficit zones."),
+      documents: t("Irrigation details, Land survey map, Aadhaar")
+    },
+    {
+      name: t("PM Fasal Bima Yojana (Crop Insurance)"),
+      benefit: t("Premium subsidy, ₹45k cover"),
+      score: "88%",
+      deadline: t("July 15, 2026"),
+      approval: t("10 Days"),
+      priority: t("Medium"),
+      desc: t("Yield insurance coverage against weather risks, floods, dry spells, and pest outbreaks with subsidized premium rates."),
+      documents: t("Crop Sowing certificate, Aadhaar, Bank details")
+    }
+  ], [t]);
 
   // Document Upload States
   const [docFile, setDocFile] = React.useState<any>(null);
@@ -120,14 +122,14 @@ export default function SchemesPage() {
       
       // Validate file size (< 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setDocError("File is too large. Max size allowed is 5MB.");
+        setDocError(t("File is too large. Max size allowed is 5MB."));
         return;
       }
       
       // Validate file type
       const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
       if (!allowedTypes.includes(file.type) && !file.name.endsWith(".pdf") && !file.name.endsWith(".jpg") && !file.name.endsWith(".jpeg") && !file.name.endsWith(".png")) {
-        setDocError("Invalid file type. Only PDF, JPG, and PNG are allowed.");
+        setDocError(t("Invalid file type. Only PDF, JPG, and PNG are allowed."));
         return;
       }
       
@@ -166,7 +168,7 @@ export default function SchemesPage() {
       } catch (err: any) {
         clearInterval(progressInterval);
         setIsUploadingDoc(false);
-        setDocError(err.message || "Failed to upload document.");
+        setDocError(err.message || t("Failed to upload document."));
       }
     }
   };
@@ -225,13 +227,13 @@ export default function SchemesPage() {
       const res = await apiClient.get<any[]>("/schemes/match");
       if (res && res.length > 0) {
         setMatchedSchemes(res.map((s: any) => ({
-          name: s.name,
+          name: t(s.name),
           benefit: s.benefit,
           score: s.eligibility_score,
           deadline: s.deadline,
           approval: s.approval_time,
           priority: s.priority,
-          desc: s.description,
+          desc: t(s.description),
           documents: s.required_documents ? s.required_documents.join(", ") : "Aadhaar, Land Records"
         })));
       }
@@ -268,7 +270,7 @@ export default function SchemesPage() {
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [phase]);
+  }, [phase, matchLogs.length]);
 
   const resetWizard = () => {
     setPhase("wizard");
@@ -285,18 +287,18 @@ export default function SchemesPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-8 pb-16 animate-fade-in">
+      <div className="space-y-8 pb-16 animate-fade-in text-left">
         
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <SectionHeader 
-            title="AI Government Benefits Advisor" 
-            description="Intelligent eligibility matching to discover government schemes, crop subsidies, and solar pump grants."
+            title={t("Government Schemes")} 
+            description={t("Intelligent eligibility matching to discover government schemes, crop subsidies, and solar pump grants.")}
             className="mb-0"
           />
           {phase === "result" && (
-            <Button onClick={resetWizard} variant="outline" className="text-xs font-bold rounded-btn cursor-pointer bg-card">
-              Re-Run Advisor
+            <Button onClick={resetWizard} variant="outline" className="text-xs font-bold rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted">
+              {t("Retry")}
             </Button>
           )}
         </div>
@@ -304,7 +306,7 @@ export default function SchemesPage() {
         <AnimatePresence mode="wait">
           
           {/* PHASE 1: WIZARD QUESTIONS */}
-          {phase === "wizard" && (
+          {wizardStep <= 3 && phase === "wizard" && (
             <motion.div
               key="wizard"
               initial={{ opacity: 0, y: 15 }}
@@ -318,7 +320,7 @@ export default function SchemesPage() {
                 <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider pb-2 border-b border-border/40">
                   <span>Step {wizardStep} of 3</span>
                   <span>
-                    {wizardStep === 1 ? "Location & Land" : wizardStep === 2 ? "Crop & Category" : "Financials & Insurance"}
+                    {wizardStep === 1 ? t("Location & Land") : wizardStep === 2 ? t("Crop & Category") : t("Financials & Insurance")}
                   </span>
                 </div>
 
@@ -327,13 +329,14 @@ export default function SchemesPage() {
                   <div className="space-y-6 animate-fade-in">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-foreground">State</label>
+                        <label className="text-xs font-bold text-foreground">{t("State")}</label>
                         <div className="relative">
                           <select 
                             value={form.state}
                             onChange={(e) => setForm({ ...form, state: e.target.value })}
-                            className="w-full bg-card border border-border rounded-btn pl-4 pr-10 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none appearance-none cursor-pointer transition-all duration-200"
+                            className="w-full bg-card border border-border rounded-btn pl-4 pr-10 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none appearance-none cursor-pointer transition-all duration-200 font-semibold"
                           >
+                            <option value="Andhra Pradesh">Andhra Pradesh (AP)</option>
                             <option value="Maharashtra">Maharashtra (Western Zone)</option>
                             <option value="Punjab">Punjab (Northern Granary)</option>
                             <option value="Gujarat">Gujarat (West Coast)</option>
@@ -346,14 +349,13 @@ export default function SchemesPage() {
                         </div>
                       </div>
 
-
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-foreground">District</label>
+                        <label className="text-xs font-bold text-foreground">{t("District")}</label>
                         <input 
                           type="text"
                           value={form.district}
                           onChange={(e) => setForm({ ...form, district: e.target.value })}
-                          className="w-full bg-card border border-border rounded-btn px-4 h-11 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none placeholder:text-muted-foreground/60"
+                          className="w-full bg-card border border-border rounded-btn px-4 h-11 text-xs font-bold text-foreground focus:ring-1 focus:ring-primary focus:outline-none placeholder:text-muted-foreground/60"
                         />
                       </div>
                     </div>
@@ -421,13 +423,13 @@ export default function SchemesPage() {
                           <select 
                             value={form.cropType}
                             onChange={(e) => setForm({ ...form, cropType: e.target.value })}
-                            className="w-full bg-card border border-border rounded-btn pl-4 pr-10 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none appearance-none cursor-pointer transition-all duration-200"
+                            className="w-full bg-card border border-border rounded-btn pl-4 pr-10 h-11 text-xs text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none appearance-none cursor-pointer transition-all duration-200 font-semibold"
                           >
+                            <option value="Chilli">Chilli (Cash crop)</option>
                             <option value="Sugarcane">Sugarcane (Cash crop)</option>
                             <option value="Cotton">Cotton (Cash crop)</option>
                             <option value="Paddy">Paddy / Rice (Grains)</option>
                             <option value="Groundnut">Groundnut (Oilseeds)</option>
-                            <option value="Vegetables">Vegetables</option>
                           </select>
                           <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
@@ -437,14 +439,13 @@ export default function SchemesPage() {
                         </div>
                       </div>
 
-
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-foreground">District Head Office</label>
                         <input 
                           type="text"
                           readOnly
-                          value="Shirur Taluka Block"
-                          className="w-full bg-muted/30 border border-border rounded-btn px-4 h-11 text-xs text-muted-foreground outline-none"
+                          value="Tenali Taluka Block"
+                          className="w-full bg-muted/30 border border-border rounded-btn px-4 h-11 text-xs font-bold text-muted-foreground outline-none"
                         />
                       </div>
                     </div>
@@ -537,15 +538,15 @@ export default function SchemesPage() {
               </Card>
 
               {/* Wizard Navigation Controls */}
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center font-bold">
                 {wizardStep > 1 ? (
                   <Button 
                     onClick={handlePrevStep}
                     variant="outline"
-                    className="text-xs font-bold px-5 h-10 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold px-5 h-10 rounded-btn cursor-pointer bg-card border border-border hover:bg-muted"
                   >
                     <ChevronLeft className="mr-1.5 h-4 w-4" />
-                    Back
+                    {t("Back")}
                   </Button>
                 ) : (
                   <div />
@@ -554,17 +555,17 @@ export default function SchemesPage() {
                 {wizardStep < 3 ? (
                   <Button 
                     onClick={handleNextStep}
-                    className="text-xs font-bold px-6 h-10 rounded-btn cursor-pointer bg-primary"
+                    className="text-xs font-bold px-6 h-10 rounded-btn cursor-pointer bg-primary text-white"
                   >
-                    Next Step
+                    {t("Next")}
                     <ChevronRight className="ml-1.5 h-4 w-4" />
                   </Button>
                 ) : (
                   <Button 
                     onClick={startAnalysis}
-                    className="text-xs font-bold px-6 h-10 rounded-btn cursor-pointer bg-primary"
+                    className="text-xs font-bold px-6 h-10 rounded-btn cursor-pointer bg-primary text-white"
                   >
-                    Analyze Benefits
+                    {t("Submit")}
                     <Brain className="ml-1.5 h-4 w-4 text-white" />
                   </Button>
                 )}
@@ -602,10 +603,10 @@ export default function SchemesPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm font-bold text-foreground leading-normal min-h-[40px] px-4">
+                  <p className="text-sm font-bold text-foreground leading-normal min-h-[40px] px-4 animate-pulse">
                     {matchLogs[activeLogIndex]}
                   </p>
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">
+                  <span className="text-[10px] font-bold text-primary tracking-widest block">
                     AI SUBSIDY EVALUATION: {Math.round(loadingProgress)}%
                   </span>
                 </div>
@@ -619,7 +620,7 @@ export default function SchemesPage() {
               key="result"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-8"
+              className="space-y-8 text-left"
             >
               {/* Top Row Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
@@ -640,7 +641,7 @@ export default function SchemesPage() {
                       </div>
 
                       {/* Schemes indices metrics */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y border-border/40 text-xs">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y border-border/40 text-xs font-semibold">
                         <div className="space-y-0.5">
                           <span className="text-muted-foreground block text-[10px] font-bold uppercase">Matched schemes</span>
                           <strong className="text-lg font-extrabold text-primary">4 Schemes</strong>
@@ -665,14 +666,14 @@ export default function SchemesPage() {
                       <div className="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 shadow-inner">
                         <Sparkles className="h-4 w-4 animate-pulse" />
                       </div>
-                      <div className="space-y-1 text-left flex-1">
+                      <div className="space-y-1 text-left flex-1 font-semibold">
                         <div className="flex items-center gap-1.5">
-                          <strong className="text-foreground">Vira AI Recommendation</strong>
+                          <strong className="text-foreground">{t("AI Recommendation")}</strong>
                           <Badge variant="outline" className="text-[8px] font-black border-primary/20 bg-primary/10 text-primary px-1.5 py-0.5 shrink-0 rounded-full select-none">
                             ✨ VIRA AI
                           </Badge>
                         </div>
-                        <p className="text-muted-foreground leading-relaxed font-semibold">
+                        <p className="text-muted-foreground leading-relaxed">
                           You are eligible for RKVY, PM-KISAN, and the Solar Pump Subsidy. Priority is high for **Solar Pump Subsidy** since applications close June 30. Applying for both PM-KISAN and Micro Irrigation could save you ₹30,500 this season.
                         </p>
                       </div>
@@ -690,7 +691,7 @@ export default function SchemesPage() {
                         <h4 className="font-bold text-sm text-foreground">Subsidy Deadlines & Alerts</h4>
                       </div>
 
-                      <div className="space-y-3.5 text-xs leading-normal">
+                      <div className="space-y-3.5 text-xs leading-normal font-semibold">
                         <div className="flex items-start gap-2.5">
                           <span className="h-2 w-2 rounded-full bg-red-500 shrink-0 mt-1.5" />
                           <p className="text-muted-foreground">
@@ -706,14 +707,14 @@ export default function SchemesPage() {
                         <div className="flex items-start gap-2.5">
                           <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />
                           <p className="text-muted-foreground">
-                            <strong className="text-foreground">New State Scheme:</strong> ₹12,000 Organic Fertilizers grant announced for Pune district.
+                            <strong className="text-foreground">New State Scheme:</strong> ₹12,000 Organic Fertilizers grant announced for Guntur district.
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-border/30 text-[10px] text-muted-foreground">
-                      * Sourced from MH state agriculture office.
+                    <div className="mt-4 pt-3 border-t border-border/30 text-[10px] text-muted-foreground font-semibold">
+                      * Sourced from AP state agriculture office.
                     </div>
                   </Card>
                 </div>
@@ -721,7 +722,7 @@ export default function SchemesPage() {
               </div>
 
               {/* INTERACTIVE DOCUMENT ASSISTANT & TIMELINE GRID */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start font-semibold">
                 
                 {/* AI Document Assistant */}
                 <Card title="" animate={false} className="lg:col-span-2 p-6 space-y-4">
@@ -741,7 +742,7 @@ export default function SchemesPage() {
                           : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
                       }`}
                     >
-                      <div className="space-y-0.5">
+                      <div className="space-y-0.5 text-left">
                         <span className="font-bold block">Aadhaar Card Verification</span>
                         <span className="text-[10px] text-muted-foreground/80">National demographic lock linked</span>
                       </div>
@@ -757,8 +758,8 @@ export default function SchemesPage() {
                           : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
                       }`}
                     >
-                      <div className="space-y-0.5">
-                        <span className="font-bold block">Land Records Extract (7/12)</span>
+                      <div className="space-y-0.5 text-left">
+                        <span className="font-bold block">Land Records Extract (Patta)</span>
                         <span className="text-[10px] text-muted-foreground/80">Verify acreage limits: 5.5 Acres</span>
                       </div>
                       <CheckCircle2 className={`h-5 w-5 shrink-0 ${checklist.land ? "text-primary" : "text-muted-foreground/30"}`} />
@@ -773,7 +774,7 @@ export default function SchemesPage() {
                           : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
                       }`}
                     >
-                      <div className="space-y-0.5">
+                      <div className="space-y-0.5 text-left">
                         <span className="font-bold block">Bank Account Passbook</span>
                         <span className="text-[10px] text-muted-foreground/80">Direct Benefit Transfer (DBT) target</span>
                       </div>
@@ -789,7 +790,7 @@ export default function SchemesPage() {
                           : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
                       }`}
                     >
-                      <div className="space-y-0.5">
+                      <div className="space-y-0.5 text-left">
                         <span className="font-bold block">Farmer ID Certificate</span>
                         <span className="text-[10px] text-muted-foreground/80">District smallholder validation</span>
                       </div>
@@ -805,9 +806,9 @@ export default function SchemesPage() {
                           : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
                       }`}
                     >
-                      <div className="space-y-0.5">
+                      <div className="space-y-0.5 text-left">
                         <span className="font-bold block">Crop Sowing details</span>
-                        <span className="text-[10px] text-muted-foreground/80">Verify Kharif Sugarcane sowing</span>
+                        <span className="text-[10px] text-muted-foreground/80">Verify Kharif Chilli sowing</span>
                       </div>
                       <CheckCircle2 className={`h-5 w-5 shrink-0 ${checklist.cropDetails ? "text-primary" : "text-muted-foreground/30"}`} />
                     </div>
@@ -821,7 +822,7 @@ export default function SchemesPage() {
                           : "border-border bg-card hover:bg-muted/10 text-muted-foreground"
                       }`}
                     >
-                      <div className="space-y-0.5">
+                      <div className="space-y-0.5 text-left">
                         <span className="font-bold block">PMFBY Crop Insurance Papers</span>
                         <span className="text-[10px] text-muted-foreground/80">Verify premium deposit receipt</span>
                       </div>
@@ -832,7 +833,7 @@ export default function SchemesPage() {
 
                   {/* Document Upload Area */}
                   <div className="border-t border-border/50 pt-5 space-y-4 text-left">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Upload Document & Apply</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">{t("Upload")} & {t("Apply")}</span>
                     
                     <input
                       type="file"
@@ -916,7 +917,7 @@ export default function SchemesPage() {
                             variant="destructive"
                             size="sm"
                             onClick={handleDocDelete}
-                            className="h-8 text-[11px] font-semibold px-3 rounded-btn bg-destructive hover:bg-destructive/90 cursor-pointer"
+                            className="h-8 text-[11px] font-semibold px-3 rounded-btn bg-destructive hover:bg-destructive/90 cursor-pointer animate-fade-in"
                           >
                             Delete
                           </Button>
@@ -956,13 +957,13 @@ export default function SchemesPage() {
                       />
                     </div>
 
-                    <p className="text-[11px] text-muted-foreground pt-1.5 border-t border-border/30">
+                    <p className="text-[11px] text-muted-foreground pt-1.5 border-t border-border/30 text-left">
                       {getTimelineStepIndex() === 0 ? (
                         "Verify matching land records to unlock stage 2 (Documents Ready)."
                       ) : getTimelineStepIndex() === 1 ? (
                         "Aadhaar, Land records, Bank details are verified. Attach sowing files to submit application dossier."
                       ) : getTimelineStepIndex() === 2 ? (
-                        "Dossier ready! Submitting files directly to Shirur district officer database."
+                        "Dossier ready! Submitting files directly to Tenali district officer database."
                       ) : (
                         "Dossier fully verified! Application approved for direct DBT cash compensation deposit."
                       )}
@@ -985,7 +986,7 @@ export default function SchemesPage() {
                       key={idx}
                       className="p-5 rounded-card border border-border bg-card flex flex-col justify-between h-56 hover:border-primary/30 transition-all shadow-sm text-xs leading-relaxed"
                     >
-                      <div className="space-y-2">
+                      <div className="space-y-2 text-left">
                         <div className="flex justify-between items-start gap-4">
                           <h4 className="font-extrabold text-sm text-foreground tracking-tight max-w-[180px]">{scheme.name}</h4>
                           <Badge variant="success" className="font-bold text-[9px] px-2 py-0.5 shrink-0 bg-primary text-white">
@@ -1009,7 +1010,7 @@ export default function SchemesPage() {
                             size="sm" 
                             className="h-6 rounded-btn cursor-pointer bg-primary text-white text-[9px] font-bold px-2.5"
                           >
-                            Pre-Apply
+                            {t("Apply")}
                           </Button>
                         </div>
                       </div>
@@ -1024,19 +1025,19 @@ export default function SchemesPage() {
                   <HelpingHand className="h-4.5 w-4.5 text-primary" />
                   Advisor Actions:
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3 font-semibold">
                   <Button
                     onClick={() => window.location.href = "/assistant"}
                     variant="outline"
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                   >
                     <Sparkles className="mr-1.5 h-4 w-4 text-primary" />
-                    Talk to AI
+                    {t("Vira AI")}
                   </Button>
                   <Button
                     onClick={() => alert("Verification checklists downloaded as PDF.")}
                     variant="outline"
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                   >
                     <Save className="mr-1.5 h-4 w-4 text-primary" />
                     Download Checklist
@@ -1044,7 +1045,7 @@ export default function SchemesPage() {
                   <Button
                     onClick={() => alert("Subsidies eligibility dossier saved to profile.")}
                     variant="outline"
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                   >
                     <Save className="mr-1.5 h-4 w-4 text-primary" />
                     Save Eligibility
@@ -1052,17 +1053,17 @@ export default function SchemesPage() {
                   <Button
                     onClick={() => alert("Eligibility report shared with village panchayat officer.")}
                     variant="outline"
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-card border border-border/80 hover:bg-muted"
                   >
                     <Share2 className="mr-1.5 h-4 w-4 text-primary" />
                     Share Report
                   </Button>
                   <Button
                     onClick={() => window.location.href = "/offices"}
-                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-primary"
+                    className="text-xs font-bold h-9 rounded-btn cursor-pointer bg-primary text-white"
                   >
-                    <MapPin className="mr-1.5 h-4 w-4 text-white" />
-                    Find Local Office
+                    <MapPin className="mr-1.5 h-4 w-4 text-white animate-bounce" />
+                    {t("Nearby Offices")}
                   </Button>
                 </div>
               </div>
