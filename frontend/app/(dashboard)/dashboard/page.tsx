@@ -721,7 +721,7 @@ export default function DashboardPage() {
             </div>
 
             <Button 
-              onClick={() => router.push("/offices")}
+              onClick={() => router.push("/machinery")}
               className="w-full mt-5 rounded-btn h-9 cursor-pointer text-xs font-bold bg-primary text-white"
             >
               Book Machinery Rental

@@ -5,8 +5,8 @@ import { Sidebar } from "@/components/navigation/Sidebar";
 import { TopBar } from "@/components/navigation/TopBar";
 import { BottomNavigation } from "@/components/navigation/BottomNavigation";
 import { Footer } from "@/components/navigation/Footer";
-import { DemoController, scenarios } from "@/components/layout/DemoController";
-import { useThemeContext } from "@/components/layout/ThemeProvider";
+import { useLanguage } from "@/context/LanguageContext";
+import { usePathname } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { ViraVoiceWidget } from "@/components/ai/ViraVoiceWidget";
 
@@ -15,8 +15,8 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
-  const { activeScenarioId } = useThemeContext();
-  const activeScenario = scenarios.find((s) => s.id === activeScenarioId) || scenarios[0];
+  const { t } = useLanguage();
+  const pathname = usePathname();
 
   React.useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash) {
@@ -36,6 +36,11 @@ export function MainLayout({ children }: MainLayoutProps) {
     }
   }, []);
 
+  // Wave 5: Reset scroll position to top on every route change
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}
@@ -46,25 +51,33 @@ export function MainLayout({ children }: MainLayoutProps) {
         {/* Top Navigation */}
         <TopBar />
 
-        {/* Premium Demo Status Banner */}
-        <div className="sticky top-16 z-20 w-full border-b border-emerald-500/15 bg-emerald-50/80 dark:bg-emerald-950/20 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-3 flex-wrap">
-            {/* Farm Active pill */}
+        {/* Premium Status Banner */}
+        <div className="sticky top-16 z-20 w-full border-b border-emerald-500/15 bg-emerald-50/80 dark:bg-emerald-950/20 backdrop-blur-sm select-none">
+          <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-3.5 flex-wrap">
+            {/* Farm Connected pill */}
             <span className="inline-flex items-center gap-1.5 text-[10.5px] font-bold text-emerald-800 dark:text-emerald-300">
               <span className="relative flex h-2 w-2">
                 <span className="kv-ping-slow absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
               </span>
-              🌱 Demo Farm Active
+              {t("Farm Connected")}
             </span>
-            <span className="hidden sm:block text-emerald-500/40 text-xs">|</span>
-            <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400">
-              <Sparkles className="h-3 w-3 text-emerald-500" />
-              {activeScenario.alert}
+            <span className="text-emerald-500/40 text-xs">|</span>
+            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400">
+              {t("Crop Health")}: 92%
             </span>
-            <span className="hidden md:block text-emerald-500/40 text-xs">|</span>
-            <span className="hidden md:inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400">
-              ☀️ Sunny · Crop Health: 92% · AI Monitoring: ON
+            <span className="text-emerald-500/40 text-xs">|</span>
+            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400">
+              ☀️ {t("Sunny")}
+            </span>
+            <span className="text-emerald-500/40 text-xs">|</span>
+            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400">
+              {t("Last Sync")}: {t("Just now")}
+            </span>
+            <span className="text-emerald-500/40 text-xs">|</span>
+            <span className="inline-flex items-center gap-1.5 text-[10.5px] font-bold text-emerald-800 dark:text-emerald-300">
+              <Sparkles className="h-3.5 w-3.5 text-emerald-500 animate-pulse animate-duration-1000" />
+              {t("AI Active")}
             </span>
           </div>
         </div>
@@ -82,11 +95,9 @@ export function MainLayout({ children }: MainLayoutProps) {
         <BottomNavigation />
       </div>
 
-      {/* Hidden floating Demo Selector */}
-      <DemoController />
-
       {/* Vira AI Floating Copilot widget */}
       <ViraVoiceWidget />
     </div>
   );
 }
+

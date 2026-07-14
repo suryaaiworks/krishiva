@@ -129,54 +129,123 @@ export default function ReliefHubPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start"
+              className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
             >
-              <div className="lg:col-span-3 space-y-6">
+              {/* Left Column: Command Console & Image Upload */}
+              <div className="lg:col-span-7 space-y-6 text-left">
                 {/* Emergency status banner */}
                 <div className="rounded-card border border-red-500/20 bg-red-500/5 p-5 flex items-start gap-4 shadow-sm">
                   <RadarIllustration />
-                  <div className="space-y-2 text-xs leading-relaxed">
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-red-500 text-sm">Emergency Alert: Regional Flooding</span>
-                      <Badge variant="destructive" className="font-bold text-[9px] px-2 bg-red-500">Level 3 Critical</Badge>
+                  <div className="space-y-1.5 text-xs leading-relaxed flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-extrabold text-red-500 text-sm">Disaster Advisory: High Monsoon Flooding</span>
+                      <Badge variant="destructive" className="font-bold text-[9px] px-2 bg-red-500 rounded-full">Level 3 Critical</Badge>
                     </div>
-                    <p className="text-muted-foreground">
-                      Severe southwest monsoon flooding recorded on June 26 in Pune district. Smallholders in low-lying segments are eligible for immediate seed grants and compensation payouts.
+                    <p className="text-muted-foreground font-semibold">
+                      Severe monsoon flood levels recorded across Guntur (AP) and Western Maharashtra. Local smallholders in riverbed segments are eligible for state seed grants and PMFBY crop compensation.
                     </p>
-                    <span className="font-bold text-foreground block pt-1">
-                      Upload a photo of your waterlogged fields below to generate an AI Damage Report.
-                    </span>
+                    <div className="text-[10.5px] text-foreground font-bold pt-1.5 border-t border-red-500/10">
+                      ⚡ Action Required: Upload field photograph to generate AI Loss Assessment report.
+                    </div>
                   </div>
+                </div>
+
+                {/* Live Disaster Risk Feeds */}
+                <div className="grid grid-cols-2 gap-3.5">
+                  <Card className="p-4 border border-border/80 shadow-inner bg-card flex flex-col justify-between">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-bold text-red-500 uppercase tracking-wide block">Flood Surge</span>
+                      <h4 className="text-xs font-extrabold text-foreground">Guntur Delta Zone</h4>
+                      <p className="text-[9.5px] text-muted-foreground font-semibold leading-normal mt-1">Water level +1.2m above warning benchmarks. Risk: HIGH.</p>
+                    </div>
+                  </Card>
+                  <Card className="p-4 border border-border/80 shadow-inner bg-card flex flex-col justify-between">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-bold text-amber-500 uppercase tracking-wide block">Heat Wave Warning</span>
+                      <h4 className="text-xs font-extrabold text-foreground">Anantapur Dryland</h4>
+                      <p className="text-[9.5px] text-muted-foreground font-semibold leading-normal mt-1">Daily temperatures crossing 42°C. Ground moisture: CRITICAL.</p>
+                    </div>
+                  </Card>
                 </div>
 
                 {/* Uploader Card component */}
-                <UploadImageCard onImageSelected={handleImageSelected} className="h-72" />
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-1">Upload Damage Scan</span>
+                  <UploadImageCard onImageSelected={handleImageSelected} className="h-72" />
+                </div>
               </div>
 
-              {/* Sidebar Guide */}
-              <div className="lg:col-span-2 space-y-4 text-xs leading-relaxed text-muted-foreground bg-muted/20 border border-border/80 rounded-card p-5">
-                <span className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-2">How Recovery Works</span>
-                
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
-                    <p>
-                      <strong className="text-foreground block">Upload Field Image:</strong> Snaps field water levels, root rotting, or pest sweeps.
-                    </p>
+              {/* Right Column: Information & Assistance Checklist */}
+              <div className="lg:col-span-5 space-y-6 text-left">
+                {/* Emergency hotline numbers */}
+                <Card className="p-5 border border-border shadow-sm space-y-3.5 bg-card/45">
+                  <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                    <PhoneCall className="h-4.5 w-4.5 text-primary" />
+                    <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Emergency Hotlines</span>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</span>
-                    <p>
-                      <strong className="text-foreground block">AI Loss Estimation:</strong> Calculates damaged acreage percentages to pre-verify criteria bounds.
-                    </p>
+                  <div className="space-y-2 text-xs font-bold">
+                    <div className="flex justify-between items-center p-2 rounded-btn bg-red-500/[0.04] border border-red-500/10 text-red-600">
+                      <span>Disaster Management Cell:</span>
+                      <span className="font-mono text-xs">1078</span>
+                    </div>
+                    <div className="flex justify-between items-center p-2 rounded-btn bg-emerald-500/[0.04] border border-emerald-500/10 text-emerald-700">
+                      <span>Rythu Seva Kendras (RSK):</span>
+                      <span className="font-mono text-xs">1800-425-1990</span>
+                    </div>
+                    <div className="flex justify-between items-center p-2 rounded-btn bg-slate-100 dark:bg-slate-800/40 text-muted-foreground">
+                      <span>Krishi Vigyan Kendras (KVK):</span>
+                      <span className="font-mono text-xs">1800-180-1551</span>
+                    </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</span>
-                    <p>
-                      <strong className="text-foreground block">Compensation & Claims:</strong> Sinks data directly to PM-Kisan payouts, PMFBY insurance claims, and local NGO seed trucks.
-                    </p>
+                </Card>
+
+                {/* PMFBY & Required Documents Checklist */}
+                <Card className="p-5 border border-border shadow-sm space-y-3.5 bg-card/45">
+                  <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                    <FileText className="h-4.5 w-4.5 text-primary" />
+                    <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Required Claim Documents</span>
                   </div>
-                </div>
+                  <ul className="space-y-2 text-xs font-semibold text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <span className="h-4.5 w-4.5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[9px] shrink-0">✓</span>
+                      <span>Verified Farmer Passbook / Land Patta Document</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="h-4.5 w-4.5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[9px] shrink-0">✓</span>
+                      <span>PMFBY Insurance policy receipt / enrollment slip</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="h-4.5 w-4.5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[9px] shrink-0">✓</span>
+                      <span>Aadhar Card identity linkage details</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="h-4.5 w-4.5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[9px] shrink-0">✓</span>
+                      <span>Geotagged site photograph (AI assessed)</span>
+                    </li>
+                  </ul>
+                </Card>
+
+                {/* Disaster recovery steps timeline */}
+                <Card className="p-5 border border-border shadow-sm space-y-3 bg-card/45">
+                  <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                    <Clock className="h-4.5 w-4.5 text-primary" />
+                    <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Compensation Payout Steps</span>
+                  </div>
+                  <div className="space-y-4 text-xs">
+                    <div className="flex items-start gap-3">
+                      <div className="h-5 w-5 rounded-full bg-primary/15 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">1</div>
+                      <p className="text-muted-foreground leading-normal"><strong className="text-foreground">Filing Report:</strong> Generate field loss assessment via AI scanner within 72 hours of hazard impact.</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="h-5 w-5 rounded-full bg-primary/15 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">2</div>
+                      <p className="text-muted-foreground leading-normal"><strong className="text-foreground">Official Audit:</strong> Joint verification by local Rythu Mitra / Grama Sachivalayam agricultural officer.</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="h-5 w-5 rounded-full bg-primary/15 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">3</div>
+                      <p className="text-muted-foreground leading-normal"><strong className="text-foreground">Payout Approval:</strong> DBT payout directly to Aadhar-linked bank account within 21 working days.</p>
+                    </div>
+                  </div>
+                </Card>
               </div>
             </motion.div>
           )}

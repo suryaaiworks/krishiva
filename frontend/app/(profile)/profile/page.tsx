@@ -38,7 +38,7 @@ const mockFarms: Farm[] = [
   {
     id: "farm-1",
     name: "Pune Main Field",
-    location: "Shirur Taluka, Pune",
+    location: "Shirur Taluka, Pune, MH",
     area: "5.5 Acres",
     soilType: "Clayey (Black Cotton)",
     waterSource: "Canal Gravity Gate",
@@ -47,13 +47,23 @@ const mockFarms: Farm[] = [
   },
   {
     id: "farm-2",
-    name: "Shirur Dryland",
-    location: "Kharad Block, Pune",
-    area: "3.0 Acres",
+    name: "Guntur Chilli Field",
+    location: "Tenali Taluka, Guntur, AP",
+    area: "4.5 Acres",
     soilType: "Sandy Loam",
-    waterSource: "Rainfed / Borewell",
-    currentCrop: "Groundnut (TAG-24)",
-    healthScore: 88
+    waterSource: "Borewell / Sprinkler",
+    currentCrop: "Chilli (Guntur Teja)",
+    healthScore: 94
+  },
+  {
+    id: "farm-3",
+    name: "Krishna Rice Delta",
+    location: "Gudivada Block, Krishna, AP",
+    area: "6.0 Acres",
+    soilType: "Clayey Loam",
+    waterSource: "Canal Irrigation",
+    currentCrop: "Paddy (MTU 7029)",
+    healthScore: 91
   }
 ];
 

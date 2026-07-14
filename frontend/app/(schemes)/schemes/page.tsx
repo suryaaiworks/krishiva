@@ -885,6 +885,7 @@ export default function SchemesPage() {
                           {docFile.content_type && docFile.content_type.includes("pdf") ? (
                             <FileText className="h-7 w-7" />
                           ) : (
+                            /* eslint-disable-next-line @next/next/no-img-element */
                             <img src={docFile.file_path} alt="document preview" className="h-full w-full object-cover" />
                           )}
                         </div>

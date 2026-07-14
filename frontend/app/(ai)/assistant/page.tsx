@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, Camera, Image as ImageIcon, MapPin, Send, Mic, 
-  Globe, Loader2, PhoneCall, Award, RefreshCw, X
+  Globe, Loader2, PhoneCall, Award, RefreshCw, X,
+  Sprout, Cloud, TrendingUp
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { apiClient } from "@/services/apiClient";
@@ -40,12 +41,14 @@ const INITIAL_MESSAGES: Message[] = [
 
 export default function AssistantPage() {
   const router = useRouter();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [inputValue, setInputValue] = React.useState("");
   const [isTyping, setIsTyping] = React.useState(false);
   const [isVoiceActive, setIsVoiceActive] = React.useState(false);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
+
+  const isFirstMount = React.useRef(true);
 
   // Load chat history from backend on mount
   React.useEffect(() => {
@@ -120,6 +123,10 @@ export default function AssistantPage() {
 
   // Auto scroll to chat bottom
   React.useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
@@ -254,6 +261,91 @@ export default function AssistantPage() {
 
         {/* CHAT CONVERSATION AREA */}
         <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
+          {messages.length <= 1 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {/* Farm Health Snapshot Card */}
+              <Card className="p-4 bg-emerald-500/[0.03] dark:bg-emerald-500/[0.01] border border-emerald-500/10 flex flex-col justify-between text-left">
+                <div>
+                  <div className="flex items-center gap-2 mb-2 text-xs font-bold text-primary uppercase">
+                    <Sprout className="h-4 w-4" />
+                    {t("Farm Snapshot")}
+                  </div>
+                  <h3 className="text-sm font-extrabold text-foreground mb-1">Pune Farm Plot A (MH)</h3>
+                  <div className="grid grid-cols-2 gap-2 text-[10.5px] font-semibold text-muted-foreground pt-1.5 border-t border-border/40">
+                    <div>{t("Current Crop")}: <span className="text-foreground font-bold">Sugarcane</span></div>
+                    <div>{t("Soil Type")}: <span className="text-foreground font-bold">Clayey</span></div>
+                    <div>{t("Crop Health")}: <span className="text-emerald-600 dark:text-emerald-400 font-bold">92%</span></div>
+                    <div>{t("Status")}: <span className="text-foreground font-bold">{t("AI Active")}</span></div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Weather Summary Card */}
+              <Card className="p-4 bg-blue-500/[0.03] dark:bg-blue-500/[0.01] border border-blue-500/10 flex flex-col justify-between text-left">
+                <div>
+                  <div className="flex items-center gap-2 mb-2 text-xs font-bold text-sky-600 dark:text-sky-400 uppercase">
+                    <Cloud className="h-4 w-4" />
+                    {t("Weather Summary")}
+                  </div>
+                  <h3 className="text-sm font-extrabold text-foreground mb-1">☀️ {t("Sunny")} · 28°C</h3>
+                  <div className="grid grid-cols-2 gap-2 text-[10.5px] font-semibold text-muted-foreground pt-1.5 border-t border-border/40">
+                    <div>{t("Humidity")}: <span className="text-foreground font-bold">62%</span></div>
+                    <div>{t("Rain Probability")}: <span className="text-foreground font-bold">10%</span></div>
+                    <div>{t("Wind Speed")}: <span className="text-foreground font-bold">12 km/h</span></div>
+                    <div>{t("UV Index")}: <span className="text-foreground font-bold">5 (Moderate)</span></div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Quick Actions Panel */}
+              <div className="md:col-span-2 space-y-2 text-left">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block px-1">
+                  {t("Suggested Actions")}
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div 
+                    onClick={() => handleSendText("Diagnose my crop disease.")}
+                    className="p-3.5 rounded-[16px] bg-card border border-border hover:border-primary/40 cursor-pointer shadow-sm hover:shadow transition-all duration-300 flex items-start gap-3"
+                  >
+                    <div className="p-2 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">
+                      <Camera className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <h4 className="text-xs font-extrabold text-foreground">{t("Diagnose Crop")}</h4>
+                      <p className="text-[9.5px] text-muted-foreground font-semibold leading-snug">{t("Upload crop leaf photo")}</p>
+                    </div>
+                  </div>
+
+                  <div 
+                    onClick={() => handleSendText("Show today's market prices.")}
+                    className="p-3.5 rounded-[16px] bg-card border border-border hover:border-primary/40 cursor-pointer shadow-sm hover:shadow transition-all duration-300 flex items-start gap-3"
+                  >
+                    <div className="p-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                      <TrendingUp className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <h4 className="text-xs font-extrabold text-foreground">{t("Market Intelligence")}</h4>
+                      <p className="text-[9.5px] text-muted-foreground font-semibold leading-snug">{t("Explore mandi spot price trends")}</p>
+                    </div>
+                  </div>
+
+                  <div 
+                    onClick={() => handleSendText("Recommend crops for clayey loam soil.")}
+                    className="p-3.5 rounded-[16px] bg-card border border-border hover:border-primary/40 cursor-pointer shadow-sm hover:shadow transition-all duration-300 flex items-start gap-3"
+                  >
+                    <div className="p-2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <h4 className="text-xs font-extrabold text-foreground">{t("Crop Advisor")}</h4>
+                      <p className="text-[9.5px] text-muted-foreground font-semibold leading-snug">{t("NPK suitability recommendations")}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {messages.map((msg) => {
             const isUser = msg.sender === "user";
             return (

@@ -13,6 +13,7 @@ import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Buyer {
   id: string;
@@ -63,44 +64,27 @@ const buyersDatabase: Buyer[] = [
     distanceVal: 12.4,
     pickupAvailable: true,
     paymentMethod: "Direct Bank Transfer",
-    expectedPaymentTime: "3 Working Days",
+    expectedPaymentTime: "Net 7 Days",
     category: "Sugarcane",
     location: "Baramati Highway, Pune",
-    certification: "NABL Quality Certified"
+    certification: "Govt Licensed Processor"
   },
   {
     id: "biofuel-pune",
-    companyName: "BioFuel Solutions Pune",
+    companyName: "Pune Bio-Ethanol Ltd",
     rating: 4.5,
     cropRequired: "Sugarcane",
     quantityRequired: "80 Tons",
-    offeredPrice: 3250,
+    offeredPrice: 3410,
     unit: "Ton",
-    distance: "4.8 km",
-    distanceVal: 4.8,
+    distance: "8.0 km",
+    distanceVal: 8.0,
     pickupAvailable: false,
     paymentMethod: "Direct Bank Transfer",
-    expectedPaymentTime: "Instant",
+    expectedPaymentTime: "Net 3 Days",
     category: "Sugarcane",
     location: "Hadapsar Industrial Area, Pune",
-    certification: "BioFuel Council Approved"
-  },
-  {
-    id: "krishi-feed",
-    companyName: "Krishi Feed Mills",
-    rating: 4.3,
-    cropRequired: "Paddy",
-    quantityRequired: "50 Tons",
-    offeredPrice: 2250,
-    unit: "Quintal",
-    distance: "8.1 km",
-    distanceVal: 8.1,
-    pickupAvailable: true,
-    paymentMethod: "Cash / Bank Transfer",
-    expectedPaymentTime: "Instant",
-    category: "Grains",
-    location: "Talegaon, Pune",
-    certification: "FSSAI Registered"
+    certification: "Green Energy Certified"
   },
   {
     id: "maharashtra-oil",
@@ -139,6 +123,7 @@ const buyersDatabase: Buyer[] = [
 ];
 
 export default function BuyerMarketplacePage() {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedCrop, setSelectedCrop] = React.useState<string>("Sugarcane");
   const [selectedBuyerId, setSelectedBuyerId] = React.useState<string>("sahyadri-sugar");
@@ -360,20 +345,41 @@ export default function BuyerMarketplacePage() {
         </div>
 
         {/* AI SELLING ADVISORY RECOMMENDATION */}
-        <div className="bg-emerald-500/[0.04] dark:bg-emerald-500/[0.02] border-l-4 border-l-primary border-y-0 border-r-0 p-5 rounded-r-card rounded-l-none flex items-start gap-3.5 text-xs shadow-sm">
+        <div className="bg-emerald-500/[0.04] dark:bg-emerald-500/[0.02] border-l-4 border-l-primary border-y-0 border-r-0 p-5 rounded-r-card rounded-l-none flex items-start gap-3.5 text-xs shadow-sm text-left">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 shadow-inner">
             <Sparkles className="h-4.5 w-4.5 animate-pulse" />
           </div>
-          <div className="space-y-1.5 flex-1 text-left">
-            <div className="flex items-center gap-2">
-              <h4 className="font-extrabold text-foreground text-sm">Vira AI Selling Advisory</h4>
-              <Badge variant="outline" className="text-[9px] font-black border-primary/20 bg-primary/10 text-primary px-2 py-0.5 shrink-0 rounded-full select-none">
-                ✨ VIRA ADVISOR
-              </Badge>
+          <div className="space-y-3 flex-1">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <h4 className="font-extrabold text-foreground text-sm">Vira AI Selling Advisory</h4>
+                <Badge variant="outline" className="text-[9px] font-black border-primary/20 bg-primary/10 text-primary px-2 py-0.5 shrink-0 rounded-full select-none">
+                  ✨ VIRA ADVISOR
+                </Badge>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Badge className="text-[9px] font-bold bg-emerald-500 text-white border-none shadow-sm rounded-full">
+                  96% Confidence
+                </Badge>
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              </div>
             </div>
-            <p className="text-muted-foreground leading-relaxed font-semibold">
-              We recommend selling your Sugarcane to **Sahyadri Sugar Cooperative**. While Baramati Agro offers a close rate, Sahyadri Sugar is only 3.5 km away and offers direct pickup, which boosts your net earnings by ₹1,400. Furthermore, Sahyadri Sugar has a 98% payment success rate with instant Direct Bank Transfer upon delivery slip generation.
-            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1 text-[11.5px] font-semibold text-muted-foreground">
+              <div className="space-y-1">
+                <p><strong className="text-foreground">{t("Reasoning")}:</strong> Sahyadri Sugar Cooperative offers free direct field pickup and is located only 3.5 km away, minimizing transport costs.</p>
+                <p><strong className="text-foreground">{t("Recommended Action")}:</strong> Sell Sugarcane harvest directly to Sahyadri Sugar Cooperative via the match button below.</p>
+              </div>
+              <div className="space-y-1">
+                <p><strong className="text-foreground">{t("Expected Impact")}:</strong> Boosts net earnings by ₹1,400 with a 98% payment success rate through instant Direct Bank Transfer.</p>
+                <p><strong className="text-foreground">{t("Data Source")}:</strong> Local Mandi APMCs &amp; B2B Procurement API</p>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-border/30 flex justify-between items-center text-[10px] text-muted-foreground font-semibold">
+              <span>Last Updated: Just now</span>
+              <span>Secure match verified</span>
+            </div>
           </div>
         </div>
 

@@ -98,7 +98,7 @@ export function GuestSidebar() {
               animate={{ opacity: 1 }}
               className="whitespace-nowrap truncate"
             >
-              Demo Dashboard
+              Guest Dashboard
             </motion.span>
           )}
         </Link>

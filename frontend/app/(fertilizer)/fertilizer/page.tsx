@@ -11,8 +11,10 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function FertilizerAdvisorPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const [result, setResult] = React.useState(false);
@@ -69,23 +71,40 @@ export default function FertilizerAdvisorPage() {
         </div>
 
         {/* AI Recommendations panel */}
-        <Card title="" animate={false} className="p-6 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.02] border-l-4 border-l-primary border-y-0 border-r-0 shadow-sm rounded-r-card rounded-l-none">
-          <div className="flex items-start gap-3.5 text-xs leading-relaxed text-left">
+        <Card title="" animate={false} className="p-6 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.02] border-l-4 border-l-primary border-y-0 border-r-0 shadow-sm rounded-r-card rounded-l-none text-left">
+          <div className="flex items-start gap-3.5 text-xs leading-relaxed">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 shadow-inner">
               <Sparkles className="h-4.5 w-4.5" />
             </div>
-            <div className="space-y-2 flex-1">
-              <div className="flex items-center gap-2">
-                <h4 className="font-extrabold text-foreground text-sm">Vira AI Fertilizer Recommendation</h4>
-                <Badge variant="outline" className="text-[9px] font-black border-primary/20 bg-primary/10 text-primary px-2 py-0.5 shrink-0 rounded-full select-none">
-                  ✨ VIRA ADVISOR
-                </Badge>
+            <div className="space-y-3 flex-1">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-extrabold text-foreground text-sm">Vira AI Fertilizer Recommendation</h4>
+                  <Badge variant="outline" className="text-[9px] font-black border-primary/20 bg-primary/10 text-primary px-2 py-0.5 shrink-0 rounded-full select-none">
+                    ✨ VIRA ADVISOR
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Badge className="text-[9px] font-bold bg-emerald-500 text-white border-none shadow-sm rounded-full">
+                    94% Confidence
+                  </Badge>
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
               </div>
-              <p className="text-muted-foreground leading-normal font-semibold">
-                To balance the phosphorus deficiency, apply **12 kg of Diammonium Phosphate (DAP)** or **25 kg of Single Superphosphate (SSP)** per acre. Add organic compost (neem cake) to Zone A to enhance nitrogen retention before sowing next week.
-              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1 text-[11.5px] font-semibold text-muted-foreground">
+                <div className="space-y-1">
+                  <p><strong className="text-foreground">{t("Reasoning")}:</strong> Soil test analysis indicates severe phosphorus deficiency in Zone A.</p>
+                  <p><strong className="text-foreground">{t("Recommended Action")}:</strong> Apply 12 kg of Diammonium Phosphate (DAP) or 25 kg of Single Superphosphate (SSP) per acre.</p>
+                </div>
+                <div className="space-y-1">
+                  <p><strong className="text-foreground">{t("Expected Impact")}:</strong> Rebalances NPK ratio by 15%, enhancing nitrogen retention before sowing next week.</p>
+                  <p><strong className="text-foreground">{t("Data Source")}:</strong> Soil Lab Report &amp; Gemini 2.5</p>
+                </div>
+              </div>
+
               <div className="pt-2 border-t border-border/30 flex justify-between items-center text-[10px] text-muted-foreground font-semibold">
-                <span>Last Soil Test Date: **June 12, 2026**</span>
+                <span>Last Updated: June 12, 2026</span>
                 <span className="text-primary font-bold cursor-pointer hover:underline" onClick={() => router.push("/profile")}>View Soil Report</span>
               </div>
             </div>

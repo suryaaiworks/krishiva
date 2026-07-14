@@ -20,10 +20,10 @@ export default function GuestDashboardPage() {
         {/* Title */}
         <div className="space-y-1">
           <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">
-            Demo Portal
+            Guest Preview
           </span>
           <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
-            Limited Demo Dashboard
+            Limited Guest Dashboard
           </h2>
         </div>
 
@@ -33,7 +33,7 @@ export default function GuestDashboardPage() {
           <div className="space-y-1">
             <span className="font-extrabold text-foreground block">Guest Account Restrictions</span>
             <p className="leading-relaxed">
-              You are currently viewing Krishiva in Demo mode. Real-time B2B trade posting, machinery rentals, plant disease diagnostic cameras, and Vira AI Advisor require a verified account registration.
+              You are currently viewing Krishiva in Preview mode. Real-time B2B trade posting, machinery rentals, plant disease diagnostic cameras, and Vira AI Advisor require a verified account registration.
             </p>
             <div className="pt-2">
               <Button 

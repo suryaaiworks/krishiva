@@ -135,6 +135,7 @@ export function UploadImageCard({
             <div className="flex flex-col md:flex-row gap-5 p-4 bg-muted/20 border border-border/60 rounded-card items-center md:items-start w-full text-left">
               {/* Image Preview Thumbnail */}
               <div className="relative w-32 h-32 md:w-28 md:h-28 shrink-0 rounded-card overflow-hidden border border-border/80 shadow-inner">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selectedImage}
                   alt="Selected crop preview"

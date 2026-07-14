@@ -485,9 +485,14 @@ export default function MarketIntelligencePage() {
                 onChange={(e) => setSelectedDistrict(e.target.value)}
                 className="bg-card border border-border rounded-input px-3 h-10 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none transition-all duration-200 cursor-pointer"
               >
-                <option value="Pune">Pune District</option>
-                <option value="Nagpur">Nagpur District</option>
-                <option value="Nashik">Nashik District</option>
+                <option value="Pune">Pune (Maharashtra)</option>
+                <option value="Guntur">Guntur (Andhra Pradesh)</option>
+                <option value="Nellore">Nellore (Andhra Pradesh)</option>
+                <option value="Warangal">Warangal (Telangana)</option>
+                <option value="Mysuru">Mysuru (Karnataka)</option>
+                <option value="Coimbatore">Coimbatore (Tamil Nadu)</option>
+                <option value="Nagpur">Nagpur (Maharashtra)</option>
+                <option value="Nashik">Nashik (Maharashtra)</option>
               </select>
 
               <select 

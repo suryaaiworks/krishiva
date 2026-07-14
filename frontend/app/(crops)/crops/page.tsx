@@ -283,10 +283,15 @@ export default function CropRecommendationPage() {
                           onChange={(e) => setLocation({ ...location, district: e.target.value })}
                           className="w-full bg-card border border-border rounded-btn px-3.5 h-11 text-xs text-foreground focus:ring-1 focus:ring-primary focus:outline-none"
                         >
-                          <option value="Pune">Pune (Western Maharashtra)</option>
-                          <option value="Nagpur">Nagpur (Vidarbha Region)</option>
-                          <option value="Nashik">Nashik (North Maharashtra)</option>
-                          <option value="Jalgaon">Jalgaon (Khandesh Region)</option>
+                           <option value="Pune">Pune (Western Maharashtra)</option>
+                           <option value="Guntur">Guntur (Andhra Pradesh)</option>
+                           <option value="Nellore">Nellore (Andhra Pradesh)</option>
+                           <option value="Warangal">Warangal (Telangana)</option>
+                           <option value="Mysuru">Mysuru (Karnataka)</option>
+                           <option value="Coimbatore">Coimbatore (Tamil Nadu)</option>
+                           <option value="Nagpur">Nagpur (Vidarbha Region)</option>
+                           <option value="Nashik">Nashik (North Maharashtra)</option>
+                           <option value="Jalgaon">Jalgaon (Khandesh Region)</option>
                         </select>
                       </div>
 
