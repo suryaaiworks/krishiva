@@ -38,6 +38,8 @@ cors_kwargs = {
     "allow_methods": ["*"],
     "allow_headers": ["*"],
 }
+if settings.cors_origins == ["*"]:
+    cors_kwargs["allow_credentials"] = False
 if getattr(settings, "CORS_ORIGIN_REGEX", None):
     cors_kwargs["allow_origin_regex"] = settings.CORS_ORIGIN_REGEX
 

@@ -9,8 +9,10 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     
     # CORS Origins (Comma separated strings converted to list)
-    ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
-    CORS_ORIGIN_REGEX: str = r"https://.*\.vercel\.app"
+    ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,https://krishiva-ohyw6gd19-cabzii-web.vercel.app"
+    FRONTEND_URL: str = "http://localhost:3000"
+    CORS_ORIGIN_REGEX: str = r"https://.*\.vercel\.app|https://.*\.onrender\.com|http://localhost:\d+|http://127\.0\.0\.1:\d+"
+    CORS_ALLOW_ALL_ORIGINS: bool = False
     
     # Supabase Settings
     SUPABASE_URL: str = ""
@@ -44,7 +46,24 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins(self) -> List[str]:
-        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
+        origins = [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
+
+        if self.CORS_ALLOW_ALL_ORIGINS:
+            return ["*"]
+
+        if self.FRONTEND_URL and self.FRONTEND_URL not in origins:
+            origins.append(self.FRONTEND_URL)
+
+        defaults = [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "https://krishiva-ohyw6gd19-cabzii-web.vercel.app",
+        ]
+        for default in defaults:
+            if default not in origins:
+                origins.append(default)
+
+        return origins
 
     class Config:
         env_file = ".env"
