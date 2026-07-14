@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     
     # Google Maps & AI APIs
-    GEMINI_API_KEY: str = ""
+    GEMINI_API_KEY: str = "AIzaSyAF1sAN9FmjC_QPi3L61ukTCUSk8kUOl7A"
     GOOGLE_MAPS_API_KEY: str = ""
     OPENWEATHER_API_KEY: str = ""
 
