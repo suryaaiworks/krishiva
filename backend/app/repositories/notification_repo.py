@@ -86,19 +86,37 @@ class NotificationRepository:
 
     @staticmethod
     def append_chat_message(db: Session, user_id: UUID, message_data: dict) -> ConversationHistory:
-        hist = NotificationRepository.get_chat_history(db, user_id)
-        if not hist:
-            hist = ConversationHistory(user_id=user_id, messages=[message_data])
-            db.add(hist)
-        else:
-            # We copy list to trigger sqlalchemy JSON mutation detection
-            updated_messages = list(hist.messages)
-            updated_messages.append(message_data)
-            hist.messages = updated_messages
-            hist.updated_at = datetime.datetime.utcnow()
-        db.commit()
-        db.refresh(hist)
-        return hist
+        from sqlalchemy.exc import IntegrityError
+        from app.repositories.user_repo import UserRepository
+        try:
+            hist = NotificationRepository.get_chat_history(db, user_id)
+            if not hist:
+                hist = ConversationHistory(user_id=user_id, messages=[message_data])
+                db.add(hist)
+            else:
+                updated_messages = list(hist.messages)
+                updated_messages.append(message_data)
+                hist.messages = updated_messages
+                hist.updated_at = datetime.datetime.utcnow()
+            db.commit()
+            db.refresh(hist)
+            return hist
+        except IntegrityError:
+            db.rollback()
+            UserRepository.upsert_skeleton_user(db, user_id)
+            
+            hist = NotificationRepository.get_chat_history(db, user_id)
+            if not hist:
+                hist = ConversationHistory(user_id=user_id, messages=[message_data])
+                db.add(hist)
+            else:
+                updated_messages = list(hist.messages)
+                updated_messages.append(message_data)
+                hist.messages = updated_messages
+                hist.updated_at = datetime.datetime.utcnow()
+            db.commit()
+            db.refresh(hist)
+            return hist
 
     # --- Voice Session Logs ---
     @staticmethod

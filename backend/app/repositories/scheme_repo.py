@@ -26,8 +26,20 @@ class SchemeRepository:
 
     @staticmethod
     def create_application(db: Session, scheme_id: UUID, user_id: UUID, docs: list) -> SchemeApplication:
-        app = SchemeApplication(scheme_id=scheme_id, user_id=user_id, status="Pending", submitted_documents=docs)
-        db.add(app)
-        db.commit()
-        db.refresh(app)
-        return app
+        from sqlalchemy.exc import IntegrityError
+        from app.repositories.user_repo import UserRepository
+        try:
+            app = SchemeApplication(scheme_id=scheme_id, user_id=user_id, status="Pending", submitted_documents=docs)
+            db.add(app)
+            db.commit()
+            db.refresh(app)
+            return app
+        except IntegrityError:
+            db.rollback()
+            UserRepository.upsert_skeleton_user(db, user_id)
+            
+            app = SchemeApplication(scheme_id=scheme_id, user_id=user_id, status="Pending", submitted_documents=docs)
+            db.add(app)
+            db.commit()
+            db.refresh(app)
+            return app
